@@ -671,6 +671,29 @@ function euroLine(item, amount) {
   return converted === "–" ? "" : `<small class="eur-conversion">≈ ${converted}</small>`;
 }
 
+
+function originalCurrencyText(item, amount) {
+  if (!Number.isFinite(amount)) return "";
+  const currency = detectedCurrency(item);
+  if (!currency || currency === "EUR") return "";
+  return `${formatNumber(amount, 2)} ${currency}`;
+}
+
+function primaryPriceHtml(item, amount) {
+  const euro = euroValue(item, amount);
+  const original = originalCurrencyText(item, amount);
+
+  if (euro !== "–") {
+    return `
+      <strong>${euro}</strong>
+      ${original ? `<small class="original-currency">${original}</small>` : ""}
+    `;
+  }
+
+  const currency = detectedCurrency(item);
+  return `<strong>${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}</strong>`;
+}
+
 function profitLossExample(item, investmentAmount) {
   if (!Number.isFinite(item.price) || item.price <= 0 || !Number.isFinite(investmentAmount) || investmentAmount <= 0) {
     return { gain: NaN, loss: NaN };
@@ -733,7 +756,9 @@ function cardHtml(item) {
         <div class="card-identity">
           <div class="symbol">${item.symbol}</div>
           <div class="company-line">${item.companyName || item.resolvedSymbol || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
-          <div class="price">Kurs ${formatNumber(item.price, 2)}${item.currency ? ` ${item.currency}` : ""}</div>
+          <div class="price header-price">
+            ${primaryPriceHtml(item, item.price)}
+          </div>
         </div>
         <div class="card-header-actions">
           <span class="signal-pill ${item.kind}">${item.label}</span>
@@ -830,18 +855,15 @@ function cardHtml(item) {
         <div class="trade-plan-grid">
           <div>
             <span>Aktueller Kurs</span>
-            <strong>${euroValue(item, item.price) !== "–" ? euroValue(item, item.price) : `${formatNumber(item.price, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.price) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.price, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
+            ${primaryPriceHtml(item, item.price)}
           </div>
           <div>
             <span>Mögliches Ziel</span>
-            <strong>${euroValue(item, item.crvTarget) !== "–" ? euroValue(item, item.crvTarget) : `${formatNumber(item.crvTarget, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.crvTarget) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvTarget, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
+            ${primaryPriceHtml(item, item.crvTarget)}
           </div>
           <div>
             <span>Rechnerischer Stopp</span>
-            <strong>${euroValue(item, item.crvStop) !== "–" ? euroValue(item, item.crvStop) : `${formatNumber(item.crvStop, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.crvStop) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvStop, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
+            ${primaryPriceHtml(item, item.crvStop)}
           </div>
           <div>
             <span>Potenzial zum 3M-Hoch</span>

@@ -383,3 +383,17 @@ VERSION 7.2 – KARTEN- UND EURO-FIX
   keine Währung im gemeinsamen Ergebnis gespeichert hat.
 - Für die tatsächliche Euro-Umrechnung muss die Aktie nach dem Deploy einmal
   neu geprüft werden, damit der aktuelle Wechselkurs gespeichert wird.
+
+
+VERSION 7.3 – EURO KONSEQUENT
+
+- Bei Nicht-Euro-Aktien wird der Euro-Wert groß als Hauptwert angezeigt.
+- Die Originalwährung steht kleiner darunter.
+- Dies gilt für:
+  - den Kurs oben in der Aktienkarte
+  - den aktuellen Kurs im Chancen-Risiko-Bereich
+  - das mögliche Ziel
+  - den rechnerischen Stopp
+- Bei Euro-Aktien erscheint nur der Euro-Wert.
+- Nach dem Deploy müssen die Aktien einmal neu geprüft werden, damit der
+  aktuelle Wechselkurs im gemeinsamen Ergebnis gespeichert wird.
