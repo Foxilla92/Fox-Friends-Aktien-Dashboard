@@ -17,7 +17,10 @@
         <h1>Fox & Friends Aktien Dashboard</h1>
         <p>In wenigen Sekunden sehen, welche Aktien nach deinen Regeln interessant sind.</p>
       </div>
-      <button id="settingsButton" class="icon-button" aria-label="Einstellungen öffnen">⚙️</button>
+      <div class="top-actions">
+        <button id="helpButton" class="icon-button help-button" aria-label="Erklärungen öffnen">?</button>
+        <button id="settingsButton" class="icon-button" aria-label="Einstellungen öffnen">⚙️</button>
+      </div>
     </header>
 
     <section class="overview-card">
@@ -167,7 +170,242 @@ AMD</textarea>
     </form>
   </dialog>
 
-  <dialog id="chartDialog" class="modal chart-modal">
+  
+  <dialog id="helpDialog" class="help-dialog">
+    <div class="dialog-header">
+      <div>
+        <div class="eyebrow">SO LIEST DU DAS DASHBOARD</div>
+        <h2>Indikatoren & Bewertung erklärt</h2>
+      </div>
+      <button class="close-button" data-close="helpDialog" aria-label="Schließen">✕</button>
+    </div>
+
+    <div class="help-content">
+      <section class="help-intro">
+        <h3>Was macht das Dashboard überhaupt?</h3>
+        <p>
+          Das Dashboard kombiniert mehrere technische Indikatoren zu einem Einstieg- und Ausstiegsscore.
+          Kein einzelner Wert entscheidet allein. Eine Aktie wird interessant, wenn mehrere Signale
+          gleichzeitig in dieselbe Richtung zeigen.
+        </p>
+      </section>
+
+      <section class="help-section">
+        <h3>Die vier verständlichen Hauptwerte</h3>
+        <div class="help-card-grid">
+          <article class="help-card">
+            <h4>Trend</h4>
+            <p>Zeigt, ob der Kurs grundsätzlich aufwärts oder abwärts läuft.</p>
+            <ul>
+              <li>Kurs über EMA 20: kurzfristig positiv</li>
+              <li>EMA 20 über EMA 50: mittelfristig positiv</li>
+              <li>EMA 50 über EMA 200: langfristig positiv</li>
+            </ul>
+            <p><strong>Hoher Wert:</strong> stabiler Aufwärtstrend.</p>
+          </article>
+
+          <article class="help-card">
+            <h4>Schwung</h4>
+            <p>Bewertet, ob eine Kursbewegung gerade Kraft gewinnt oder verliert.</p>
+            <ul>
+              <li>RSI</li>
+              <li>MACD</li>
+              <li>Bollinger-Lage</li>
+            </ul>
+            <p><strong>Hoher Wert:</strong> Bewegung wird technisch bestätigt.</p>
+          </article>
+
+          <article class="help-card">
+            <h4>Sicherheit</h4>
+            <p>Misst nicht, ob eine Aktie sicher ist, sondern ob das technische Verhältnis von Chance und Risiko günstig wirkt.</p>
+            <ul>
+              <li>ATR / Volatilität</li>
+              <li>Chancen-Risiko-Verhältnis</li>
+            </ul>
+            <p><strong>Hoher Wert:</strong> Risiko erscheint im Verhältnis zur möglichen Chance günstiger.</p>
+          </article>
+
+          <article class="help-card">
+            <h4>Kurspotenzial</h4>
+            <p>Bewertet, wie viel rechnerischer Raum bis zu technischen Zielen noch vorhanden ist.</p>
+            <ul>
+              <li>Abstand zum 3-Monats-Hoch</li>
+              <li>aktuelle 3-Monats-Lage</li>
+              <li>Chancen-Risiko-Verhältnis</li>
+            </ul>
+            <p><strong>Hoher Wert:</strong> viel möglicher Spielraum nach oben.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="help-section">
+        <h3>Die einzelnen Indikatoren</h3>
+        <div class="indicator-help-list">
+          <article>
+            <h4>RSI – die lila Linie</h4>
+            <p>Der RSI liegt zwischen 0 und 100 und misst die Stärke der letzten Kursbewegungen.</p>
+            <div class="help-scale">
+              <span>0–30: weit unten</span>
+              <span>30–70: neutral</span>
+              <span>70–100: weit oben</span>
+            </div>
+            <p>
+              Je weiter unten der RSI liegt, desto interessanter kann eine mögliche Gegenbewegung nach oben werden.
+              Je weiter oben er liegt, desto wahrscheinlicher werden Rücksetzer.
+            </p>
+          </article>
+
+          <article>
+            <h4>Gelbe RSI-Linie</h4>
+            <p>Das ist der geglättete Durchschnitt des RSI.</p>
+            <ul>
+              <li>Lila über Gelb: eher positives Momentum</li>
+              <li>Lila unter Gelb: eher schwächeres Momentum</li>
+              <li>Frische Kreuzung von unten nach oben: zusätzlich positives Signal</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>3-Monats-Lage</h4>
+            <p>Zeigt, wo der aktuelle Kurs innerhalb der Spanne aus 3-Monats-Tief und 3-Monats-Hoch liegt.</p>
+            <ul>
+              <li>0–33 %: unteres Drittel, eher günstiger Bereich</li>
+              <li>34–66 %: mittlerer Bereich</li>
+              <li>67–100 %: oberes Drittel, weniger Luft bis zum Hoch</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Jahreslage</h4>
+            <p>Funktioniert genauso wie die 3-Monats-Lage, wird aber schwächer gewichtet. Sie dient zur langfristigen Einordnung.</p>
+          </article>
+
+          <article>
+            <h4>EMA 20 / 50 / 200</h4>
+            <p>Exponentielle gleitende Durchschnitte zeigen den kurzfristigen, mittelfristigen und langfristigen Trend.</p>
+            <ul>
+              <li>EMA 20: kurzfristig</li>
+              <li>EMA 50: mittelfristig</li>
+              <li>EMA 200: langfristig</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>MACD</h4>
+            <p>Misst Trend und Momentum gemeinsam.</p>
+            <ul>
+              <li>MACD über Signallinie: eher positiv</li>
+              <li>MACD unter Signallinie: eher negativ</li>
+              <li>Steigendes Histogramm: Bewegung gewinnt an Kraft</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Bollinger-Bänder</h4>
+            <p>Zeigen, wo der Kurs im Verhältnis zu seiner normalen Schwankungsbreite liegt.</p>
+            <ul>
+              <li>nahe unterem Band: eher günstiger Rücklaufbereich</li>
+              <li>nahe oberem Band: Kurs bereits stark gelaufen</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Volumen</h4>
+            <p>Vergleicht das aktuelle Handelsvolumen mit dem Durchschnitt der letzten 20 Handelstage.</p>
+            <ul>
+              <li>über 120 %: Bewegung wird stärker bestätigt</li>
+              <li>90–120 %: normales Volumen</li>
+              <li>unter 70 %: Signal ist weniger überzeugend</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Fibonacci</h4>
+            <p>Markiert typische technische Unterstützungs- und Widerstandszonen.</p>
+            <p>Das Dashboard bewertet die aktuelle Zone und zeigt das nächste technische Ziel.</p>
+          </article>
+
+          <article>
+            <h4>ATR / Volatilität</h4>
+            <p>Zeigt, wie stark eine Aktie typischerweise schwankt. Hohe ATR-Werte bedeuten größere Schwankungen und damit mehr Risiko.</p>
+          </article>
+
+          <article>
+            <h4>Chancen-Risiko-Verhältnis</h4>
+            <p>Vergleicht den möglichen Gewinn bis zum Ziel mit dem möglichen Verlust bis zum rechnerischen Stopp.</p>
+            <ul>
+              <li>unter 1 : 1: ungünstig</li>
+              <li>1,5 : 1: brauchbar</li>
+              <li>2 : 1 oder höher: gut</li>
+              <li>3 : 1 oder höher: sehr attraktiv</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Relative Stärke zum Markt</h4>
+            <p>Vergleicht die Entwicklung der Aktie mit dem gewählten Marktbenchmark, standardmäßig SPY.</p>
+            <ul>
+              <li>positiver Wert: Aktie war stärker als der Markt</li>
+              <li>negativer Wert: Aktie war schwächer als der Markt</li>
+            </ul>
+          </article>
+
+          <article>
+            <h4>Quartalszahlen</h4>
+            <p>Zeigt den nächsten bekannten Termin. Je näher die Veröffentlichung rückt, desto höher ist das Risiko größerer Kurssprünge.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="help-section score-help">
+        <h3>Wie entsteht die Gesamtbewertung?</h3>
+        <div class="score-formula">
+          <div><span>RSI</span><strong>35 %</strong></div>
+          <div><span>Preis & Fibonacci</span><strong>25 %</strong></div>
+          <div><span>Trend über EMA</span><strong>15 %</strong></div>
+          <div><span>Momentum über MACD/Bollinger</span><strong>15 %</strong></div>
+          <div><span>Volumen</span><strong>10 %</strong></div>
+        </div>
+
+        <div class="help-example">
+          <h4>Warum wird eine Aktie als „Kaufen“ bewertet?</h4>
+          <p>Ein starkes Kaufsignal entsteht zum Beispiel, wenn:</p>
+          <ul>
+            <li>der RSI relativ weit unten liegt,</li>
+            <li>die lila Linie über der gelben liegt,</li>
+            <li>der Kurs im unteren Bereich der letzten 3 Monate steht,</li>
+            <li>noch ausreichend Potenzial nach oben vorhanden ist,</li>
+            <li>EMA und MACD den Trend bestätigen,</li>
+            <li>das Volumen nicht auffällig schwach ist,</li>
+            <li>und das Chancen-Risiko-Verhältnis mindestens brauchbar ist.</li>
+          </ul>
+        </div>
+
+        <div class="help-example">
+          <h4>Warum wird eine Aktie als „Verkaufen“ oder „Verkauf prüfen“ bewertet?</h4>
+          <p>Das passiert eher, wenn:</p>
+          <ul>
+            <li>der RSI weit oben liegt,</li>
+            <li>die lila Linie unter die gelbe fällt,</li>
+            <li>der Kurs nahe am 3-Monats- oder Jahreshoch steht,</li>
+            <li>MACD und EMA an Stärke verlieren,</li>
+            <li>und das weitere Potenzial im Verhältnis zum Risiko klein wird.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="help-warning">
+        <strong>Wichtig</strong>
+        <p>
+          Das Dashboard ist eine technische Auswertung und keine Garantie.
+          Nachrichten, Quartalszahlen, politische Ereignisse oder Unternehmensprobleme können
+          technische Signale jederzeit überlagern.
+        </p>
+      </section>
+    </div>
+  </dialog>
+
+<dialog id="chartDialog" class="modal chart-modal">
     <div class="chart-card">
       <div class="modal-header chart-header">
         <div>

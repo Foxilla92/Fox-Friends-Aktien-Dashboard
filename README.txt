@@ -172,3 +172,26 @@ Eine Aktienprüfung benötigt jetzt normalerweise drei Credits:
 3. Earnings-Kalender
 Zusätzlich benötigen Markt- und optionale Sektorbenchmarks jeweils ihre bisherigen
 Kursabfragen. Beim Öffnen/Refresh entstehen weiterhin keine Twelve-Data-Credits.
+
+
+VERSION 4.2 – ANFÄNGERFREUNDLICHE OBERFLÄCHE
+
+- Klarer Ergebnisblock mit verständlichem Einstieg-/Ausstiegsscore.
+- Signal-Vertrauen wird getrennt dargestellt.
+- Trend, Schwung, Sicherheit und Kurspotenzial werden in Worten erklärt.
+- Automatische Zusammenfassung der wichtigsten positiven Punkte und Risiken.
+- CRV-Bereich mit Kurs, Ziel, rechnerischem Stopp und Marktvergleich.
+- Technische Kennzahlen sind standardmäßig eingeklappt und verständlich erläutert.
+- „Risiko“ wurde in der Oberfläche zu „Sicherheit“ umbenannt:
+  Ein hoher Wert ist positiv, ein niedriger Wert deutet auf ungünstigere Bedingungen hin.
+- Keine zusätzlichen API-Abfragen gegenüber Version 4.1.
+
+
+VERSION 4.3 – ERKLÄRUNGSBEREICH
+
+- Neuer Hilfe-Button „?“ neben den Einstellungen.
+- Erläuterung aller Hauptwerte und technischen Indikatoren.
+- Erklärung der Score-Gewichtung.
+- Beispiele, warum eine Aktie als Kaufen, Prüfen oder Verkaufen bewertet wird.
+- Speziell für Anfänger formuliert.
+- Keine zusätzlichen API-Anfragen.

@@ -517,15 +517,117 @@ function earningsDisplay(item) {
   return { text: `Quartalszahlen: ${formatted} (${relative})${session}`, className };
 }
 
+
+function scoreWord(score) {
+  if (!Number.isFinite(score)) return "Unbekannt";
+  if (score >= 80) return "Sehr stark";
+  if (score >= 65) return "Stark";
+  if (score >= 50) return "Ausgeglichen";
+  if (score >= 35) return "Schwach";
+  return "Sehr schwach";
+}
+
+function scoreClass(score) {
+  if (!Number.isFinite(score)) return "tone-neutral";
+  if (score >= 65) return "tone-positive";
+  if (score >= 45) return "tone-caution";
+  return "tone-negative";
+}
+
+function crvAssessment(crv) {
+  if (!Number.isFinite(crv)) return { label: "nicht berechenbar", className: "tone-neutral" };
+  if (crv >= 3) return { label: "sehr attraktiv", className: "tone-positive" };
+  if (crv >= 2) return { label: "gut", className: "tone-positive" };
+  if (crv >= 1.5) return { label: "brauchbar", className: "tone-caution" };
+  if (crv >= 1) return { label: "knapp", className: "tone-caution" };
+  return { label: "ungünstig", className: "tone-negative" };
+}
+
+function relativeMarketText(value) {
+  if (!Number.isFinite(value)) return "Kein Marktvergleich verfügbar";
+  if (value >= 5) return `${formatNumber(value, 1)} Prozentpunkte besser als der Markt`;
+  if (value >= 0) return `${formatNumber(value, 1)} Prozentpunkte leicht besser als der Markt`;
+  if (value > -5) return `${formatNumber(Math.abs(value), 1)} Prozentpunkte leicht schwächer als der Markt`;
+  return `${formatNumber(Math.abs(value), 1)} Prozentpunkte schwächer als der Markt`;
+}
+
+function buildBeginnerSummary(item) {
+  if (item.error) {
+    return {
+      headline: "Diese Aktie konnte nicht ausgewertet werden.",
+      text: item.error,
+      positives: [],
+      cautions: []
+    };
+  }
+
+  const positives = [];
+  const cautions = [];
+
+  if (item.trendScore >= 65) positives.push("Der mittelfristige Trend ist stabil.");
+  else if (item.trendScore < 40) cautions.push("Der Trend ist aktuell eher schwach.");
+
+  if (item.momentumScore >= 65) positives.push("Der Kursschwung entwickelt sich positiv.");
+  else if (item.momentumScore < 40) cautions.push("Der Kursschwung liefert noch wenig Unterstützung.");
+
+  if (item.crv >= 2) positives.push(`Das Chancen-Risiko-Verhältnis ist mit ${formatNumber(item.crv, 2)} : 1 attraktiv.`);
+  else if (Number.isFinite(item.crv) && item.crv < 1.5) cautions.push(`Das Chancen-Risiko-Verhältnis ist mit ${formatNumber(item.crv, 2)} : 1 eher schwach.`);
+
+  if (item.rsi < 35) positives.push("Der RSI liegt weit unten und kann eine Gegenbewegung begünstigen.");
+  else if (item.rsi > 70) cautions.push("Der RSI liegt hoch; kurzfristige Rücksetzer sind eher möglich.");
+
+  if (item.volumeRatio >= 1.2) positives.push("Das Handelsvolumen bestätigt die Bewegung.");
+  else if (Number.isFinite(item.volumeRatio) && item.volumeRatio < 0.7) cautions.push("Das Handelsvolumen ist sehr niedrig; das Signal ist weniger überzeugend.");
+
+  if (item.relativeStrengthMarket >= 0) positives.push("Die Aktie hält sich mindestens so gut wie der Markt.");
+  else if (item.relativeStrengthMarket <= -5) cautions.push("Die Aktie entwickelt sich deutlich schwächer als der Markt.");
+
+  if (item.nextEarningsDate) {
+    const days = daysUntil(item.nextEarningsDate);
+    if (days >= 0 && days <= 7) cautions.push(`Quartalszahlen stehen in ${days === 0 ? "weniger als einem Tag" : `${days} Tagen`} an; stärkere Kursschwankungen sind möglich.`);
+  }
+
+  let headline;
+  if (item.kind === "buy") headline = "Mehrere Signale sprechen für einen möglichen Einstieg.";
+  else if (item.kind === "sell") headline = "Mehrere Signale sprechen für erhöhte Vorsicht oder einen möglichen Ausstieg.";
+  else headline = "Die Aktie ist interessant, aber das Signal ist noch nicht eindeutig.";
+
+  const text = positives.length || cautions.length
+    ? "Die wichtigsten Gründe sind unten zusammengefasst."
+    : "Für eine klare Einordnung fehlen derzeit ausreichend starke Signale.";
+
+  return { headline, text, positives: positives.slice(0, 3), cautions: cautions.slice(0, 3) };
+}
+
+function beginnerMetric(title, score, explanation) {
+  return `
+    <div class="beginner-metric ${scoreClass(score)}">
+      <div class="beginner-metric-top">
+        <span>${title}</span>
+        <strong>${scoreWord(score)}</strong>
+      </div>
+      <div class="mini-progress"><i style="width:${clamp(score, 0, 100)}%"></i></div>
+      <small>${explanation}</small>
+    </div>`;
+}
+
 function cardHtml(item) {
   const mainScore = item.kind === "sell" ? item.sellScore : item.buyScore;
-  const mainLabel = item.kind === "sell" ? "Verkauf" : "Einstieg";
-  const explanation = item.error
-    ? item.error
-    : `RSI ${formatNumber(item.rsi)} · 3M-Lage ${formatNumber(item.threeMonthPosition, 0)} % · Jahreslage ${formatNumber(item.oneYearPosition, 0)} % · nächstes Fib ${formatNumber(item.fibonacciRatio * 100, 1)} %`;
+  const mainLabel = item.kind === "sell" ? "Ausstiegsscore" : "Einstiegsscore";
+  const summary = buildBeginnerSummary(item);
+  const crv = crvAssessment(item.crv);
+  const earnings = earningsDisplay(item);
+
+  const positiveList = summary.positives.length
+    ? `<div class="reason-group positive-reasons"><h4>Was dafür spricht</h4>${summary.positives.map(text => `<div>✓ ${text}</div>`).join("")}</div>`
+    : "";
+
+  const cautionList = summary.cautions.length
+    ? `<div class="reason-group caution-reasons"><h4>Worauf du achten solltest</h4>${summary.cautions.map(text => `<div>⚠ ${text}</div>`).join("")}</div>`
+    : "";
 
   return `
-    <article class="signal-card">
+    <article class="signal-card ${item.kind}">
       <div class="signal-card-header">
         <div>
           <div class="symbol">${item.symbol}</div>
@@ -534,58 +636,119 @@ function cardHtml(item) {
         <span class="signal-pill ${item.kind}">${item.label}</span>
       </div>
 
-      <div class="score-row">
-        <strong>${formatNumber(mainScore, 0)}</strong>
-        <span>${mainLabel}/100</span>
-      </div>
-      <div class="progress"><i style="width:${clamp(mainScore, 0, 100)}%"></i></div>
+      <section class="verdict-panel ${item.kind}">
+        <div class="verdict-score">
+          <strong>${formatNumber(mainScore, 0)}</strong>
+          <span>/100</span>
+        </div>
+        <div class="verdict-copy">
+          <span class="verdict-kicker">${mainLabel}</span>
+          <h3>${summary.headline}</h3>
+          <p>${summary.text}</p>
+        </div>
+      </section>
 
-      <div class="metric-grid">
-        <div class="metric"><span>RSI</span><strong>${formatNumber(item.rsi)}</strong></div>
-        <div class="metric"><span>Gelb</span><strong>${formatNumber(item.rsiAverage)}</strong></div>
-        <div class="metric"><span>3 Monate</span><strong>${formatNumber(item.threeMonthPosition, 0)} %</strong></div>
-        <div class="metric"><span>1 Jahr</span><strong>${formatNumber(item.oneYearPosition, 0)} %</strong></div>
+      <div class="confidence-row">
+        <span>Signal-Vertrauen</span>
+        <strong>${formatNumber(item.confidence, 0)} % · ${scoreWord(item.confidence)}</strong>
+      </div>
+      <div class="progress confidence-progress"><i style="width:${clamp(item.confidence, 0, 100)}%"></i></div>
+
+      <section class="beginner-section">
+        <h3>Einfach erklärt</h3>
+        <div class="beginner-grid">
+          ${beginnerMetric("Trend", item.trendScore, "Zeigt, ob sich der Kurs grundsätzlich aufwärts oder abwärts bewegt.")}
+          ${beginnerMetric("Schwung", item.momentumScore, "Bewertet, ob die aktuelle Bewegung neue Stärke gewinnt oder nachlässt.")}
+          ${beginnerMetric("Sicherheit", item.riskScore, "Je höher, desto günstiger sind Volatilität und Chancen-Risiko-Verhältnis.")}
+          ${beginnerMetric("Kurspotenzial", item.chanceScore, "Bewertet den verfügbaren Raum nach oben und die aktuelle Preisposition.")}
+        </div>
+      </section>
+
+      <section class="reason-layout">
+        ${positiveList}
+        ${cautionList}
+      </section>
+
+      <section class="trade-plan">
+        <div class="trade-plan-header">
+          <div>
+            <span>Chancen-Risiko-Verhältnis</span>
+            <strong class="${crv.className}">${formatNumber(item.crv, 2)} : 1 · ${crv.label}</strong>
+          </div>
+          <div class="market-comparison ${item.relativeStrengthMarket >= 0 ? "positive" : "negative"}">
+            ${relativeMarketText(item.relativeStrengthMarket)}
+          </div>
+        </div>
+        <div class="trade-plan-grid">
+          <div><span>Aktueller Kurs</span><strong>${formatNumber(item.price, 2)}</strong></div>
+          <div><span>Mögliches Ziel</span><strong>${formatNumber(item.crvTarget, 2)}</strong></div>
+          <div><span>Rechnerischer Stopp</span><strong>${formatNumber(item.crvStop, 2)}</strong></div>
+          <div><span>Potenzial zum 3M-Hoch</span><strong>+${formatNumber(item.upsidePotential, 1)} %</strong></div>
+        </div>
+        <small class="trade-plan-note">Ziel und Stopp sind technische Orientierungswerte aus 3-Monats-Hoch, Fibonacci und ATR – keine Garantie.</small>
+      </section>
+
+      <div class="earnings-event ${earnings.className}">
+        <span class="event-icon">📅</span>
+        <div>
+          <strong>${earnings.text}</strong>
+          ${Number.isFinite(item.nextEpsEstimate) ? `<small>EPS-Schätzung: ${formatNumber(item.nextEpsEstimate, 2)}</small>` : ""}
+        </div>
       </div>
 
-      <div class="metric-grid secondary-metrics">
-        <div class="metric"><span>Volumen</span><strong>${Number.isFinite(item.volumeRatio) ? formatNumber(item.volumeRatio * 100, 0) + " %" : "–"}</strong></div>
-        <div class="metric"><span>Volumenlage</span><strong>${item.volumeLabel || "–"}</strong></div>
-        <div class="metric"><span>Vertrauen</span><strong>${formatNumber(item.confidence, 0)} %</strong></div>
-        <div class="metric"><span>Fib</span><strong>${formatNumber(item.fibonacciRatio * 100, 1)} %</strong></div>
-      </div>
-
-      <div class="professional-grid">
-        <div class="pro-metric"><span>Trend</span><strong>${formatNumber(item.trendScore,0)}/100</strong></div>
-        <div class="pro-metric"><span>Momentum</span><strong>${formatNumber(item.momentumScore,0)}/100</strong></div>
-        <div class="pro-metric"><span>Risiko</span><strong>${formatNumber(item.riskScore,0)}/100</strong></div>
-        <div class="pro-metric"><span>Chance</span><strong>${formatNumber(item.chanceScore,0)}/100</strong></div>
-      </div>
-      <div class="potential-box">
-        ↗ 3M-Hoch: +${formatNumber(item.upsidePotential)} % · CRV ${formatNumber(item.crv,2)} : 1<br>
-        Ziel ${formatNumber(item.crvTarget,2)} · Stopp ${formatNumber(item.crvStop,2)}
-      </div>
       <details class="indicator-details">
-        <summary>Weitere Indikatoren</summary>
+        <summary>
+          <span>Technische Details anzeigen</span>
+          <small>Für eine genauere Prüfung</small>
+        </summary>
+
+        <div class="technical-explainer">
+          <div class="tech-card">
+            <span>RSI</span>
+            <strong>${formatNumber(item.rsi, 1)}</strong>
+            <small>${item.rsi < 30 ? "Weit unten – mögliche Gegenbewegung." : item.rsi > 70 ? "Weit oben – Rücksetzer möglich." : "Neutraler Bereich."}</small>
+          </div>
+          <div class="tech-card">
+            <span>RSI-Durchschnitt</span>
+            <strong>${formatNumber(item.rsiAverage, 1)}</strong>
+            <small>${item.rsi > item.rsiAverage ? "Lila liegt über Gelb – eher positiv." : "Lila liegt unter Gelb – eher vorsichtig."}</small>
+          </div>
+          <div class="tech-card">
+            <span>3-Monats-Lage</span>
+            <strong>${formatNumber(item.threeMonthPosition, 0)} %</strong>
+            <small>${item.threeMonthPosition <= 33 ? "Im unteren Drittel der Spanne." : item.threeMonthPosition >= 67 ? "Im oberen Drittel der Spanne." : "Im mittleren Drittel."}</small>
+          </div>
+          <div class="tech-card">
+            <span>Jahreslage</span>
+            <strong>${formatNumber(item.oneYearPosition, 0)} %</strong>
+            <small>Langfristige Einordnung zwischen Jahrestief und Jahreshoch.</small>
+          </div>
+          <div class="tech-card">
+            <span>Volumen</span>
+            <strong>${Number.isFinite(item.volumeRatio) ? `${formatNumber(item.volumeRatio * 100, 0)} %` : "–"}</strong>
+            <small>Vergleich zum durchschnittlichen Handelsvolumen der letzten 20 Tage.</small>
+          </div>
+          <div class="tech-card">
+            <span>Fibonacci-Zone</span>
+            <strong>${formatNumber(item.fibonacciRatio * 100, 1)} %</strong>
+            <small>Mögliche technische Unterstützungs- oder Widerstandszone.</small>
+          </div>
+        </div>
+
         <div class="indicator-list">
           <div><span>EMA 20 / 50 / 200</span><strong>${formatNumber(item.ema20,2)} / ${formatNumber(item.ema50,2)} / ${formatNumber(item.ema200,2)}</strong></div>
-          <div><span>MACD / Signal</span><strong>${formatNumber(item.macdValue,3)} / ${formatNumber(item.macdSignal,3)}</strong></div>
-          <div><span>Bollinger-Lage</span><strong>${formatNumber(item.bollingerPosition,0)} %</strong></div>
+          <div><span>MACD / Signallinie</span><strong>${formatNumber(item.macdValue,3)} / ${formatNumber(item.macdSignal,3)}</strong></div>
+          <div><span>Bollinger-Position</span><strong>${formatNumber(item.bollingerPosition,0)} %</strong></div>
           <div><span>ATR / Volatilität</span><strong>${formatNumber(item.atrPercent,1)} %</strong></div>
           <div><span>Relativ zum Markt</span><strong>${Number.isFinite(item.relativeStrengthMarket)?(item.relativeStrengthMarket>=0?"+":"")+formatNumber(item.relativeStrengthMarket,1)+" %-Pkt.":"–"}</strong></div>
           <div><span>Relativ zum Sektor</span><strong>${Number.isFinite(item.relativeStrengthSector)?(item.relativeStrengthSector>=0?"+":"")+formatNumber(item.relativeStrengthSector,1)+" %-Pkt.":"–"}</strong></div>
         </div>
       </details>
-      ${(() => {
-        const event = earningsDisplay(item);
-        return `<div class="earnings-event ${event.className}">📅 ${event.text}${Number.isFinite(item.nextEpsEstimate) ? ` · EPS-Schätzung ${formatNumber(item.nextEpsEstimate, 2)}` : ""}</div>`;
-      })()}
-      <div class="context-strip">
-        <span>Analysten: –</span><span>Dividende: –</span><span>Fear & Greed: –</span>
-      </div>
-      <div class="explanation">${explanation}</div>
 
       <div class="card-actions">
-        <button class="chart-button" data-chart="${item.symbol}" data-tv-symbol="${item.tradingViewSymbol || ""}">TradingView-Chart öffnen</button>
+        <button class="chart-button" data-chart="${item.symbol}" data-tv-symbol="${item.tradingViewSymbol || ""}">
+          TradingView-Chart öffnen
+        </button>
       </div>
     </article>`;
 }
@@ -885,3 +1048,18 @@ loadSharedDashboard();
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
+
+
+/* Hilfe-Dialog */
+const helpButton = document.getElementById("helpButton");
+if (helpButton) {
+  helpButton.addEventListener("click", () => {
+    document.getElementById("helpDialog")?.showModal();
+  });
+}
+
+document.querySelectorAll("[data-close]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.getElementById(button.dataset.close)?.close();
+  });
+});
