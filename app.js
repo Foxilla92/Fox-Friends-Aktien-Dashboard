@@ -333,7 +333,7 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   const resolvedSymbol = marketData.resolvedSymbol || symbol;
   const resolvedExchange = marketData.resolvedExchange || "";
   const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
-  const earningsInfo = marketData.earnings || { available: false, next: null };
+  const companyName = marketData.companyName || marketData.intraday?.meta?.name || marketData.daily?.meta?.name || resolvedSymbol;
   const exchangeForCurrency = String(marketData.resolvedExchange || marketData.intraday?.meta?.exchange || marketData.daily?.meta?.exchange || "").toUpperCase();
   const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(exchangeForCurrency) ? "USD"
     : ["XETRA","GETTEX","FWB","TRADEGATE"].includes(exchangeForCurrency) ? "EUR"
@@ -439,6 +439,7 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     resolvedSymbol,
     resolvedExchange,
     tradingViewSymbol,
+    companyName,
     kind,
     label,
     price: latest.close,
@@ -486,13 +487,6 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     relativeStrengthMarket: marketRelative.relative,
     sectorReturn: sectorRelative.benchmarkReturn,
     relativeStrengthSector: sectorRelative.relative,
-    earningsAvailable: Boolean(earningsInfo.available),
-    nextEarningsDate: earningsInfo.next?.date || null,
-    nextEarningsSession: earningsInfo.next?.session || "",
-    nextEpsEstimate: earningsInfo.next?.estimate ?? null,
-    currency,
-    eurRate,
-    earningsUnavailableReason: earningsInfo.available ? "" : (earningsInfo.reason || ""),
     rank: Math.max(buyRank, sellRank),
     error: null
   };
@@ -505,34 +499,6 @@ function formatNumber(value, decimals = 1) {
 }
 
 
-function daysUntil(dateText) {
-  if (!dateText) return NaN;
-  const target = new Date(`${dateText}T12:00:00`);
-  const today = new Date();
-  today.setHours(12, 0, 0, 0);
-  return Math.ceil((target - today) / 86400000);
-}
-
-function earningsDisplay(item) {
-  if (!item.earningsAvailable) {
-    return { text: "Earnings: nicht verfügbar", className: "event-unknown" };
-  }
-  if (!item.nextEarningsDate) {
-    return { text: "Earnings: kein Termin in 180 Tagen", className: "event-safe" };
-  }
-
-  const days = daysUntil(item.nextEarningsDate);
-  const formatted = new Date(`${item.nextEarningsDate}T12:00:00`).toLocaleDateString("de-DE");
-  const relative =
-    days === 0 ? "heute" :
-    days === 1 ? "morgen" :
-    days > 1 ? `in ${days} Tagen` :
-    `vor ${Math.abs(days)} Tagen`;
-
-  const session = item.nextEarningsSession ? ` · ${item.nextEarningsSession}` : "";
-  const className = days <= 2 ? "event-danger" : days <= 7 ? "event-warning" : days <= 14 ? "event-caution" : "event-safe";
-  return { text: `Quartalszahlen: ${formatted} (${relative})${session}`, className };
-}
 
 
 
@@ -650,11 +616,6 @@ function buildBeginnerSummary(item) {
   if (item.relativeStrengthMarket >= 0) positives.push("Die Aktie hält sich mindestens so gut wie der Markt.");
   else if (item.relativeStrengthMarket <= -5) cautions.push("Die Aktie entwickelt sich deutlich schwächer als der Markt.");
 
-  if (item.nextEarningsDate) {
-    const days = daysUntil(item.nextEarningsDate);
-    if (days >= 0 && days <= 7) cautions.push(`Quartalszahlen stehen in ${days === 0 ? "weniger als einem Tag" : `${days} Tagen`} an; stärkere Kursschwankungen sind möglich.`);
-  }
-
   let headline;
   if (item.kind === "buy") headline = "Mehrere Signale sprechen für einen möglichen Einstieg.";
   else if (item.kind === "sell") headline = "Mehrere Signale sprechen für erhöhte Vorsicht oder einen möglichen Ausstieg.";
@@ -716,7 +677,6 @@ function cardHtml(item) {
   const mainLabel = item.kind === "sell" ? "Ausstiegsscore" : "Einstiegsscore";
   const summary = buildBeginnerSummary(item);
   const crv = crvAssessment(item.crv);
-  const earnings = earningsDisplay(item);
 
   const positiveList = summary.positives.length
     ? `<div class="reason-group positive-reasons"><h4>Was dafür spricht</h4>${summary.positives.map(text => `<div>✓ ${text}</div>`).join("")}</div>`
@@ -729,13 +689,18 @@ function cardHtml(item) {
   return `
     <article class="signal-card ${item.kind}">
       <div class="signal-card-header">
-        <div>
+        <div class="card-identity">
           <div class="symbol">${item.symbol}</div>
-          <div class="price">Kurs ${formatNumber(item.price, 2)}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
+          <div class="company-line">${item.companyName || item.resolvedSymbol || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
+          <div class="price">Kurs ${formatNumber(item.price, 2)}${item.currency ? ` ${item.currency}` : ""}</div>
         </div>
-        <span class="signal-pill ${item.kind}">${item.label}</span>
+        <div class="card-header-actions">
+          <span class="signal-pill ${item.kind}">${item.label}</span>
+          <button class="card-collapse-button" type="button" aria-label="Aktienkarte einklappen">⌃</button>
+        </div>
       </div>
 
+      <div class="card-collapsible">
       ${(() => {
         const scoreInfo = scoreExplanation(item);
         const band = scoreBand(mainScore);
@@ -860,13 +825,6 @@ function cardHtml(item) {
         <small class="trade-plan-note">Ziel, Stopp und Euro-Umrechnung sind technische Näherungen – keine Garantie und keine Kaufempfehlung.</small>
       </section>`;
       })()}
-
-      <div class="earnings-event ${earnings.className}">
-        <span class="event-icon">📅</span>
-        <div>
-          <strong>${earnings.text}</strong>
-          ${Number.isFinite(item.nextEpsEstimate) ? `<small>EPS-Schätzung: ${formatNumber(item.nextEpsEstimate, 2)}</small>` : ""}
-        </div>
       </div>
 
       <details class="indicator-details">
@@ -922,6 +880,7 @@ function cardHtml(item) {
         <button class="chart-button" data-chart="${item.symbol}" data-tv-symbol="${item.tradingViewSymbol || ""}">
           TradingView-Chart öffnen
         </button>
+      </div>
       </div>
     </article>`;
 }
@@ -1385,3 +1344,65 @@ document.addEventListener("click", event => {
   if (!button) return;
   button.closest(".verdict-score-block")?.querySelector(".score-popover")?.classList.toggle("visible");
 });
+
+
+document.addEventListener("click", event => {
+  const button = event.target.closest(".card-collapse-button");
+  if (!button) return;
+  const card = button.closest(".signal-card");
+  card?.classList.toggle("collapsed");
+  button.textContent = card?.classList.contains("collapsed") ? "⌄" : "⌃";
+});
+
+let macroEvents = [];
+function macroDateText(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Zeit unbekannt" : date.toLocaleString("de-DE", {
+    timeZone:"Europe/Berlin", weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"
+  });
+}
+function macroDistance(value) {
+  const minutes = Math.round((new Date(value) - new Date()) / 60000);
+  if (!Number.isFinite(minutes)) return "";
+  if (minutes < -60) return "bereits veröffentlicht";
+  if (minutes < 0) return "vor wenigen Minuten";
+  if (minutes < 60) return `in ${minutes} Min.`;
+  if (minutes < 1440) return `in ${Math.floor(minutes/60)} Std. ${minutes%60} Min.`;
+  return `in ${Math.ceil(minutes/1440)} Tagen`;
+}
+function macroWarningText(event) {
+  const value = `${event.event || ""} ${event.category || ""}`.toLowerCase();
+  if (/interest rate|fed|fomc|ezb|ecb/.test(value)) return "Zinsentscheid kann starke marktweite Bewegungen auslösen.";
+  if (/inflation|cpi|consumer price|pce/.test(value)) return "Inflationsdaten können Zins- und Aktienerwartungen deutlich verändern.";
+  if (/non farm|nfp|payroll|employment|arbeitsmarkt/.test(value)) return "Arbeitsmarktdaten können den US-Markt kurzfristig stark bewegen.";
+  return "Technische Signale können rund um diesen Termin kurzfristig weniger zuverlässig sein.";
+}
+function renderMacroPanel() {
+  const panel=byId("macroPanel"), headline=byId("macroHeadline"), detail=byId("macroDetail");
+  const upcoming=macroEvents.filter(e=>new Date(e.date)>=new Date(Date.now()-60*60000)).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const next=upcoming[0];
+  panel.className="macro-panel "+(next ? "macro-warning" : "macro-safe");
+  if (!next) { headline.textContent="Keine High-Impact-Termine in den nächsten Tagen"; detail.textContent="Technische Signale haben aktuell keinen bekannten Makro-Termin direkt vor sich."; return; }
+  headline.textContent=`${next.country || ""}: ${next.event || next.category}`;
+  detail.textContent=`${macroDateText(next.date)} · ${macroDistance(next.date)} · ${macroWarningText(next)}`;
+}
+function renderMacroDialog() {
+  const content=byId("macroDialogContent");
+  if (!macroEvents.length) { content.innerHTML="<p>Keine High-Impact-Termine verfügbar.</p>"; return; }
+  content.innerHTML=`<div class="macro-event-list">${macroEvents.map(event=>`<article><div><strong>${event.event || event.category}</strong><span>${event.country || ""} · ${macroDateText(event.date)} · ${macroDistance(event.date)}</span></div><p>${macroWarningText(event)}</p></article>`).join("")}</div>`;
+}
+async function loadMacroCalendar() {
+  try {
+    const response=await fetch("/.netlify/functions/macro-calendar",{cache:"no-store"});
+    const data=await response.json();
+    if (!response.ok || data.status==="error") throw new Error(data.message||"Kalender nicht verfügbar");
+    macroEvents=Array.isArray(data.events)?data.events:[];
+    renderMacroPanel(); renderMacroDialog();
+  } catch(error) {
+    byId("macroHeadline").textContent="Wirtschaftskalender derzeit nicht verfügbar";
+    byId("macroDetail").textContent=error.message;
+  }
+}
+byId("macroDetailsButton")?.addEventListener("click",()=>{renderMacroDialog();byId("macroDialog")?.showModal();});
+loadMacroCalendar();
+setInterval(loadMacroCalendar,30*60*1000);

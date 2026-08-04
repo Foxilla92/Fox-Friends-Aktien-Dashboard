@@ -3,7 +3,7 @@
 const { readJson, writeJson } = require("./github-store");
 
 const ALLOWED_INTERVALS = new Set(["30min", "1h", "2h", "4h", "1day"]);
-const SYMBOL_PATTERN = /^[A-Z0-9:._-]{1,40}$/;
+const SYMBOL_PATTERN = /^[A-Z0-9 ÄÖÜ:._-]{1,60}$/;
 
 function response(statusCode, body, cache = false) {
   return {
@@ -21,10 +21,22 @@ function response(statusCode, body, cache = false) {
 }
 
 function parseInput(input) {
-  if (!input.includes(":")) return { symbol: input, exchange: "" };
-  const [prefix, symbol] = input.split(":", 2);
-  const aliases = { NASDAQ:"NASDAQ", NYSE:"NYSE", XETR:"XETRA", XETRA:"XETRA", LSE:"LSE" };
-  return { symbol, exchange: aliases[prefix] || prefix };
+  const normalized = String(input || "").trim().toUpperCase();
+  const known = {
+    "SIE": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens" },
+    "SIEMENS": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens" },
+    "ENR": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy" },
+    "SIEMENS ENERGY": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy" },
+    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
+    "DRH": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
+    "DRONESHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
+    "DRONE SHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" }
+  };
+  if (known[normalized]) return { ...known[normalized], original:normalized };
+  if (!normalized.includes(":")) return { symbol:normalized, exchange:"", expectedName:"", original:normalized };
+  const [prefix, symbol] = normalized.split(":", 2);
+  const aliases = { NASDAQ:"NASDAQ", NYSE:"NYSE", XETR:"XETRA", XETRA:"XETRA", LSE:"LSE", ASX:"ASX" };
+  return { symbol, exchange:aliases[prefix] || prefix, expectedName:"", original:normalized };
 }
 
 function tradingViewPrefix(exchange) {
@@ -64,66 +76,6 @@ async function fetchTwelveSeries(symbol, interval, outputsize, apiKey, exchange 
     throw new Error(data.message || `Keine Kursdaten für ${symbol}.`);
   }
   return data;
-}
-
-function isoDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function normalizeCalendarRows(data) {
-  if (Array.isArray(data)) return data;
-  for (const key of ["earnings","data","values","calendar","result"]) {
-    if (Array.isArray(data?.[key])) return data[key];
-  }
-  return [];
-}
-
-function parseEventDate(row) {
-  const raw = row?.date || row?.datetime || row?.report_date || row?.earnings_date || row?.fiscal_date || row?.time;
-  if (!raw) return null;
-  const date = new Date(String(raw).length === 10 ? `${raw}T12:00:00Z` : raw);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-async function fetchUpcomingEarnings(symbol, apiKey, exchange = "") {
-  const start = new Date();
-  start.setUTCHours(0,0,0,0);
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 180);
-
-  const url = new URL("https://api.twelvedata.com/earnings_calendar");
-  url.searchParams.set("symbol", symbol);
-  url.searchParams.set("start_date", isoDate(start));
-  url.searchParams.set("end_date", isoDate(end));
-  url.searchParams.set("apikey", apiKey);
-  if (exchange) url.searchParams.set("exchange", exchange);
-
-  const upstream = await fetch(url);
-  const text = await upstream.text();
-  let data;
-  try { data = JSON.parse(text); }
-  catch { return { available:false, reason:`Ungültige Earnings-Antwort (HTTP ${upstream.status}).` }; }
-
-  if (!upstream.ok || data?.status === "error") {
-    return { available:false, reason:data?.message || `Earnings nicht verfügbar (HTTP ${upstream.status}).` };
-  }
-
-  const rows = normalizeCalendarRows(data)
-    .map(row => ({ row, date: parseEventDate(row) }))
-    .filter(item => item.date && item.date >= start)
-    .sort((a,b) => a.date - b.date);
-
-  if (!rows.length) return { available:true, next:null };
-  const next = rows[0].row;
-  return {
-    available:true,
-    next:{
-      date:isoDate(rows[0].date),
-      session:String(next?.time || next?.release_time || next?.hour || next?.when || ""),
-      estimate:next?.eps_estimate ?? next?.estimate ?? next?.estimated_eps ?? null,
-      currency:next?.currency ?? null
-    }
-  };
 }
 
 async function readAuxCache(parsed) {
@@ -190,7 +142,7 @@ exports.handler = async function handler(event) {
     status:"ok",
     message:"Fox & Friends Backend läuft.",
     apiKeyConfigured:true,
-    cacheMode:"daily-and-earnings"
+    cacheMode:"daily-only"
   });
   if (!SYMBOL_PATTERN.test(rawSymbol)) return response(400, { status:"error", message:"Ungültiges Aktiensymbol." });
   if (!ALLOWED_INTERVALS.has(interval)) return response(400, { status:"error", message:"Ungültiger Zeitraum." });
@@ -202,7 +154,6 @@ exports.handler = async function handler(event) {
     const { path, cache } = await readAuxCache(parsed);
 
     let daily = cache.dailyDate === today ? cache.daily : null;
-    let earnings = cache.earningsDate === today ? cache.earnings : null;
     let intraday = null;
     let creditsUsed = 0;
 
@@ -214,24 +165,21 @@ exports.handler = async function handler(event) {
     if (mode !== "benchmark") {
       intraday = await fetchTwelveSeries(parsed.symbol, interval, 450, apiKey, parsed.exchange);
       creditsUsed += 1;
-
-      if (!earnings) {
-        earnings = await fetchUpcomingEarnings(parsed.symbol, apiKey, parsed.exchange);
-        creditsUsed += 1;
-      }
     }
 
-    if (cache.dailyDate !== today || (mode !== "benchmark" && cache.earningsDate !== today)) {
-      await writeAuxCache(path, {
-        dailyDate: today,
-        daily,
-        earningsDate: mode !== "benchmark" ? today : cache.earningsDate || null,
-        earnings: mode !== "benchmark" ? earnings : cache.earnings || null
-      }, rawSymbol);
+    if (cache.dailyDate !== today) {
+      await writeAuxCache(path, { dailyDate: today, daily }, rawSymbol);
     }
 
     const meta = intraday?.meta || daily?.meta || {};
+    const companyName = String(meta.name || meta.instrument_name || meta.symbol_name || parsed.expectedName || parsed.symbol);
     const rawExchange = String(meta.exchange || parsed.exchange || "").toUpperCase();
+    if (parsed.exchange && rawExchange && !rawExchange.includes(parsed.exchange)) {
+      throw new Error(`Falscher Handelsplatz geliefert: erwartet ${parsed.exchange}, erhalten ${rawExchange}.`);
+    }
+    if (parsed.expectedName && !companyName.toLowerCase().includes(parsed.expectedName.toLowerCase())) {
+      throw new Error(`Symbol-Zuordnung stimmt nicht: erwartet ${parsed.expectedName}, erhalten ${companyName}. Bitte Börsenpräfix verwenden.`);
+    }
     const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(rawExchange) ? "USD"
       : ["XETRA","GETTEX","FWB","TRADEGATE"].includes(rawExchange) ? "EUR"
       : "";
@@ -254,15 +202,14 @@ exports.handler = async function handler(event) {
       resolvedSymbol,
       resolvedExchange,
       tradingViewSymbol,
+      companyName,
       currency,
       eurRate,
       intraday,
       daily,
-      earnings: mode !== "benchmark" ? earnings : null,
       cacheInfo:{
         date:today,
         dailyFromCache:cache.dailyDate === today,
-        earningsFromCache:mode !== "benchmark" ? cache.earningsDate === today : null,
         creditsUsed
       },
       fetchedAt:new Date().toISOString()

@@ -46,6 +46,15 @@
         <button id="refreshButton" class="primary-button">Jetzt prüfen</button>
       </div>
 
+      <section id="macroPanel" class="macro-panel macro-neutral">
+        <div class="macro-icon">🌍</div>
+        <div class="macro-copy">
+          <span class="macro-kicker">MARKT-KONTEXT</span>
+          <strong id="macroHeadline">Wirtschaftskalender wird geladen …</strong>
+          <small id="macroDetail">FED, Inflation und Arbeitsmarktdaten</small>
+        </div>
+        <button id="macroDetailsButton" class="macro-details-button" type="button">Details</button>
+      </section>
       <div id="sharedStatus" class="shared-status">Gemeinsamer Stand wird geladen …</div>
       <div id="schedulePanel" class="schedule-panel">
         <div class="schedule-main">
@@ -178,7 +187,15 @@ AMD</textarea>
   </dialog>
 
   
-  <dialog id="helpDialog" class="help-dialog">
+    <dialog id="macroDialog" class="help-dialog macro-dialog">
+    <div class="dialog-header">
+      <div><div class="eyebrow">WIRTSCHAFTSKALENDER</div><h2>Marktbewegende Termine</h2></div>
+      <button class="close-button" data-close="macroDialog" aria-label="Schließen">✕</button>
+    </div>
+    <div id="macroDialogContent" class="help-content"><p>Termine werden geladen …</p></div>
+  </dialog>
+
+<dialog id="helpDialog" class="help-dialog">
     <div class="dialog-header">
       <div>
         <div class="eyebrow">SO LIEST DU DAS DASHBOARD</div>

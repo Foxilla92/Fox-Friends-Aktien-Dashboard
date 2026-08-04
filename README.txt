@@ -328,3 +328,14 @@ Neue Standard-Gewichtung:
 
 Der RSI dient jetzt bewusst nur noch als Warn- und Zusatzfilter.
 Die Gewichtung wurde im Einstellungsdialog und im Hilfebereich angepasst.
+
+
+VERSION 7 – MAKRO, KLAPPKARTEN UND SYMBOL-FIX
+- Firmenname und Börse kompakt unter jedem Kürzel.
+- Aktienkarten lassen sich einzeln ein- und ausklappen.
+- Earnings-Anzeige und Earnings-API-Abfrage entfernt.
+- High-Impact-Wirtschaftskalender für USA, Eurozone und Deutschland.
+- Optional: TRADING_ECONOMICS_API_KEY in Netlify; ohne Key wird guest:guest versucht.
+- Symbol-Aliase verhindern falsche US-Treffer: SIE=Siemens AG/XETRA, ENR=Siemens Energy/XETRA, DRO/DRH=DroneShield/ASX.
+- Explizite US-Symbole bleiben möglich, z. B. NYSE:ENR oder NYSE:DRH.
+- Keine stille Substitution auf ein anderes Unternehmen mehr.
