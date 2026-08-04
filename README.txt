@@ -291,3 +291,40 @@ AUTOMATIK
 ZUSÄTZLICHER API-VERBRAUCH
 - EUR/USD benötigt höchstens einen zusätzlichen Credit pro Kalendertag.
 - Danach wird der gemeinsame Tagescache verwendet.
+
+
+VERSION 6.3 – EURO-FIX IM CRV-BEREICH
+
+- Bei US-Börsen wird USD nun auch dann erkannt, wenn Twelve Data das Feld
+  „currency“ in den Metadaten nicht mitsendet.
+- Die Euro-Umrechnung versucht zuerst USD/EUR und ersatzweise EUR/USD.
+- Im CRV-Bereich wird für USD-Aktien jetzt Euro als Hauptwert angezeigt.
+- Der originale Dollarwert steht kleiner darunter.
+- Nach dem Deploy muss die Aktie einmal neu geprüft werden, damit Währung und
+  Tageswechselkurs im gemeinsamen Ergebnis gespeichert werden.
+
+
+VERSION 6.4 – ANZEIGE- UND COUNTDOWN-FIX
+
+- Die letzte Aktualisierung wird nicht mehr doppelt angezeigt.
+- Der gemeinsame Stand bleibt ausschließlich in der oberen Statuszeile sichtbar.
+- Im Automatik-Kasten bleiben Status, Countdown, feste Uhrzeiten und API-Verbrauch.
+- Der Countdown wurde korrigiert und findet 09:15 sowie 15:45 jetzt zuverlässig.
+- Ursache war ein nicht auf Viertelstunden ausgerichtetes Suchraster.
+
+
+VERSION 6.5
+- Unter dem Ticker wird nun kompakt der Firmenname und der Börsenplatz angezeigt (z. B. 'Intel Corporation · NASDAQ').
+
+
+VERSION 6.6 – TREND-TRADER-PROFIL
+
+Neue Standard-Gewichtung:
+- Trend (EMA): 30 %
+- Preis & Fibonacci: 25 %
+- Momentum (MACD/Bollinger): 20 %
+- Volumen: 15 %
+- RSI: 10 %
+
+Der RSI dient jetzt bewusst nur noch als Warn- und Zusatzfilter.
+Die Gewichtung wurde im Einstellungsdialog und im Hilfebereich angepasst.

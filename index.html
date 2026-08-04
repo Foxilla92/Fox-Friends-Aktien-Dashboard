@@ -56,7 +56,6 @@
         </div>
         <div class="schedule-side">
           <span id="runBadge" class="run-badge idle">Bereit</span>
-          <small id="lastUpdateInfo">Letzte Aktualisierung: –</small>
           <small id="apiUsageInfo">API heute: –</small>
         </div>
       </div>
@@ -160,13 +159,13 @@ AMD</textarea>
       </div>
 
       <details class="weight-details">
-        <summary>Aktuelle Gewichtung</summary>
+        <summary>Bewertungsmodell – Trend-Trader</summary>
         <div class="weight-list">
-          <div><span>RSI</span><strong>35 %</strong></div>
+          <div><span>Trend (EMA)</span><strong>30 %</strong></div>
           <div><span>Preis & Fibonacci</span><strong>25 %</strong></div>
-          <div><span>Trend (EMA)</span><strong>15 %</strong></div>
-          <div><span>Momentum (MACD/Bollinger)</span><strong>15 %</strong></div>
-          <div><span>Volumen</span><strong>10 %</strong></div>
+          <div><span>Momentum (MACD/Bollinger)</span><strong>20 %</strong></div>
+          <div><span>Volumen</span><strong>15 %</strong></div>
+          <div><span>RSI</span><strong>10 %</strong></div>
         </div>
         <p>Das kurzfristige Potenzial bis zum 3-Monats-Hoch wird zusätzlich angezeigt und beeinflusst die Sortierung. Fibonacci nutzt die 3-Monats-Spanne und bewertet typische Rücklaufzonen sowie den Abstand zum nächsten Fib-Ziel.</p>
       </details>
@@ -250,6 +249,11 @@ AMD</textarea>
       <section class="help-section">
         <h3>Die einzelnen Indikatoren</h3>
         <div class="indicator-help-list">
+          <article>
+            <h4>Warum hat der RSI nur 10 % Gewicht?</h4>
+            <p>Der RSI liefert gute Warnsignale, erzeugt in starken Auf- oder Abwärtstrends jedoch häufig Fehlsignale. Deshalb dient er im Trend-Trader-Profil nur als ergänzender Filter und nicht als Hauptkriterium.</p>
+          </article>
+
           <article>
             <h4>RSI – die lila Linie</h4>
             <p>Der RSI liegt zwischen 0 und 100 und misst die Stärke der letzten Kursbewegungen.</p>
@@ -369,11 +373,11 @@ AMD</textarea>
       <section class="help-section score-help">
         <h3>Wie entsteht die Gesamtbewertung?</h3>
         <div class="score-formula">
-          <div><span>RSI</span><strong>35 %</strong></div>
+          <div><span>Trend über EMA</span><strong>30 %</strong></div>
           <div><span>Preis & Fibonacci</span><strong>25 %</strong></div>
-          <div><span>Trend über EMA</span><strong>15 %</strong></div>
-          <div><span>Momentum über MACD/Bollinger</span><strong>15 %</strong></div>
-          <div><span>Volumen</span><strong>10 %</strong></div>
+          <div><span>Momentum über MACD/Bollinger</span><strong>20 %</strong></div>
+          <div><span>Volumen</span><strong>15 %</strong></div>
+          <div><span>RSI</span><strong>10 %</strong></div>
         </div>
 
         <div class="help-example">

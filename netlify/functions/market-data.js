@@ -149,16 +149,27 @@ async function getEurRate(apiKey) {
     return { rate: Number(stored.data.rate), creditsUsed: 0 };
   }
 
+  // Bevorzugt USD/EUR direkt. Falls der Feed das Paar nicht akzeptiert,
+  // wird EUR/USD geladen und mathematisch umgedreht.
   try {
-    const fx = await fetchTwelveSeries("EUR/USD", "1day", 5, apiKey, "");
-    const eurUsd = Number(fx.values?.at(-1)?.close);
-    const rate = eurUsd > 0 ? 1 / eurUsd : NaN;
-    if (Number.isFinite(rate)) {
-      await writeAuxCache(path, { date: today, rate }, "EUR/USD");
+    const direct = await fetchTwelveSeries("USD/EUR", "1day", 5, apiKey, "");
+    const rate = Number(direct.values?.at(-1)?.close);
+    if (Number.isFinite(rate) && rate > 0) {
+      await writeAuxCache(path, { date: today, rate }, "USD/EUR");
       return { rate, creditsUsed: 1 };
     }
-  } catch (error) {
-    console.warn("EUR-Umrechnung nicht verfügbar:", error.message);
+  } catch (directError) {
+    try {
+      const inverse = await fetchTwelveSeries("EUR/USD", "1day", 5, apiKey, "");
+      const eurUsd = Number(inverse.values?.at(-1)?.close);
+      const rate = eurUsd > 0 ? 1 / eurUsd : NaN;
+      if (Number.isFinite(rate)) {
+        await writeAuxCache(path, { date: today, rate }, "EUR/USD");
+        return { rate, creditsUsed: 1 };
+      }
+    } catch (inverseError) {
+      console.warn("EUR-Umrechnung nicht verfügbar:", inverseError.message);
+    }
   }
   return { rate: NaN, creditsUsed: 0 };
 }
@@ -220,7 +231,11 @@ exports.handler = async function handler(event) {
     }
 
     const meta = intraday?.meta || daily?.meta || {};
-    const currency = String(meta.currency || "").toUpperCase();
+    const rawExchange = String(meta.exchange || parsed.exchange || "").toUpperCase();
+    const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(rawExchange) ? "USD"
+      : ["XETRA","GETTEX","FWB","TRADEGATE"].includes(rawExchange) ? "EUR"
+      : "";
+    const currency = String(meta.currency || inferredCurrency).toUpperCase();
     let eurRate = currency === "EUR" ? 1 : NaN;
     if (currency === "USD") {
       const fx = await getEurRate(apiKey);

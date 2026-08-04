@@ -334,7 +334,11 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   const resolvedExchange = marketData.resolvedExchange || "";
   const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
   const earningsInfo = marketData.earnings || { available: false, next: null };
-  const currency = marketData.currency || marketData.intraday?.meta?.currency || marketData.daily?.meta?.currency || "";
+  const exchangeForCurrency = String(marketData.resolvedExchange || marketData.intraday?.meta?.exchange || marketData.daily?.meta?.exchange || "").toUpperCase();
+  const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(exchangeForCurrency) ? "USD"
+    : ["XETRA","GETTEX","FWB","TRADEGATE"].includes(exchangeForCurrency) ? "EUR"
+    : "";
+  const currency = String(marketData.currency || marketData.intraday?.meta?.currency || marketData.daily?.meta?.currency || inferredCurrency).toUpperCase();
   const eurRate = Number(marketData.eurRate);
 
   const intradayCloses = intradayData.values.map(row => Number(row.close));
@@ -385,8 +389,21 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   const priceFibBuy = buyPriceScore(threeMonthPosition)*0.50 + buyPriceScore(oneYearPosition)*0.20 + fibonacci.buyScore*0.30;
   const priceFibSell = sellPriceScore(threeMonthPosition)*0.50 + sellPriceScore(oneYearPosition)*0.20 + fibonacci.sellScore*0.30;
 
-  const buyScore = buyRsiScore(currentRsi)*0.35 + priceFibBuy*0.25 + trendScore*0.15 + momentumScore*0.15 + volume.score*0.10;
-  const sellScore = sellRsiScore(currentRsi)*0.35 + priceFibSell*0.25 + (100-trendScore)*0.15 + (100-momentumScore)*0.15 + volume.score*0.10;
+  // Trend-Trader-Profil:
+  // Trend 30 %, Preis/Fibonacci 25 %, Momentum 20 %, Volumen 15 %, RSI 10 %
+  const buyScore =
+    trendScore * 0.30 +
+    priceFibBuy * 0.25 +
+    momentumScore * 0.20 +
+    volume.score * 0.15 +
+    buyRsiScore(currentRsi) * 0.10;
+
+  const sellScore =
+    (100 - trendScore) * 0.30 +
+    priceFibSell * 0.25 +
+    (100 - momentumScore) * 0.20 +
+    volume.score * 0.15 +
+    sellRsiScore(currentRsi) * 0.10;
 
   const directionAgreement = buyScore >= sellScore
     ? (currentRsi > currentRsiAverage && macd.bullish ? 100 : currentRsi > currentRsiAverage || macd.bullish ? 70 : 35)
@@ -806,18 +823,18 @@ function cardHtml(item) {
         <div class="trade-plan-grid">
           <div>
             <span>Aktueller Kurs</span>
-            <strong>${formatNumber(item.price, 2)}${symbolCurrency}</strong>
-            ${euroLine(item, item.price)}
+            <strong>${euroValue(item, item.price) !== "–" ? euroValue(item, item.price) : `${formatNumber(item.price, 2)}${symbolCurrency}`}</strong>
+            ${euroValue(item, item.price) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.price, 2)} ${item.currency || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Mögliches Ziel</span>
-            <strong>${formatNumber(item.crvTarget, 2)}${symbolCurrency}</strong>
-            ${euroLine(item, item.crvTarget)}
+            <strong>${euroValue(item, item.crvTarget) !== "–" ? euroValue(item, item.crvTarget) : `${formatNumber(item.crvTarget, 2)}${symbolCurrency}`}</strong>
+            ${euroValue(item, item.crvTarget) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvTarget, 2)} ${item.currency || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Rechnerischer Stopp</span>
-            <strong>${formatNumber(item.crvStop, 2)}${symbolCurrency}</strong>
-            ${euroLine(item, item.crvStop)}
+            <strong>${euroValue(item, item.crvStop) !== "–" ? euroValue(item, item.crvStop) : `${formatNumber(item.crvStop, 2)}${symbolCurrency}`}</strong>
+            ${euroValue(item, item.crvStop) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvStop, 2)} ${item.currency || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Potenzial zum 3M-Hoch</span>
@@ -962,11 +979,16 @@ function berlinParts(date) {
 }
 
 function nextAutomaticRun(now = new Date()) {
-  // In 30-Minuten-Schritten suchen; dadurch wird Sommer-/Winterzeit automatisch berücksichtigt.
+  // Auf das nächste volle 15-Minuten-Raster springen.
+  // So werden 09:15 und 15:45 unabhängig von der aktuellen Minute sicher gefunden.
   const start = new Date(now.getTime() + 60_000);
   start.setUTCSeconds(0, 0);
-  for (let i = 0; i < 24 * 2 * 10; i++) {
-    const candidate = new Date(start.getTime() + i * 30 * 60_000);
+  const minute = start.getUTCMinutes();
+  const minutesToNextQuarter = (15 - (minute % 15)) % 15;
+  start.setUTCMinutes(minute + minutesToNextQuarter);
+
+  for (let i = 0; i < 24 * 4 * 10; i++) {
+    const candidate = new Date(start.getTime() + i * 15 * 60_000);
     const p = berlinParts(candidate);
     const weekend = p.weekday === "Sa" || p.weekday === "So";
     if (!weekend && ((p.hour === "09" && p.minute === "15") || (p.hour === "15" && p.minute === "45"))) {
@@ -979,7 +1001,13 @@ function nextAutomaticRun(now = new Date()) {
 function updateScheduleCountdown() {
   const target = nextAutomaticRun();
   const element = byId("scheduleCountdown");
-  if (!target || !element) return;
+  if (!element) return;
+  if (!target) {
+    const next = byId("scheduleNext");
+    if (next) next.textContent = "Nächster Lauf konnte nicht berechnet werden";
+    element.textContent = "Bitte Seite neu laden";
+    return;
+  }
   const milliseconds = Math.max(target - new Date(), 0);
   const totalMinutes = Math.ceil(milliseconds / 60000);
   const hours = Math.floor(totalMinutes / 60);
@@ -1101,7 +1129,6 @@ async function loadSharedDashboard() {
     }
 
     setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(dashboard.updatedAt)} · erstellt von ${dashboard.updatedBy || "Unbekannt"}`);
-    if (byId("lastUpdateInfo")) byId("lastUpdateInfo").textContent = `Letzte Aktualisierung: ${sharedDateText(dashboard.updatedAt)} · ${dashboard.updatedBy || "Unbekannt"}`;
     if (byId("apiUsageInfo")) byId("apiUsageInfo").textContent = `API heute: ${Number(dashboard.apiCreditsToday || 0)} Credits`;
     setStatus("Gespeicherte Ergebnisse geladen – keine Twelve-Data-Credits verbraucht.");
   } catch (error) {

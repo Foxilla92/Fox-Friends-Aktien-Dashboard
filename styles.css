@@ -805,3 +805,30 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
   .example-calculator { grid-template-columns: 1fr; }
   .score-popover { left: -4px; }
 }
+
+.original-currency {
+  display: block;
+  margin-top: 2px;
+  color: #8fa0bf;
+  font-size: 9px;
+}
+
+.schedule-side {
+  min-width: 180px;
+}
+@media (max-width: 620px) {
+  .schedule-side {
+    min-width: 0;
+  }
+}
+
+
+.company-line{
+  margin-top:2px;
+  font-size:12px;
+  color:#9fb0cf;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
