@@ -1,9 +1,9 @@
 {
   "version": 1,
   "updatedBy": "Matthias",
-  "updatedAt": "2026-08-04T22:56:51.587Z",
+  "updatedAt": "2026-08-04T23:02:25.245Z",
   "apiUsageDate": "2026-08-05",
-  "apiCreditsToday": 25,
+  "apiCreditsToday": 27,
   "lastRunCredits": 2,
   "interval": "1h",
   "marketBenchmark": "SPY",
@@ -75,8 +75,8 @@
       "relativeStrengthMarket": 0,
       "sectorReturn": 0,
       "relativeStrengthSector": 0,
-      "currency": "",
-      "eurRate": null,
+      "currency": "USD",
+      "eurRate": 0.86736,
       "rank": 71.81556259729696,
       "error": null
     },
@@ -135,8 +135,8 @@
       "relativeStrengthMarket": 0,
       "sectorReturn": 0,
       "relativeStrengthSector": 0,
-      "currency": "",
-      "eurRate": null,
+      "currency": "USD",
+      "eurRate": 0.86736,
       "rank": 72.89525056977661,
       "error": null
     }
