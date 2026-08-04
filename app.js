@@ -445,13 +445,15 @@ async function waitForNextMinute(seconds = 61) {
 }
 
 async function analyzeWithRetry(symbol, settings) {
+  let retries = 0;
   while (true) {
     try {
       return await analyzeSymbol(symbol, settings);
     } catch (error) {
-      if (isMinuteLimitError(error.message)) {
+      if (isMinuteLimitError(error.message) && retries < 1) {
+        retries += 1;
         await waitForNextMinute();
-        // Nur diese noch offene Aktie wird erneut versucht.
+        // Nur diese offene Aktie wird genau einmal erneut versucht.
         continue;
       }
       throw error;

@@ -76,3 +76,23 @@ VERSION 2.1 – AUTOMATISCHE BÖRSENAUSWAHL
 
 Hinweis: Jeder fehlgeschlagene Börsenversuch kann API-Credits verbrauchen. Das Ergebnis
 wird über Netlify zwischengespeichert, wodurch wiederholte identische Abrufe reduziert werden.
+
+
+VERSION 2.2 – CREDIT-SAFE FIX
+
+Problem in 2.1:
+Die automatische Börsensuche konnte pro Aktie mehrere Handelsplätze testen.
+Jeder Test brauchte zwei Twelve-Data-Credits. Dadurch wurde das Minutenlimit
+schnell erreicht und die App wiederholte die offene Aktie immer wieder.
+
+Lösung:
+- Pro Aktie nur noch genau ein Datenversuch.
+- Ohne Börsenpräfix wählt Twelve Data selbst den verfügbaren Haupttreffer.
+- Aus der Antwort wird der tatsächliche Handelsplatz für TradingView übernommen.
+- Explizite Eingabe bleibt möglich, z. B. NASDAQ:MSFT oder XETR:RHM.
+- Beim Minutenlimit erfolgt höchstens ein automatischer Wiederholungsversuch.
+  Danach erscheint ein Fehler statt einer Endlosschleife.
+
+Empfehlung:
+US-Aktien einfach als AAPL, MSFT, INTC, NVDA usw. eintragen.
+Wenn eine eindeutige Börse erforderlich ist, das Präfix explizit angeben.

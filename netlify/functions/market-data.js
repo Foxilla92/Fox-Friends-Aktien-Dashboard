@@ -18,15 +18,8 @@ function response(statusCode, body, cache = false) {
   };
 }
 
-const EXCHANGE_PRIORITY = [
-  { exchange: "NASDAQ", tv: "NASDAQ" },
-  { exchange: "NYSE", tv: "NYSE" },
-  { exchange: "XETRA", tv: "XETR" },
-  { exchange: "LSE", tv: "LSE" }
-];
-
 function parseInput(input) {
-  if (!input.includes(":")) return { symbol: input, explicitExchange: "" };
+  if (!input.includes(":")) return { symbol: input, exchange: "" };
   const [prefix, symbol] = input.split(":", 2);
   const aliases = {
     NASDAQ: "NASDAQ",
@@ -35,12 +28,18 @@ function parseInput(input) {
     XETRA: "XETRA",
     LSE: "LSE"
   };
-  return { symbol, explicitExchange: aliases[prefix] || prefix };
+  return { symbol, exchange: aliases[prefix] || prefix };
 }
 
-function tvPrefix(exchange) {
-  const found = EXCHANGE_PRIORITY.find(item => item.exchange === exchange);
-  return found ? found.tv : exchange;
+function tradingViewPrefix(exchange) {
+  const aliases = {
+    NASDAQ: "NASDAQ",
+    NYSE: "NYSE",
+    XETRA: "XETR",
+    LSE: "LSE",
+    AMEX: "AMEX"
+  };
+  return aliases[exchange] || exchange;
 }
 
 async function fetchTwelveSeries(symbol, interval, outputsize, apiKey, exchange = "") {
@@ -64,58 +63,10 @@ async function fetchTwelveSeries(symbol, interval, outputsize, apiKey, exchange 
 
   if (!upstream.ok || data.status === "error" || !Array.isArray(data.values)) {
     const error = new Error(data.message || `Keine Kursdaten für ${symbol}.`);
-    error.status = upstream.status;
+    error.httpStatus = upstream.status;
     throw error;
   }
   return data;
-}
-
-function shouldTryNextExchange(message) {
-  return /not found|no data|symbol|available starting with|upgrade|plan|exchange/i.test(String(message || ""));
-}
-
-async function resolveAndFetch(rawInput, interval, apiKey) {
-  const parsed = parseInput(rawInput);
-  const attempts = parsed.explicitExchange
-    ? [{ exchange: parsed.explicitExchange, tv: tvPrefix(parsed.explicitExchange) }]
-    : [...EXCHANGE_PRIORITY, { exchange: "", tv: "" }];
-
-  let lastError = null;
-
-  for (const attempt of attempts) {
-    try {
-      const [intraday, daily] = await Promise.all([
-        fetchTwelveSeries(parsed.symbol, interval, 450, apiKey, attempt.exchange),
-        fetchTwelveSeries(parsed.symbol, "1day", 300, apiKey, attempt.exchange)
-      ]);
-
-      const metaExchange =
-        intraday?.meta?.exchange ||
-        daily?.meta?.exchange ||
-        attempt.exchange ||
-        "";
-
-      const resolvedSymbol =
-        intraday?.meta?.symbol ||
-        daily?.meta?.symbol ||
-        parsed.symbol;
-
-      return {
-        intraday,
-        daily,
-        resolvedSymbol,
-        resolvedExchange: metaExchange,
-        tradingViewSymbol: metaExchange
-          ? `${tvPrefix(metaExchange)}:${resolvedSymbol}`
-          : resolvedSymbol
-      };
-    } catch (error) {
-      lastError = error;
-      if (parsed.explicitExchange || !shouldTryNextExchange(error.message)) throw error;
-    }
-  }
-
-  throw lastError || new Error(`Kein passender Handelsplatz für ${rawInput} gefunden.`);
 }
 
 exports.handler = async function handler(event) {
@@ -141,7 +92,7 @@ exports.handler = async function handler(event) {
       status: "ok",
       message: "Fox & Friends Backend läuft.",
       apiKeyConfigured: true,
-      exchangePriority: ["NASDAQ", "NYSE", "XETRA", "LSE", "AUTO"]
+      resolutionMode: "single-attempt"
     });
   }
 
@@ -152,12 +103,40 @@ exports.handler = async function handler(event) {
     return response(400, { status: "error", message: "Ungültiger Zeitraum." });
   }
 
+  const parsed = parseInput(rawSymbol);
+
   try {
-    const result = await resolveAndFetch(rawSymbol, interval, apiKey);
+    // Nur EIN Handelsplatzversuch pro Aktie:
+    // - ohne Präfix lässt Twelve Data selbst den besten Treffer wählen
+    // - mit Präfix wird genau dieser Handelsplatz verwendet
+    const [intraday, daily] = await Promise.all([
+      fetchTwelveSeries(parsed.symbol, interval, 450, apiKey, parsed.exchange),
+      fetchTwelveSeries(parsed.symbol, "1day", 300, apiKey, parsed.exchange)
+    ]);
+
+    const resolvedExchange =
+      intraday?.meta?.exchange ||
+      daily?.meta?.exchange ||
+      parsed.exchange ||
+      "";
+
+    const resolvedSymbol =
+      intraday?.meta?.symbol ||
+      daily?.meta?.symbol ||
+      parsed.symbol;
+
+    const tradingViewSymbol = resolvedExchange
+      ? `${tradingViewPrefix(resolvedExchange)}:${resolvedSymbol}`
+      : resolvedSymbol;
+
     return response(200, {
       status: "ok",
       requestedSymbol: rawSymbol,
-      ...result,
+      resolvedSymbol,
+      resolvedExchange,
+      tradingViewSymbol,
+      intraday,
+      daily,
       fetchedAt: new Date().toISOString()
     }, true);
   } catch (error) {
