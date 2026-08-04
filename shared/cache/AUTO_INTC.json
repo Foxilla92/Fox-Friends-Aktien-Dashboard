@@ -1,5 +1,5 @@
 {
-  "dailyDate": "2026-08-04",
+  "dailyDate": "2026-08-05",
   "daily": {
     "meta": {
       "symbol": "INTC",
@@ -2414,7 +2414,7 @@
     ],
     "status": "ok"
   },
-  "earningsDate": "2026-08-04",
+  "earningsDate": "2026-08-05",
   "earnings": {
     "available": false,
     "reason": "/earnings_calendar is available exclusively with grow or pro or ultra or venture or enterprise plans. Consider upgrading your API Key now at https://twelvedata.com/pricing"
