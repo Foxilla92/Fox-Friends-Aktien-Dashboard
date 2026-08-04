@@ -697,3 +697,111 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
     flex-direction: column;
   }
 }
+
+.schedule-main { min-width: 0; }
+.countdown-value {
+  display: block;
+  margin-top: 4px;
+  color: #a9bbff;
+  font-size: 12px;
+  font-weight: 900;
+}
+.schedule-side {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+.schedule-side small {
+  text-align: right;
+}
+
+.score-with-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+.score-popover-button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #52658b;
+  border-radius: 50%;
+  background: #17253f;
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 950;
+}
+.verdict-score-block { position: relative; }
+.score-popover {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  top: 72px;
+  left: 0;
+  width: 205px;
+  padding: 8px;
+  border: 1px solid #3c5076;
+  border-radius: 12px;
+  background: #0a1323;
+  box-shadow: 0 18px 45px rgba(0,0,0,.45);
+}
+.score-popover.visible { display: grid; gap: 5px; }
+.score-popover > div {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  border-radius: 8px;
+  opacity: .48;
+}
+.score-popover > div.active {
+  opacity: 1;
+  outline: 2px solid currentColor;
+}
+.score-popover span { font-size: 10px; }
+.score-popover strong { font-size: 11px; }
+.band-bad { background: #351a22; color: #ff9cab; }
+.band-wait { background: #362a13; color: #ffdc73; }
+.band-good { background: #172f28; color: #8be8ba; }
+.band-great { background: #172747; color: #9fb8ff; }
+
+.eur-conversion {
+  display: block;
+  margin-top: 2px;
+  color: #9fb0cf;
+  font-size: 9px;
+}
+.example-calculator {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+.example-calculator > div {
+  padding: 9px;
+  border-radius: 10px;
+  background: #151f34;
+}
+.example-calculator span {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+}
+.example-calculator strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+}
+.example-gain strong { color: #73e6ae; }
+.example-loss strong { color: #ff94a2; }
+
+@media (max-width: 620px) {
+  .schedule-panel { flex-direction: column; }
+  .schedule-side { justify-items: start; }
+  .schedule-side small { text-align: left; }
+  .example-calculator { grid-template-columns: 1fr; }
+  .score-popover { left: -4px; }
+}

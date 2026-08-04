@@ -260,3 +260,34 @@ VERSION 6.1 – SCORE VERSTÄNDLICH ERKLÄRT
 - Score-Skala lässt sich direkt auf der Aktienkarte ein- und ausblenden.
 - Klarer Hinweis: Das Dashboard weiß nicht, ob jemand die Aktie besitzt.
 - Keine zusätzlichen API-Abfragen.
+
+
+VERSION 6.2 – SCORE, EURO, AUTOMATIK & BEISPIELRECHNER
+
+SCORE
+- Aktive Score-Einordnung direkt neben dem Wert.
+- Kleine Hilfe-Schaltfläche direkt am Score.
+- Aufklappbare Vierer-Skala direkt neben der Zahl.
+- Aktiver Bereich wird farbig hervorgehoben.
+
+EURO-UMRECHNUNG
+- USD-Kurse werden zusätzlich ungefähr in EUR angezeigt.
+- EUR/USD wird einmal täglich geladen und gemeinsam gecacht.
+- Aktueller Kurs, technisches Ziel und rechnerischer Stopp werden umgerechnet.
+- Die Umrechnung ist eine Näherung und berücksichtigt keine Broker-Spreads.
+
+BEISPIELRECHNER
+- Frei einstellbarer Beispielbetrag, standardmäßig 1.000 Euro.
+- Anzeige des rechnerischen Gewinns am technischen Ziel.
+- Anzeige des rechnerischen Verlusts am technischen Stopp.
+- Keine persönliche Depotverwaltung.
+
+AUTOMATIK
+- Getrennte Anzeige von nächstem Lauf und Countdown.
+- Letzte Aktualisierung und Ersteller werden angezeigt.
+- Geschätzter API-Verbrauch des aktuellen Tages wird gemeinsam gespeichert.
+- API-Zähler basiert auf den vom Dashboard ausgelösten Twelve-Data-Abfragen.
+
+ZUSÄTZLICHER API-VERBRAUCH
+- EUR/USD benötigt höchstens einen zusätzlichen Credit pro Kalendertag.
+- Danach wird der gemeinsame Tagescache verwendet.

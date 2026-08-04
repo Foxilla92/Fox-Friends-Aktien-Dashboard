@@ -89,6 +89,8 @@ function sanitizeResults(results) {
     nextEarningsSession: cleanText(item.nextEarningsSession, 60),
     nextEpsEstimate: finiteOrNull(item.nextEpsEstimate),
     earningsUnavailableReason: cleanText(item.earningsUnavailableReason, 300),
+    currency: cleanText(item.currency, 10),
+    eurRate: finiteOrNull(item.eurRate),
     rank: finiteOrNull(item.rank),
     error: item.error ? cleanText(item.error, 500) : null
   }));
@@ -202,10 +204,21 @@ exports.handler = async function handler(event) {
       ? [...new Set(body.symbols.map(value => cleanText(value, 40)).filter(Boolean))].slice(0, MAX_SYMBOLS)
       : [];
 
+    const existingDashboard = await readDashboard(owner, repo, token, branch);
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(new Date());
+    const previousCredits = existingDashboard.dashboard?.apiUsageDate === today
+      ? Number(existingDashboard.dashboard?.apiCreditsToday || 0)
+      : 0;
+
     const dashboard = {
       version: 1,
       updatedBy,
       updatedAt: new Date().toISOString(),
+      apiUsageDate: today,
+      apiCreditsToday: previousCredits + Number(body.runCredits || 0),
+      lastRunCredits: Number(body.runCredits || 0),
       interval: cleanText(body.interval, 20) || "1h",
       marketBenchmark: cleanText(body.marketBenchmark, 30) || "SPY",
       sectorBenchmark: cleanText(body.sectorBenchmark, 30),
@@ -215,6 +228,7 @@ exports.handler = async function handler(event) {
       sellThreshold: Number(body.sellThreshold) || 70,
       minimumPotential: Number(body.minimumPotential) || 5,
       crossLookback: Number(body.crossLookback) || 3,
+      investmentAmount: Number(body.investmentAmount) || 1000,
       symbols,
       results: sanitizeResults(body.results)
     };

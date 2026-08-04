@@ -48,12 +48,17 @@
 
       <div id="sharedStatus" class="shared-status">Gemeinsamer Stand wird geladen …</div>
       <div id="schedulePanel" class="schedule-panel">
-        <div>
+        <div class="schedule-main">
           <span class="schedule-kicker">AUTOMATISCHE PRÜFUNG</span>
-          <strong id="scheduleCountdown">Nächster Lauf wird berechnet …</strong>
+          <strong id="scheduleNext">Nächster Lauf wird berechnet …</strong>
+          <span id="scheduleCountdown" class="countdown-value">–</span>
           <small id="scheduleTimes">Werktags um 09:15 Uhr und 15:45 Uhr</small>
         </div>
-        <span id="runBadge" class="run-badge idle">Bereit</span>
+        <div class="schedule-side">
+          <span id="runBadge" class="run-badge idle">Bereit</span>
+          <small id="lastUpdateInfo">Letzte Aktualisierung: –</small>
+          <small id="apiUsageInfo">API heute: –</small>
+        </div>
       </div>
       <div id="status" class="status-line">Bitte zuerst unter ⚙️ den API-Key und deine Aktien eintragen.</div>
     </section>
@@ -110,6 +115,12 @@ AMD</textarea>
           <span>Marktvergleich</span>
           <input id="marketBenchmark" type="text" maxlength="20" value="SPY" placeholder="z. B. SPY oder QQQ">
           <small>Wird einmal pro Prüfung geladen.</small>
+        </label>
+
+        <label>
+          <span>Beispielbetrag für Gewinn/Verlust</span>
+          <input id="investmentAmount" type="number" min="10" step="10" value="1000">
+          <small>Nur zur Veranschaulichung des technischen Ziel-/Stopp-Szenarios.</small>
         </label>
 
         <label>

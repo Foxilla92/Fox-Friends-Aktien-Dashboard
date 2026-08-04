@@ -4,6 +4,7 @@
 const byId = (id) => document.getElementById(id);
 const SETTINGS_KEY = "foxilla-signal-radar-settings-v2";
 let results = [];
+let currentRunCredits = 0;
 let activeFilter = "all";
 
 const settingIds = [
@@ -20,6 +21,7 @@ function getSettings() {
     interval: byId("interval").value,
     marketBenchmark: byId("marketBenchmark").value.trim().toUpperCase(),
     sectorBenchmark: byId("sectorBenchmark").value.trim().toUpperCase(),
+    investmentAmount: Number(byId("investmentAmount").value || 1000),
     rsiLength: Number(byId("rsiLength").value || 14),
     rsiMaLength: Number(byId("rsiMaLength").value || 14),
     buyThreshold: Number(byId("buyThreshold").value || 70),
@@ -320,6 +322,7 @@ async function fetchMarketData(symbol, interval, mode = "full") {
   if (!response.ok || data.status === "error" || !data.intraday || !data.daily) {
     throw new Error(data.message || `Keine Daten für ${symbol}`);
   }
+  currentRunCredits += Number(data?.cacheInfo?.creditsUsed || 0);
   return data;
 }
 
@@ -331,6 +334,8 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   const resolvedExchange = marketData.resolvedExchange || "";
   const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
   const earningsInfo = marketData.earnings || { available: false, next: null };
+  const currency = marketData.currency || marketData.intraday?.meta?.currency || marketData.daily?.meta?.currency || "";
+  const eurRate = Number(marketData.eurRate);
 
   const intradayCloses = intradayData.values.map(row => Number(row.close));
   const rsiValues = calculateRsi(intradayCloses, settings.rsiLength);
@@ -468,6 +473,8 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     nextEarningsDate: earningsInfo.next?.date || null,
     nextEarningsSession: earningsInfo.next?.session || "",
     nextEpsEstimate: earningsInfo.next?.estimate ?? null,
+    currency,
+    eurRate,
     earningsUnavailableReason: earningsInfo.available ? "" : (earningsInfo.reason || ""),
     rank: Math.max(buyRank, sellRank),
     error: null
@@ -655,6 +662,38 @@ function beginnerMetric(title, score, explanation) {
     </div>`;
 }
 
+
+function euroValue(item, amount) {
+  if (!Number.isFinite(amount)) return "–";
+  if ((item.currency || "").toUpperCase() === "EUR") return formatNumber(amount, 2) + " €";
+  if (Number.isFinite(item.eurRate)) return formatNumber(amount * item.eurRate, 2) + " €";
+  return "–";
+}
+
+function euroLine(item, amount) {
+  const converted = euroValue(item, amount);
+  return converted === "–" ? "" : `<small class="eur-conversion">≈ ${converted}</small>`;
+}
+
+function profitLossExample(item, investmentAmount) {
+  if (!Number.isFinite(item.price) || item.price <= 0 || !Number.isFinite(investmentAmount) || investmentAmount <= 0) {
+    return { gain: NaN, loss: NaN };
+  }
+  const targetPct = Number.isFinite(item.crvTarget) ? (item.crvTarget / item.price - 1) : NaN;
+  const stopPct = Number.isFinite(item.crvStop) ? (item.crvStop / item.price - 1) : NaN;
+  return {
+    gain: Number.isFinite(targetPct) ? investmentAmount * targetPct : NaN,
+    loss: Number.isFinite(stopPct) ? investmentAmount * stopPct : NaN
+  };
+}
+
+function scoreBand(score) {
+  if (score >= 76) return { cls: "band-great", label: "Sehr attraktiv", range: "76–100" };
+  if (score >= 51) return { cls: "band-good", label: "Interessant", range: "51–75" };
+  if (score >= 26) return { cls: "band-wait", label: "Abwarten", range: "26–50" };
+  return { cls: "band-bad", label: "Eher ungünstig", range: "0–25" };
+}
+
 function cardHtml(item) {
   const mainScore = item.kind === "sell" ? item.sellScore : item.buyScore;
   const mainLabel = item.kind === "sell" ? "Ausstiegsscore" : "Einstiegsscore";
@@ -682,15 +721,29 @@ function cardHtml(item) {
 
       ${(() => {
         const scoreInfo = scoreExplanation(item);
+        const band = scoreBand(mainScore);
         return `
       <section class="verdict-panel ${item.kind}">
         <div class="verdict-score-block">
-          <div class="verdict-score">
-            <strong>${formatNumber(mainScore, 0)}</strong>
-            <span>/100</span>
+          <div class="score-with-help">
+            <div class="verdict-score">
+              <strong>${formatNumber(mainScore, 0)}</strong>
+              <span>/100</span>
+            </div>
+            <button type="button" class="score-popover-button" aria-label="Score-Skala anzeigen">?</button>
           </div>
-          <span class="score-meaning">${scoreInfo.label}</span>
+          <span class="score-meaning ${band.cls}">${band.label}</span>
+
+          <div class="score-popover">
+            ${[
+              {range:"0–25",label:"Eher ungünstig",cls:"band-bad"},
+              {range:"26–50",label:"Abwarten",cls:"band-wait"},
+              {range:"51–75",label:"Interessant",cls:"band-good"},
+              {range:"76–100",label:"Sehr attraktiv",cls:"band-great"}
+            ].map(row => `<div class="${row.cls} ${row.range===band.range ? "active" : ""}"><span>${row.range}</span><strong>${row.label}</strong></div>`).join("")}
+          </div>
         </div>
+
         <div class="verdict-copy">
           <span class="verdict-kicker">${mainLabel}</span>
           <h3>${summary.headline}</h3>
@@ -704,7 +757,6 @@ function cardHtml(item) {
             <span>So setzt sich der Score zusammen</span>
             <strong>Je höher, desto positiver für einen Einstieg</strong>
           </div>
-          <button type="button" class="score-help-toggle">Skala anzeigen</button>
         </div>
 
         <div class="score-breakdown">
@@ -712,13 +764,6 @@ function cardHtml(item) {
           ${beginnerMetric("Schwung", item.momentumScore, "Unterstützen RSI, MACD und Bollinger die Bewegung?")}
           ${beginnerMetric("Bewertung", scoreInfo.valuation, "Liegt der Kurs eher günstig in seiner 3-Monats- und Jahresspanne?")}
           ${beginnerMetric("Chance", item.chanceScore, "Wie viel technischer Spielraum ist nach oben vorhanden?")}
-        </div>
-
-        <div class="score-scale">
-          <div><span>0–25</span><strong>Eher ungünstig</strong></div>
-          <div><span>26–50</span><strong>Abwarten</strong></div>
-          <div><span>51–75</span><strong>Interessant</strong></div>
-          <div><span>76–100</span><strong>Sehr attraktiv</strong></div>
         </div>
       </section>`;
       })()}
@@ -742,6 +787,11 @@ function cardHtml(item) {
         ${cautionList}
       </section>
 
+      ${(() => {
+        const amount = Number(byId("investmentAmount")?.value || 1000);
+        const example = profitLossExample(item, amount);
+        const symbolCurrency = item.currency ? ` ${item.currency}` : "";
+        return `
       <section class="trade-plan">
         <div class="trade-plan-header">
           <div>
@@ -752,14 +802,47 @@ function cardHtml(item) {
             ${relativeMarketText(item.relativeStrengthMarket)}
           </div>
         </div>
+
         <div class="trade-plan-grid">
-          <div><span>Aktueller Kurs</span><strong>${formatNumber(item.price, 2)}</strong></div>
-          <div><span>Mögliches Ziel</span><strong>${formatNumber(item.crvTarget, 2)}</strong></div>
-          <div><span>Rechnerischer Stopp</span><strong>${formatNumber(item.crvStop, 2)}</strong></div>
-          <div><span>Potenzial zum 3M-Hoch</span><strong>+${formatNumber(item.upsidePotential, 1)} %</strong></div>
+          <div>
+            <span>Aktueller Kurs</span>
+            <strong>${formatNumber(item.price, 2)}${symbolCurrency}</strong>
+            ${euroLine(item, item.price)}
+          </div>
+          <div>
+            <span>Mögliches Ziel</span>
+            <strong>${formatNumber(item.crvTarget, 2)}${symbolCurrency}</strong>
+            ${euroLine(item, item.crvTarget)}
+          </div>
+          <div>
+            <span>Rechnerischer Stopp</span>
+            <strong>${formatNumber(item.crvStop, 2)}${symbolCurrency}</strong>
+            ${euroLine(item, item.crvStop)}
+          </div>
+          <div>
+            <span>Potenzial zum 3M-Hoch</span>
+            <strong>+${formatNumber(item.upsidePotential, 1)} %</strong>
+          </div>
         </div>
-        <small class="trade-plan-note">Ziel und Stopp sind technische Orientierungswerte aus 3-Monats-Hoch, Fibonacci und ATR – keine Garantie.</small>
-      </section>
+
+        <div class="example-calculator">
+          <div>
+            <span>Beispiel bei ${formatNumber(amount, 0)} € Einsatz</span>
+            <small>Rein rechnerisch anhand von Ziel und Stopp</small>
+          </div>
+          <div class="example-gain">
+            <span>Möglicher Gewinn</span>
+            <strong>${Number.isFinite(example.gain) ? "+" + formatNumber(example.gain, 2) + " €" : "–"}</strong>
+          </div>
+          <div class="example-loss">
+            <span>Möglicher Verlust</span>
+            <strong>${Number.isFinite(example.loss) ? formatNumber(example.loss, 2) + " €" : "–"}</strong>
+          </div>
+        </div>
+
+        <small class="trade-plan-note">Ziel, Stopp und Euro-Umrechnung sind technische Näherungen – keine Garantie und keine Kaufempfehlung.</small>
+      </section>`;
+      })()}
 
       <div class="earnings-event ${earnings.className}">
         <span class="event-icon">📅</span>
@@ -905,9 +988,11 @@ function updateScheduleCountdown() {
     timeZone: "Europe/Berlin",
     weekday: "short", hour: "2-digit", minute: "2-digit"
   });
+  const next = byId("scheduleNext");
+  if (next) next.textContent = `Nächster Lauf: ${targetText}`;
   element.textContent = hours > 0
-    ? `Nächster Lauf in ${hours} Std. ${minutes} Min. · ${targetText}`
-    : `Nächster Lauf in ${minutes} Min. · ${targetText}`;
+    ? `Countdown: ${hours} Std. ${minutes} Min.`
+    : `Countdown: ${minutes} Min.`;
 }
 
 async function pollSharedState() {
@@ -969,6 +1054,8 @@ async function saveSharedDashboard(settings) {
       sellThreshold: settings.sellThreshold,
       minimumPotential: settings.minimumPotential,
       crossLookback: settings.crossLookback,
+      investmentAmount: settings.investmentAmount,
+      runCredits: currentRunCredits,
       results
     })
   });
@@ -1003,7 +1090,7 @@ async function loadSharedDashboard() {
       byId("interval").value = dashboard.interval;
     }
 
-    const sharedSettings = ["marketBenchmark","sectorBenchmark","rsiLength","rsiMaLength","buyThreshold","sellThreshold","minimumPotential","crossLookback"];
+    const sharedSettings = ["marketBenchmark","sectorBenchmark","investmentAmount","rsiLength","rsiMaLength","buyThreshold","sellThreshold","minimumPotential","crossLookback"];
     for (const key of sharedSettings) {
       if (dashboard[key] !== undefined && byId(key)) byId(key).value = dashboard[key];
     }
@@ -1014,6 +1101,8 @@ async function loadSharedDashboard() {
     }
 
     setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(dashboard.updatedAt)} · erstellt von ${dashboard.updatedBy || "Unbekannt"}`);
+    if (byId("lastUpdateInfo")) byId("lastUpdateInfo").textContent = `Letzte Aktualisierung: ${sharedDateText(dashboard.updatedAt)} · ${dashboard.updatedBy || "Unbekannt"}`;
+    if (byId("apiUsageInfo")) byId("apiUsageInfo").textContent = `API heute: ${Number(dashboard.apiCreditsToday || 0)} Credits`;
     setStatus("Gespeicherte Ergebnisse geladen – keine Twelve-Data-Credits verbraucht.");
   } catch (error) {
     setSharedStatus(`Gemeinsamer Stand nicht verfügbar: ${error.message}`);
@@ -1093,6 +1182,7 @@ async function runAnalysis() {
     return;
   }
 
+  currentRunCredits = 0;
   results = [];
   render();
 
@@ -1261,11 +1351,10 @@ document.querySelectorAll("[data-close]").forEach(button => {
 
 
 document.addEventListener("click", event => {
-  const button = event.target.closest(".score-help-toggle");
+  const button = event.target.closest(".score-popover-button");
+  document.querySelectorAll(".score-popover.visible").forEach(popover => {
+    if (!button || !popover.closest(".verdict-score-block")?.contains(button)) popover.classList.remove("visible");
+  });
   if (!button) return;
-  const section = button.closest(".score-explainer");
-  const scale = section?.querySelector(".score-scale");
-  if (!scale) return;
-  scale.classList.toggle("visible");
-  button.textContent = scale.classList.contains("visible") ? "Skala ausblenden" : "Skala anzeigen";
+  button.closest(".verdict-score-block")?.querySelector(".score-popover")?.classList.toggle("visible");
 });

@@ -140,6 +140,29 @@ async function writeAuxCache(path, cache, symbol) {
   }
 }
 
+
+async function getEurRate(apiKey) {
+  const today = berlinDate();
+  const path = "shared/cache/FX_USD_EUR.json";
+  const stored = await readJson(path);
+  if (stored.data?.date === today && Number.isFinite(Number(stored.data?.rate))) {
+    return { rate: Number(stored.data.rate), creditsUsed: 0 };
+  }
+
+  try {
+    const fx = await fetchTwelveSeries("EUR/USD", "1day", 5, apiKey, "");
+    const eurUsd = Number(fx.values?.at(-1)?.close);
+    const rate = eurUsd > 0 ? 1 / eurUsd : NaN;
+    if (Number.isFinite(rate)) {
+      await writeAuxCache(path, { date: today, rate }, "EUR/USD");
+      return { rate, creditsUsed: 1 };
+    }
+  } catch (error) {
+    console.warn("EUR-Umrechnung nicht verfügbar:", error.message);
+  }
+  return { rate: NaN, creditsUsed: 0 };
+}
+
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return response(200, { ok:true });
   if (event.httpMethod !== "GET") return response(405, { status:"error", message:"Nur GET-Anfragen sind erlaubt." });
@@ -197,6 +220,13 @@ exports.handler = async function handler(event) {
     }
 
     const meta = intraday?.meta || daily?.meta || {};
+    const currency = String(meta.currency || "").toUpperCase();
+    let eurRate = currency === "EUR" ? 1 : NaN;
+    if (currency === "USD") {
+      const fx = await getEurRate(apiKey);
+      eurRate = fx.rate;
+      creditsUsed += fx.creditsUsed;
+    }
     const resolvedExchange = meta.exchange || parsed.exchange || "";
     const resolvedSymbol = meta.symbol || parsed.symbol;
     const tradingViewSymbol = resolvedExchange
@@ -209,6 +239,8 @@ exports.handler = async function handler(event) {
       resolvedSymbol,
       resolvedExchange,
       tradingViewSymbol,
+      currency,
+      eurRate,
       intraday,
       daily,
       earnings: mode !== "benchmark" ? earnings : null,

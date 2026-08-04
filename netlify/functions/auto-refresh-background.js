@@ -16,6 +16,8 @@ function mapDaily(data) {
   })) || null;
 }
 
+let automaticCredits = 0;
+
 async function marketData(symbol, interval, mode = "full") {
   const base = process.env.URL || process.env.DEPLOY_PRIME_URL;
   if (!base) throw new Error("Netlify-Site-URL ist nicht verfügbar.");
@@ -26,6 +28,7 @@ async function marketData(symbol, interval, mode = "full") {
   const response = await fetch(url);
   const data = await response.json();
   if (!response.ok || data.status === "error") throw new Error(data.message || `Keine Daten für ${symbol}`);
+  automaticCredits += Number(data?.cacheInfo?.creditsUsed || 0);
   return data;
 }
 
@@ -93,6 +96,13 @@ async function runAutomatic() {
       ...dashboard,
       updatedBy: "Automatik",
       updatedAt: new Date().toISOString(),
+      apiUsageDate: new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit"
+      }).format(new Date()),
+      apiCreditsToday: (dashboard.apiUsageDate === new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit"
+      }).format(new Date()) ? Number(dashboard.apiCreditsToday || 0) : 0) + automaticCredits,
+      lastRunCredits: automaticCredits,
       results
     };
     await writeJson(DASHBOARD_PATH, updated, "Automatische Dashboard-Prüfung");
