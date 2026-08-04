@@ -838,3 +838,46 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
 .signal-card.collapsed .card-collapsible{display:none}.signal-card.collapsed{padding-bottom:16px}.signal-card.collapsed .signal-card-header{margin-bottom:0}
 .macro-panel{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:13px 14px;border:1px solid #30415f;border-radius:15px;background:#101a2d}.macro-icon{font-size:24px}.macro-copy{min-width:0;flex:1}.macro-kicker{display:block;color:#91a8ff;font-size:9px;font-weight:950;letter-spacing:.08em}.macro-copy strong{display:block;margin-top:3px;font-size:13px}.macro-copy small{display:block;margin-top:3px;color:var(--muted);font-size:10px;white-space:normal}.macro-warning{border-color:#7b5e1d;background:#2a2112}.macro-safe{border-color:#245d49;background:#10241f}.macro-details-button{padding:8px 10px;border:1px solid #405273;border-radius:9px;background:#1a2740;color:#fff;font-size:10px;font-weight:900;cursor:pointer}.macro-event-list{display:grid;gap:10px}.macro-event-list article{padding:13px;border:1px solid #30415f;border-radius:13px;background:#0d1728}.macro-event-list strong,.macro-event-list span{display:block}.macro-event-list span{margin-top:3px;color:#9fb0cf;font-size:11px}.macro-event-list p{margin:8px 0 0}
 @media(max-width:580px){.macro-panel{align-items:flex-start}.macro-details-button{flex:0 0 auto}.company-line{max-width:210px}}
+
+/* Version 7.1: kompakte und persistente Karten */
+#cards {
+  align-items: start !important;
+}
+.signal-card {
+  align-self: start;
+  min-height: 0 !important;
+}
+.signal-card.collapsed {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 14px 16px !important;
+}
+.signal-card.collapsed .card-collapsible {
+  display: none !important;
+}
+.signal-card.collapsed .signal-card-header {
+  margin: 0 !important;
+}
+.signal-card.collapsed .company-line {
+  display: block;
+}
+.signal-card.collapsed .price {
+  display: block;
+}
+.card-collapsible {
+  display: block;
+}
+.company-line {
+  color: #a8b8d5;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+  max-width: 330px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.macro-neutral {
+  border-color: #30415f;
+  background: #101a2d;
+}

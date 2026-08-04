@@ -339,3 +339,34 @@ VERSION 7 – MAKRO, KLAPPKARTEN UND SYMBOL-FIX
 - Symbol-Aliase verhindern falsche US-Treffer: SIE=Siemens AG/XETRA, ENR=Siemens Energy/XETRA, DRO/DRH=DroneShield/ASX.
 - Explizite US-Symbole bleiben möglich, z. B. NYSE:ENR oder NYSE:DRH.
 - Keine stille Substitution auf ein anderes Unternehmen mehr.
+
+
+VERSION 7.1 – KARTEN-, SYMBOL- UND MAKRO-FIX
+
+SYMBOLSICHERHEIT
+- ENR wird bereits im Browser als XETR:ENR angefragt.
+- SIE wird als XETR:SIE angefragt.
+- DRH, DRO und DroneShield werden als ASX:DRO angefragt.
+- Alte gespeicherte NYSE-Fehlzuordnungen werden nicht mehr angezeigt,
+  sondern ausdrücklich als falscher Datensatz markiert.
+- Falls ASX:DRO im Twelve-Data-Tarif nicht verfügbar ist, erscheint ein Fehler
+  statt DiamondRock Hospitality.
+
+FIRMENNAMEN
+- Bekannte Unternehmen erhalten ausgeschriebene Namen, unter anderem:
+  Intel Corporation, Apple Inc., Microsoft Corporation, Siemens AG,
+  Siemens Energy AG, Rheinmetall AG und DroneShield Limited.
+- Der Firmenname wird im gemeinsamen Ergebnis gespeichert.
+
+EINKLAPPBARE KARTEN
+- Der komplette Inhalt einschließlich technischer Details und TradingView wird
+  eingeklappt.
+- Eingeklappt bleiben nur Ticker, Firmenname/Börse, Kurs und Status sichtbar.
+- Der Zustand wird pro Browser gespeichert und überlebt Refresh sowie
+  die automatische Aktualisierung des gemeinsamen Standes.
+- Eingeklappte Karten behalten keine leere Höhe mehr.
+
+WIRTSCHAFTSKALENDER
+- HTML-Fehlerantworten werden nicht mehr als JSON verarbeitet.
+- Ohne TRADING_ECONOMICS_API_KEY erscheint eine klare Aktivierungsinformation.
+- Mit API-Key werden High-Impact-Termine weiterhin geladen und gecacht.

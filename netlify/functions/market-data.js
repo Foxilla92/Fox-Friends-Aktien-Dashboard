@@ -23,20 +23,36 @@ function response(statusCode, body, cache = false) {
 function parseInput(input) {
   const normalized = String(input || "").trim().toUpperCase();
   const known = {
-    "SIE": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens" },
-    "SIEMENS": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens" },
-    "ENR": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy" },
-    "SIEMENS ENERGY": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy" },
-    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
-    "DRH": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
-    "DRONESHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" },
-    "DRONE SHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield" }
+    "INTC": { symbol:"INTC", exchange:"NASDAQ", expectedName:"Intel", displayName:"Intel Corporation" },
+    "AAPL": { symbol:"AAPL", exchange:"NASDAQ", expectedName:"Apple", displayName:"Apple Inc." },
+    "MSFT": { symbol:"MSFT", exchange:"NASDAQ", expectedName:"Microsoft", displayName:"Microsoft Corporation" },
+    "NVDA": { symbol:"NVDA", exchange:"NASDAQ", expectedName:"NVIDIA", displayName:"NVIDIA Corporation" },
+    "AMD": { symbol:"AMD", exchange:"NASDAQ", expectedName:"Advanced Micro Devices", displayName:"Advanced Micro Devices, Inc." },
+    "AMZN": { symbol:"AMZN", exchange:"NASDAQ", expectedName:"Amazon", displayName:"Amazon.com, Inc." },
+    "GOOGL": { symbol:"GOOGL", exchange:"NASDAQ", expectedName:"Alphabet", displayName:"Alphabet Inc." },
+    "META": { symbol:"META", exchange:"NASDAQ", expectedName:"Meta", displayName:"Meta Platforms, Inc." },
+    "TSLA": { symbol:"TSLA", exchange:"NASDAQ", expectedName:"Tesla", displayName:"Tesla, Inc." },
+    "SIE": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens", displayName:"Siemens AG" },
+    "SIEMENS": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens", displayName:"Siemens AG" },
+    "ENR": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy", displayName:"Siemens Energy AG" },
+    "SIEMENS ENERGY": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy", displayName:"Siemens Energy AG" },
+    "RHM": { symbol:"RHM", exchange:"XETRA", expectedName:"Rheinmetall", displayName:"Rheinmetall AG" },
+    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
+    "DRH": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
+    "DRONESHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
+    "DRONE SHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" }
   };
   if (known[normalized]) return { ...known[normalized], original:normalized };
   if (!normalized.includes(":")) return { symbol:normalized, exchange:"", expectedName:"", original:normalized };
   const [prefix, symbol] = normalized.split(":", 2);
   const aliases = { NASDAQ:"NASDAQ", NYSE:"NYSE", XETR:"XETRA", XETRA:"XETRA", LSE:"LSE", ASX:"ASX" };
-  return { symbol, exchange:aliases[prefix] || prefix, expectedName:"", original:normalized };
+  const explicit = { symbol, exchange:aliases[prefix] || prefix, expectedName:"", displayName:"", original:normalized };
+  const exactKnown = known[symbol];
+  if (exactKnown && exactKnown.exchange === explicit.exchange) {
+    explicit.expectedName = exactKnown.expectedName;
+    explicit.displayName = exactKnown.displayName || "";
+  }
+  return explicit;
 }
 
 function tradingViewPrefix(exchange) {
@@ -172,12 +188,13 @@ exports.handler = async function handler(event) {
     }
 
     const meta = intraday?.meta || daily?.meta || {};
-    const companyName = String(meta.name || meta.instrument_name || meta.symbol_name || parsed.expectedName || parsed.symbol);
+    const providerCompanyName = String(meta.name || meta.instrument_name || meta.symbol_name || "");
+    const companyName = String(parsed.displayName || providerCompanyName || parsed.expectedName || parsed.symbol);
     const rawExchange = String(meta.exchange || parsed.exchange || "").toUpperCase();
     if (parsed.exchange && rawExchange && !rawExchange.includes(parsed.exchange)) {
       throw new Error(`Falscher Handelsplatz geliefert: erwartet ${parsed.exchange}, erhalten ${rawExchange}.`);
     }
-    if (parsed.expectedName && !companyName.toLowerCase().includes(parsed.expectedName.toLowerCase())) {
+    if (parsed.expectedName && providerCompanyName && !providerCompanyName.toLowerCase().includes(parsed.expectedName.toLowerCase())) {
       throw new Error(`Symbol-Zuordnung stimmt nicht: erwartet ${parsed.expectedName}, erhalten ${companyName}. Bitte Börsenpräfix verwenden.`);
     }
     const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(rawExchange) ? "USD"
