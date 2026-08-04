@@ -96,6 +96,18 @@ AMD</textarea>
         </label>
 
         <label>
+          <span>Marktvergleich</span>
+          <input id="marketBenchmark" type="text" maxlength="20" value="SPY" placeholder="z. B. SPY oder QQQ">
+          <small>Wird einmal pro Prüfung geladen.</small>
+        </label>
+
+        <label>
+          <span>Sektorvergleich (optional)</span>
+          <input id="sectorBenchmark" type="text" maxlength="20" placeholder="z. B. SOXX, XLK oder XLF">
+          <small>Leer lassen, wenn kein Sektor-ETF genutzt werden soll.</small>
+        </label>
+
+        <label>
           <span>Automatische Aktualisierung</span>
           <select id="autoRefresh">
             <option value="0">Aus</option>
@@ -139,12 +151,11 @@ AMD</textarea>
       <details class="weight-details">
         <summary>Aktuelle Gewichtung</summary>
         <div class="weight-list">
-          <div><span>RSI-Lage</span><strong>45 %</strong></div>
-          <div><span>3-Monats-Preisbereich</span><strong>20 %</strong></div>
-          <div><span>Jahres-Preisbereich</span><strong>10 %</strong></div>
-          <div><span>RSI-Kreuzung</span><strong>10 %</strong></div>
-          <div><span>Fibonacci-Lage & nächstes Ziel</span><strong>10 %</strong></div>
-          <div><span>Relatives Handelsvolumen</span><strong>5 %</strong></div>
+          <div><span>RSI</span><strong>35 %</strong></div>
+          <div><span>Preis & Fibonacci</span><strong>25 %</strong></div>
+          <div><span>Trend (EMA)</span><strong>15 %</strong></div>
+          <div><span>Momentum (MACD/Bollinger)</span><strong>15 %</strong></div>
+          <div><span>Volumen</span><strong>10 %</strong></div>
         </div>
         <p>Das kurzfristige Potenzial bis zum 3-Monats-Hoch wird zusätzlich angezeigt und beeinflusst die Sortierung. Fibonacci nutzt die 3-Monats-Spanne und bewertet typische Rücklaufzonen sowie den Abstand zum nächsten Fib-Ziel.</p>
       </details>

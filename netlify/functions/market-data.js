@@ -69,6 +69,91 @@ async function fetchTwelveSeries(symbol, interval, outputsize, apiKey, exchange 
   return data;
 }
 
+
+function isoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function normalizeCalendarRows(data) {
+  if (Array.isArray(data)) return data;
+  for (const key of ["earnings", "data", "values", "calendar", "result"]) {
+    if (Array.isArray(data?.[key])) return data[key];
+  }
+  return [];
+}
+
+function parseEventDate(row) {
+  const raw =
+    row?.date ||
+    row?.datetime ||
+    row?.report_date ||
+    row?.earnings_date ||
+    row?.fiscal_date ||
+    row?.time;
+  if (!raw) return null;
+  const date = new Date(String(raw).length === 10 ? `${raw}T12:00:00Z` : raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+async function fetchUpcomingEarnings(symbol, apiKey, exchange = "") {
+  const start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 180);
+
+  const url = new URL("https://api.twelvedata.com/earnings_calendar");
+  url.searchParams.set("symbol", symbol);
+  url.searchParams.set("start_date", isoDate(start));
+  url.searchParams.set("end_date", isoDate(end));
+  url.searchParams.set("apikey", apiKey);
+  if (exchange) url.searchParams.set("exchange", exchange);
+
+  const upstream = await fetch(url);
+  const text = await upstream.text();
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { available: false, reason: `Ungültige Earnings-Antwort (HTTP ${upstream.status}).` };
+  }
+
+  if (!upstream.ok || data?.status === "error") {
+    return {
+      available: false,
+      reason: data?.message || `Earnings nicht verfügbar (HTTP ${upstream.status}).`
+    };
+  }
+
+  const rows = normalizeCalendarRows(data)
+    .map(row => ({ row, date: parseEventDate(row) }))
+    .filter(item => item.date && item.date >= start)
+    .sort((a, b) => a.date - b.date);
+
+  if (!rows.length) {
+    return { available: true, next: null };
+  }
+
+  const next = rows[0].row;
+  const nextDate = rows[0].date;
+  const session =
+    next?.time ||
+    next?.release_time ||
+    next?.hour ||
+    next?.when ||
+    "";
+
+  return {
+    available: true,
+    next: {
+      date: isoDate(nextDate),
+      session: String(session || ""),
+      estimate: next?.eps_estimate ?? next?.estimate ?? next?.estimated_eps ?? null,
+      currency: next?.currency ?? null
+    }
+  };
+}
+
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return response(200, { ok: true });
   if (event.httpMethod !== "GET") {
@@ -109,9 +194,10 @@ exports.handler = async function handler(event) {
     // Nur EIN Handelsplatzversuch pro Aktie:
     // - ohne Präfix lässt Twelve Data selbst den besten Treffer wählen
     // - mit Präfix wird genau dieser Handelsplatz verwendet
-    const [intraday, daily] = await Promise.all([
+    const [intraday, daily, earnings] = await Promise.all([
       fetchTwelveSeries(parsed.symbol, interval, 450, apiKey, parsed.exchange),
-      fetchTwelveSeries(parsed.symbol, "1day", 300, apiKey, parsed.exchange)
+      fetchTwelveSeries(parsed.symbol, "1day", 300, apiKey, parsed.exchange),
+      fetchUpcomingEarnings(parsed.symbol, apiKey, parsed.exchange)
     ]);
 
     const resolvedExchange =
@@ -137,6 +223,7 @@ exports.handler = async function handler(event) {
       tradingViewSymbol,
       intraday,
       daily,
+      earnings,
       fetchedAt: new Date().toISOString()
     }, true);
   } catch (error) {

@@ -140,3 +140,35 @@ Ablauf:
 
 Hinweis:
 Jede erfolgreiche Prüfung erzeugt einen kleinen Commit in GitHub.
+
+
+VERSION 4 – PRO
+Neu: MACD, EMA 20/50/200, Bollinger-Bänder, ATR, CRV, Trend-/Momentum-/Risiko-/Chance-Scores,
+Marktvergleich und optionaler Sektorvergleich.
+
+Analystenratings, Earnings, Dividende und Fear & Greed sind als Kontextfelder vorbereitet,
+werden aber bewusst nicht erfunden. Der aktuelle kostenlose Datenfeed liefert diese Daten
+nicht für alle Symbole zuverlässig. Eine echte Befüllung benötigt später eine weitere
+Datenquelle oder einen passenden Datentarif.
+
+API-Verbrauch: Marktbenchmark kostet pro aktiver Prüfung eine zusätzliche Aktienabfrage.
+Ein optionaler Sektorbenchmark kostet ebenfalls eine zusätzliche Aktienabfrage.
+
+
+VERSION 4.1 – NÄCHSTE QUARTALSZAHLEN
+
+- Pro Aktie wird zusätzlich der Twelve-Data-Endpunkt /earnings_calendar abgefragt.
+- Angezeigt werden der nächste bekannte Termin innerhalb von 180 Tagen,
+  die verbleibenden Tage und – sofern vorhanden – Veröffentlichungszeit/EPS-Schätzung.
+- Ampellogik:
+  Grün > 14 Tage, Gelb 8–14 Tage, Orange 3–7 Tage, Rot 0–2 Tage.
+- Ist der Datensatz für ein Symbol oder den Tarif nicht verfügbar, bleibt die
+  Aktienanalyse funktionsfähig und zeigt „Earnings: nicht verfügbar“.
+
+API-VERBRAUCH
+Eine Aktienprüfung benötigt jetzt normalerweise drei Credits:
+1. Intraday-Kursreihe
+2. Tages-Kursreihe
+3. Earnings-Kalender
+Zusätzlich benötigen Markt- und optionale Sektorbenchmarks jeweils ihre bisherigen
+Kursabfragen. Beim Öffnen/Refresh entstehen weiterhin keine Twelve-Data-Credits.
