@@ -10,3 +10,7 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+
+[functions."auto-refresh-scheduled"]
+  schedule = "*/15 * * * 1-5"

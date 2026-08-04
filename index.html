@@ -47,6 +47,14 @@
       </div>
 
       <div id="sharedStatus" class="shared-status">Gemeinsamer Stand wird geladen …</div>
+      <div id="schedulePanel" class="schedule-panel">
+        <div>
+          <span class="schedule-kicker">AUTOMATISCHE PRÜFUNG</span>
+          <strong id="scheduleCountdown">Nächster Lauf wird berechnet …</strong>
+          <small id="scheduleTimes">Werktags um 09:15 Uhr und 15:45 Uhr</small>
+        </div>
+        <span id="runBadge" class="run-badge idle">Bereit</span>
+      </div>
       <div id="status" class="status-line">Bitte zuerst unter ⚙️ den API-Key und deine Aktien eintragen.</div>
     </section>
 
@@ -109,18 +117,7 @@ AMD</textarea>
           <input id="sectorBenchmark" type="text" maxlength="20" placeholder="z. B. SOXX, XLK oder XLF">
           <small>Leer lassen, wenn kein Sektor-ETF genutzt werden soll.</small>
         </label>
-
-        <label>
-          <span>Automatische Aktualisierung</span>
-          <select id="autoRefresh">
-            <option value="0">Aus</option>
-            <option value="15">Alle 15 Minuten</option>
-            <option value="30">Alle 30 Minuten</option>
-            <option value="60">Stündlich</option>
-          </select>
-        </label>
-
-        <label>
+<label>
           <span>RSI-Länge</span>
           <input id="rsiLength" type="number" min="2" max="50" value="14">
         </label>

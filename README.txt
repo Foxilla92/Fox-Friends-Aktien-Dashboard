@@ -195,3 +195,53 @@ VERSION 4.3 – ERKLÄRUNGSBEREICH
 - Beispiele, warum eine Aktie als Kaufen, Prüfen oder Verkaufen bewertet wird.
 - Speziell für Anfänger formuliert.
 - Keine zusätzlichen API-Anfragen.
+
+
+VERSION 5 – ZENTRALE AUTOMATISCHE PRÜFUNG
+
+- Zentrale automatische Prüfung werktags um 09:00 Uhr deutscher Zeit.
+- Zweite Prüfung werktags um 15:30 Uhr deutscher Zeit.
+- Sommer- und Winterzeit werden über Europe/Berlin berücksichtigt.
+- Deutsche Börsenfeiertage werden beim 09:00-Lauf übersprungen.
+- US-Börsenfeiertage werden beim 15:30-Lauf übersprungen.
+- Automatische Läufe werden als „Automatik“ gespeichert.
+- Countdown bis zum nächsten Lauf auf der Oberfläche.
+- Offene Browser laden den gemeinsamen Stand alle 60 Sekunden neu.
+  Dabei entstehen keine Twelve-Data-Credits.
+- Eine zentrale Sperre verhindert, dass manuelle und automatische Prüfungen
+  gleichzeitig starten.
+- Die bisherige Browser-Auto-Aktualisierung wurde entfernt.
+
+TECHNIK
+- auto-refresh-scheduled.js läuft alle 30 Minuten und prüft intern die Berliner Zeit.
+- auto-refresh-background.js verarbeitet die Watchlist im Hintergrund.
+- Maximal zwei Kursdatenpakete je Minute werden geladen, um das kostenlose
+  Twelve-Data-Minutenlimit konservativ einzuhalten.
+- Background Functions können auf Netlify bis zu 15 Minuten laufen.
+- Bei sehr großen Watchlists kann der Lauf trotzdem an die Laufzeitgrenze stoßen.
+
+
+VERSION 6 – CREDIT-OPTIMIERUNG
+
+NEUE AUTOMATISCHE ZEITEN
+- Werktags 09:15 Uhr deutscher Zeit
+- Werktags 15:45 Uhr deutscher Zeit
+
+API-OPTIMIERUNG
+- Intraday-Daten werden weiterhin bei jeder aktiven Prüfung geladen.
+- Tagesdaten werden nur einmal pro Aktie und Kalendertag geladen und danach
+  im GitHub-Hilfscache wiederverwendet.
+- Earnings werden ebenfalls nur einmal pro Aktie und Kalendertag geladen.
+- Markt- und Sektorbenchmark verwenden nur Tagesdaten und keine Intraday-
+  oder Earnings-Abfrage.
+- Beim Öffnen/Refresh entstehen weiterhin keine Twelve-Data-Credits.
+
+TYPISCHER VERBRAUCH
+- Erste Aktienprüfung des Tages: bis zu 3 Credits pro Aktie
+  (Intraday + Tagesdaten + Earnings).
+- Weitere Prüfungen am selben Tag: normalerweise 1 Credit pro Aktie
+  (nur Intraday).
+- Marktbenchmark: beim ersten Lauf des Tages 1 Credit, danach 0 Credits.
+- Optionaler Sektorbenchmark: beim ersten Lauf des Tages 1 Credit, danach 0 Credits.
+
+Der Hilfscache wird unter shared/cache/ im GitHub-Repository gespeichert.

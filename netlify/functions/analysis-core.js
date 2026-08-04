@@ -1,0 +1,411 @@
+"use strict";
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function calculateRsi(closes, period) {
+  const output = Array(closes.length).fill(null);
+  if (closes.length <= period) return output;
+
+  let gains = 0;
+  let losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i] - closes[i - 1];
+    gains += Math.max(change, 0);
+    losses += Math.max(-change, 0);
+  }
+
+  let averageGain = gains / period;
+  let averageLoss = losses / period;
+  output[period] = averageLoss === 0 ? 100 : 100 - 100 / (1 + averageGain / averageLoss);
+
+  for (let i = period + 1; i < closes.length; i++) {
+    const change = closes[i] - closes[i - 1];
+    averageGain = (averageGain * (period - 1) + Math.max(change, 0)) / period;
+    averageLoss = (averageLoss * (period - 1) + Math.max(-change, 0)) / period;
+    output[i] = averageLoss === 0 ? 100 : 100 - 100 / (1 + averageGain / averageLoss);
+  }
+  return output;
+}
+
+function simpleMovingAverage(values, period) {
+  return values.map((_, index) => {
+    const window = values.slice(index - period + 1, index + 1);
+    return window.length === period && window.every(Number.isFinite)
+      ? window.reduce((sum, value) => sum + value, 0) / period
+      : null;
+  });
+}
+
+function positionInRange(current, low, high) {
+  if (!Number.isFinite(current) || !Number.isFinite(low) || !Number.isFinite(high) || high === low) return 50;
+  return clamp(((current - low) / (high - low)) * 100, 0, 100);
+}
+
+function buyRsiScore(rsi) {
+  if (rsi <= 30) return 100;
+  if (rsi >= 65) return 0;
+  return ((65 - rsi) / 35) * 100;
+}
+
+function sellRsiScore(rsi) {
+  if (rsi >= 70) return 100;
+  if (rsi <= 35) return 0;
+  return ((rsi - 35) / 35) * 100;
+}
+
+function buyPriceScore(positionPercent) {
+  return Math.pow(1 - positionPercent / 100, 0.65) * 100;
+}
+
+function sellPriceScore(positionPercent) {
+  return Math.pow(positionPercent / 100, 0.65) * 100;
+}
+
+function average(values) {
+  const valid = values.filter(Number.isFinite);
+  return valid.length ? valid.reduce((a,b)=>a+b,0) / valid.length : NaN;
+}
+
+function volumeContext(dailyRows) {
+  const rows = dailyRows.slice(-21);
+  const latest = rows.at(-1);
+  const history = rows.slice(0,-1);
+  const avg20 = average(history.map(r=>r.volume));
+  const current = latest?.volume;
+  if (!Number.isFinite(current) || !Number.isFinite(avg20) || avg20 <= 0) {
+    return { current, average20: avg20, ratio: NaN, score: 50, label: "neutral" };
+  }
+  const ratio = current / avg20;
+  if (ratio >= 1.5) return {current,average20:avg20,ratio,score:100,label:"sehr hoch"};
+  if (ratio >= 1.2) return {current,average20:avg20,ratio,score:80,label:"hoch"};
+  if (ratio >= 0.9) return {current,average20:avg20,ratio,score:60,label:"normal"};
+  if (ratio >= 0.7) return {current,average20:avg20,ratio,score:40,label:"niedrig"};
+  return {current,average20:avg20,ratio,score:20,label:"sehr niedrig"};
+}
+
+
+function exponentialMovingAverage(values, period) {
+  const output = Array(values.length).fill(null);
+  if (values.length < period) return output;
+  const multiplier = 2 / (period + 1);
+  let current = values.slice(0, period).reduce((sum, value) => sum + value, 0) / period;
+  output[period - 1] = current;
+  for (let i = period; i < values.length; i++) {
+    current = (values[i] - current) * multiplier + current;
+    output[i] = current;
+  }
+  return output;
+}
+
+function standardDeviation(values) {
+  const mean = average(values);
+  if (!Number.isFinite(mean) || !values.length) return NaN;
+  return Math.sqrt(values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) / values.length);
+}
+
+function bollingerContext(closes, period = 20, deviations = 2) {
+  const window = closes.slice(-period);
+  if (window.length < period) return {middle:NaN,upper:NaN,lower:NaN,position:NaN,width:NaN};
+  const middle = average(window);
+  const deviation = standardDeviation(window);
+  const upper = middle + deviations * deviation;
+  const lower = middle - deviations * deviation;
+  const current = closes.at(-1);
+  return {
+    middle, upper, lower,
+    position: upper === lower ? 50 : clamp((current-lower)/(upper-lower)*100,0,100),
+    width: middle ? (upper-lower)/middle*100 : NaN
+  };
+}
+
+function macdContext(closes) {
+  const ema12 = exponentialMovingAverage(closes,12);
+  const ema26 = exponentialMovingAverage(closes,26);
+  const macdLine = closes.map((_,i)=>Number.isFinite(ema12[i])&&Number.isFinite(ema26[i])?ema12[i]-ema26[i]:null);
+  const valid = macdLine.filter(Number.isFinite);
+  const sigValid = exponentialMovingAverage(valid,9);
+  const signalLine = Array(macdLine.length).fill(null);
+  let offset=0;
+  for(let i=0;i<macdLine.length;i++){ if(Number.isFinite(macdLine[i])) signalLine[i]=sigValid[offset++]??null; }
+  const i=closes.length-1;
+  const macd=macdLine[i], signal=signalLine[i];
+  const histogram=Number.isFinite(macd)&&Number.isFinite(signal)?macd-signal:NaN;
+  const prev=i>0&&Number.isFinite(macdLine[i-1])&&Number.isFinite(signalLine[i-1])?macdLine[i-1]-signalLine[i-1]:NaN;
+  return {macd,signal,histogram,bullish:Number.isFinite(macd)&&Number.isFinite(signal)&&macd>signal,improving:Number.isFinite(histogram)&&Number.isFinite(prev)&&histogram>prev};
+}
+
+function atrContext(rows, period=14) {
+  if(rows.length<period+1)return{atr:NaN,percent:NaN};
+  const tr=[];
+  for(let i=1;i<rows.length;i++){
+    tr.push(Math.max(rows[i].high-rows[i].low,Math.abs(rows[i].high-rows[i-1].close),Math.abs(rows[i].low-rows[i-1].close)));
+  }
+  const atr=average(tr.slice(-period)), price=rows.at(-1).close;
+  return{atr,percent:price?atr/price*100:NaN};
+}
+
+function scoreTrend(price,e20,e50,e200){
+  let score=0;
+  if(price>e20)score+=25;
+  if(e20>e50)score+=30;
+  if(e50>e200)score+=35;
+  if(price>e200)score+=10;
+  return clamp(score,0,100);
+}
+
+function scoreMomentum(rsiValue,macd,bollinger){
+  let score=rsiValue>=40&&rsiValue<=65?30:rsiValue<40?25:10;
+  if(macd.bullish)score+=30;
+  if(macd.improving)score+=20;
+  score+=clamp((100-bollinger.position)*0.2,0,20);
+  return clamp(score,0,100);
+}
+
+function calculateCrv(current,target,support,atr){
+  const atrStop=Number.isFinite(atr)?current-1.5*atr:NaN;
+  const stop=Number.isFinite(support)&&Number.isFinite(atrStop)?Math.max(support,atrStop):Number.isFinite(support)?support:atrStop;
+  const reward=target-current,risk=current-stop;
+  return{crv:reward>0&&risk>0?reward/risk:NaN,target,stop,reward,risk};
+}
+
+function scoreRisk(atrPercent,crv){
+  const vol=!Number.isFinite(atrPercent)?50:atrPercent<=2?90:atrPercent<=4?70:atrPercent<=6?50:25;
+  const ratio=!Number.isFinite(crv)?40:crv>=3?100:crv>=2?80:crv>=1.5?60:crv>=1?35:10;
+  return vol*0.45+ratio*0.55;
+}
+
+function relativePerformance(assetRows,benchmarkRows,days=63){
+  const asset=assetRows.slice(-days),benchmark=benchmarkRows.slice(-days);
+  if(asset.length<2||benchmark.length<2)return{assetReturn:NaN,benchmarkReturn:NaN,relative:NaN};
+  const assetReturn=(asset.at(-1).close/asset[0].close-1)*100;
+  const benchmarkReturn=(benchmark.at(-1).close/benchmark[0].close-1)*100;
+  return{assetReturn,benchmarkReturn,relative:assetReturn-benchmarkReturn};
+}
+
+function fibonacciContext(current, low, high) {
+  const ratios = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+  const span = high - low;
+  if (!Number.isFinite(current) || !Number.isFinite(span) || span <= 0) {
+    return {
+      nearestRatio: 0.5,
+      nearestPrice: current,
+      nextHigherPrice: current,
+      nextLowerPrice: current,
+      upsideToNext: 0,
+      downsideToNext: 0,
+      buyScore: 50,
+      sellScore: 50
+    };
+  }
+
+  const levels = ratios.map(ratio => ({ ratio, price: low + span * ratio }));
+  const nearest = levels.reduce((best, level) =>
+    Math.abs(level.price - current) < Math.abs(best.price - current) ? level : best
+  );
+
+  const higher = levels.find(level => level.price > current) || levels.at(-1);
+  const lower = [...levels].reverse().find(level => level.price < current) || levels[0];
+
+  const upsideToNext = current > 0 ? Math.max((higher.price / current - 1) * 100, 0) : 0;
+  const downsideToNext = current > 0 ? Math.max((1 - lower.price / current) * 100, 0) : 0;
+
+  // Fibonacci ergänzt die bestehende Bewertung, ohne sie zu dominieren:
+  // Für Käufe zählen erreichbarer Raum bis zum nächsten Fib-Widerstand und
+  // Nähe zu typischen Rücklaufzonen. Für Verkäufe gilt die Spiegelung.
+  const position = positionInRange(current, low, high);
+  const retracementSupport =
+    position <= 23.6 ? 100 :
+    position <= 38.2 ? 90 :
+    position <= 50 ? 72 :
+    position <= 61.8 ? 52 :
+    position <= 78.6 ? 28 : 8;
+
+  const resistancePressure =
+    position >= 78.6 ? 100 :
+    position >= 61.8 ? 90 :
+    position >= 50 ? 72 :
+    position >= 38.2 ? 52 :
+    position >= 23.6 ? 28 : 8;
+
+  const roomUpScore = clamp((upsideToNext / 5) * 100, 0, 100);
+  const roomDownScore = clamp((downsideToNext / 5) * 100, 0, 100);
+
+  return {
+    nearestRatio: nearest.ratio,
+    nearestPrice: nearest.price,
+    nextHigherPrice: higher.price,
+    nextLowerPrice: lower.price,
+    upsideToNext,
+    downsideToNext,
+    buyScore: retracementSupport * 0.6 + roomUpScore * 0.4,
+    sellScore: resistancePressure * 0.6 + roomDownScore * 0.4
+  };
+}
+
+function recentCrossScore(rsi, average, direction, lookback) {
+  for (let i = rsi.length - 1; i >= Math.max(1, rsi.length - 1 - lookback); i--) {
+    const values = [rsi[i], average[i], rsi[i - 1], average[i - 1]];
+    if (!values.every(Number.isFinite)) continue;
+    if (direction === "up" && rsi[i - 1] <= average[i - 1] && rsi[i] > average[i]) return 100;
+    if (direction === "down" && rsi[i - 1] >= average[i - 1] && rsi[i] < average[i]) return 100;
+  }
+  const last = rsi.length - 1;
+  if (!Number.isFinite(rsi[last]) || !Number.isFinite(average[last])) return 0;
+  return direction === "up" ? (rsi[last] > average[last] ? 50 : 0) : (rsi[last] < average[last] ? 50 : 0);
+}
+
+
+
+async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = null, sectorDaily = null) {
+  const intradayData = marketData.intraday;
+  const dailyData = marketData.daily;
+  const resolvedSymbol = marketData.resolvedSymbol || symbol;
+  const resolvedExchange = marketData.resolvedExchange || "";
+  const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
+  const earningsInfo = marketData.earnings || { available: false, next: null };
+
+  const intradayCloses = intradayData.values.map(row => Number(row.close));
+  const rsiValues = calculateRsi(intradayCloses, settings.rsiLength);
+  const rsiAverage = simpleMovingAverage(rsiValues, settings.rsiMaLength);
+  const lastIndex = intradayCloses.length - 1;
+
+  const daily = dailyData.values.map(row => ({
+    close: Number(row.close),
+    low: Number(row.low),
+    high: Number(row.high),
+    volume: Number(row.volume)
+  }));
+  const latest = daily.at(-1);
+  const threeMonths = daily.slice(-63);
+  const oneYear = daily.slice(-252);
+  const dailyCloses = daily.map(row=>row.close);
+  const ema20 = exponentialMovingAverage(dailyCloses,20).at(-1);
+  const ema50 = exponentialMovingAverage(dailyCloses,50).at(-1);
+  const ema200 = exponentialMovingAverage(dailyCloses,200).at(-1);
+  const macd = macdContext(dailyCloses);
+  const bollinger = bollingerContext(dailyCloses);
+  const atr = atrContext(daily);
+
+  const threeMonthLow = Math.min(...threeMonths.map(row => row.low));
+  const threeMonthHigh = Math.max(...threeMonths.map(row => row.high));
+  const oneYearLow = Math.min(...oneYear.map(row => row.low));
+  const oneYearHigh = Math.max(...oneYear.map(row => row.high));
+
+  const threeMonthPosition = positionInRange(latest.close, threeMonthLow, threeMonthHigh);
+  const oneYearPosition = positionInRange(latest.close, oneYearLow, oneYearHigh);
+
+  const currentRsi = rsiValues[lastIndex];
+  const currentRsiAverage = rsiAverage[lastIndex];
+  const buyCross = recentCrossScore(rsiValues, rsiAverage, "up", settings.crossLookback);
+  const sellCross = recentCrossScore(rsiValues, rsiAverage, "down", settings.crossLookback);
+
+  const fibonacci = fibonacciContext(latest.close, threeMonthLow, threeMonthHigh);
+  const volume = volumeContext(daily);
+  const upsidePotential = Math.max((threeMonthHigh / latest.close - 1) * 100, 0);
+  const downsidePotential = Math.max((1 - threeMonthLow / latest.close) * 100, 0);
+  const crvData = calculateCrv(latest.close, threeMonthHigh, fibonacci.nextLowerPrice, atr.atr);
+  const trendScore = scoreTrend(latest.close, ema20, ema50, ema200);
+  const momentumScore = scoreMomentum(currentRsi, macd, bollinger);
+  const riskScore = scoreRisk(atr.percent, crvData.crv);
+  const chanceScore = clamp((Math.min(upsidePotential,30)/30)*50 + (Number.isFinite(crvData.crv)?Math.min(crvData.crv,3)/3*35:0) + (100-threeMonthPosition)*0.15,0,100);
+
+  const priceFibBuy = buyPriceScore(threeMonthPosition)*0.50 + buyPriceScore(oneYearPosition)*0.20 + fibonacci.buyScore*0.30;
+  const priceFibSell = sellPriceScore(threeMonthPosition)*0.50 + sellPriceScore(oneYearPosition)*0.20 + fibonacci.sellScore*0.30;
+
+  const buyScore = buyRsiScore(currentRsi)*0.35 + priceFibBuy*0.25 + trendScore*0.15 + momentumScore*0.15 + volume.score*0.10;
+  const sellScore = sellRsiScore(currentRsi)*0.35 + priceFibSell*0.25 + (100-trendScore)*0.15 + (100-momentumScore)*0.15 + volume.score*0.10;
+
+  const directionAgreement = buyScore >= sellScore
+    ? (currentRsi > currentRsiAverage && macd.bullish ? 100 : currentRsi > currentRsiAverage || macd.bullish ? 70 : 35)
+    : (currentRsi < currentRsiAverage && !macd.bullish ? 100 : currentRsi < currentRsiAverage || !macd.bullish ? 70 : 35);
+  const confidence = volume.score*0.35 + directionAgreement*0.35 + riskScore*0.30;
+
+  const buyPotentialScore = clamp((upsidePotential / 10) * 100, 0, 100);
+  const sellPotentialScore = clamp((downsidePotential / 10) * 100, 0, 100);
+  const buyRank = buyScore * 0.75 + buyPotentialScore * 0.25;
+  const sellRank = sellScore * 0.75 + sellPotentialScore * 0.25;
+
+  let kind = "neutral";
+  let label = "NEUTRAL";
+  if (buyScore >= settings.buyThreshold && upsidePotential >= settings.minimumPotential && buyScore >= sellScore) {
+    kind = "buy";
+    label = "KAUFEN";
+  } else if (buyScore >= 60 && upsidePotential >= Math.min(3, settings.minimumPotential) && buyScore >= sellScore) {
+    kind = "watch";
+    label = "KAUF PRÜFEN";
+  } else if (sellScore >= settings.sellThreshold && sellScore > buyScore) {
+    kind = "sell";
+    label = "VERKAUFEN";
+  } else if (sellScore >= 60 && sellScore > buyScore) {
+    kind = "watch";
+    label = "VERKAUF PRÜFEN";
+  }
+
+  const marketRelative = benchmarkDaily ? relativePerformance(daily, benchmarkDaily) : {benchmarkReturn:NaN,relative:NaN};
+  const sectorRelative = sectorDaily ? relativePerformance(daily, sectorDaily) : {benchmarkReturn:NaN,relative:NaN};
+
+  return {
+    symbol,
+    resolvedSymbol,
+    resolvedExchange,
+    tradingViewSymbol,
+    kind,
+    label,
+    price: latest.close,
+    rsi: currentRsi,
+    rsiAverage: currentRsiAverage,
+    threeMonthPosition,
+    oneYearPosition,
+    buyScore,
+    sellScore,
+    upsidePotential,
+    downsidePotential,
+    fibonacciRatio: fibonacci.nearestRatio,
+    fibonacciPrice: fibonacci.nearestPrice,
+    fibonacciTargetPrice: fibonacci.nextHigherPrice,
+    fibonacciTargetPotential: fibonacci.upsideToNext,
+    fibonacciSupportPrice: fibonacci.nextLowerPrice,
+    fibonacciSupportDownside: fibonacci.downsideToNext,
+    fibonacciBuyScore: fibonacci.buyScore,
+    fibonacciSellScore: fibonacci.sellScore,
+    volumeCurrent: volume.current,
+    volumeAverage20: volume.average20,
+    volumeRatio: volume.ratio,
+    volumeScore: volume.score,
+    volumeLabel: volume.label,
+    confidence,
+    ema20, ema50, ema200,
+    macdValue: macd.macd,
+    macdSignal: macd.signal,
+    macdHistogram: macd.histogram,
+    macdBullish: macd.bullish,
+    bollingerUpper: bollinger.upper,
+    bollingerMiddle: bollinger.middle,
+    bollingerLower: bollinger.lower,
+    bollingerPosition: bollinger.position,
+    atr: atr.atr,
+    atrPercent: atr.percent,
+    crv: crvData.crv,
+    crvTarget: crvData.target,
+    crvStop: crvData.stop,
+    trendScore,
+    momentumScore,
+    riskScore,
+    chanceScore,
+    marketReturn: marketRelative.benchmarkReturn,
+    relativeStrengthMarket: marketRelative.relative,
+    sectorReturn: sectorRelative.benchmarkReturn,
+    relativeStrengthSector: sectorRelative.relative,
+    earningsAvailable: Boolean(earningsInfo.available),
+    nextEarningsDate: earningsInfo.next?.date || null,
+    nextEarningsSession: earningsInfo.next?.session || "",
+    nextEpsEstimate: earningsInfo.next?.estimate ?? null,
+    earningsUnavailableReason: earningsInfo.available ? "" : (earningsInfo.reason || ""),
+    rank: Math.max(buyRank, sellRank),
+    error: null
+  };
+}
+
+module.exports = { analyzeMarketData };

@@ -207,6 +207,14 @@ exports.handler = async function handler(event) {
       updatedBy,
       updatedAt: new Date().toISOString(),
       interval: cleanText(body.interval, 20) || "1h",
+      marketBenchmark: cleanText(body.marketBenchmark, 30) || "SPY",
+      sectorBenchmark: cleanText(body.sectorBenchmark, 30),
+      rsiLength: Number(body.rsiLength) || 14,
+      rsiMaLength: Number(body.rsiMaLength) || 14,
+      buyThreshold: Number(body.buyThreshold) || 70,
+      sellThreshold: Number(body.sellThreshold) || 70,
+      minimumPotential: Number(body.minimumPotential) || 5,
+      crossLookback: Number(body.crossLookback) || 3,
       symbols,
       results: sanitizeResults(body.results)
     };

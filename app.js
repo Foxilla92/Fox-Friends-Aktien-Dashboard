@@ -5,10 +5,9 @@ const byId = (id) => document.getElementById(id);
 const SETTINGS_KEY = "foxilla-signal-radar-settings-v2";
 let results = [];
 let activeFilter = "all";
-let autoRefreshTimer = null;
 
 const settingIds = [
-  "displayName","symbols","interval","marketBenchmark","sectorBenchmark","autoRefresh","rsiLength","rsiMaLength",
+  "displayName","symbols","interval","marketBenchmark","sectorBenchmark","rsiLength","rsiMaLength",
   "buyThreshold","sellThreshold","minimumPotential","crossLookback"
 ];
 
@@ -21,7 +20,6 @@ function getSettings() {
     interval: byId("interval").value,
     marketBenchmark: byId("marketBenchmark").value.trim().toUpperCase(),
     sectorBenchmark: byId("sectorBenchmark").value.trim().toUpperCase(),
-    autoRefresh: Number(byId("autoRefresh").value || 0),
     rsiLength: Number(byId("rsiLength").value || 14),
     rsiMaLength: Number(byId("rsiMaLength").value || 14),
     buyThreshold: Number(byId("buyThreshold").value || 70),
@@ -44,14 +42,8 @@ function loadSettings() {
       if (saved[id] !== undefined) byId(id).value = saved[id];
     }
   } catch {}
-  setupAutoRefresh();
 }
 
-function setupAutoRefresh() {
-  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-  const minutes = Number(byId("autoRefresh").value || 0);
-  if (minutes > 0) autoRefreshTimer = setInterval(runAnalysis, minutes * 60 * 1000);
-}
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -309,10 +301,11 @@ function recentCrossScore(rsi, average, direction, lookback) {
   return direction === "up" ? (rsi[last] > average[last] ? 50 : 0) : (rsi[last] < average[last] ? 50 : 0);
 }
 
-async function fetchMarketData(symbol, interval) {
+async function fetchMarketData(symbol, interval, mode = "full") {
   const url = new URL("/.netlify/functions/market-data", window.location.origin);
   url.searchParams.set("symbol", symbol);
   url.searchParams.set("interval", interval);
+  url.searchParams.set("mode", mode);
 
   const response = await fetch(url);
   const contentType = response.headers.get("content-type") || "";
@@ -770,6 +763,87 @@ function render() {
   });
 }
 
+
+async function runControl(action = "status", owner = "") {
+  const response = await fetch("/.netlify/functions/run-control", {
+    method: action === "status" ? "GET" : "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: action === "status" ? undefined : JSON.stringify({ action, owner })
+  });
+  const data = await response.json();
+  if (!response.ok || data.status === "error") {
+    throw new Error(data.message || "Prüfstatus konnte nicht geladen werden.");
+  }
+  return data.run || null;
+}
+
+function setRunBadge(run) {
+  const badge = byId("runBadge");
+  if (!badge) return;
+  if (run?.running) {
+    badge.className = "run-badge running";
+    badge.textContent = `Läuft · ${run.owner || "Automatik"}`;
+  } else {
+    badge.className = "run-badge idle";
+    badge.textContent = "Bereit";
+  }
+}
+
+function berlinParts(date) {
+  const parts = new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
+    weekday: "short", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false
+  }).formatToParts(date);
+  return Object.fromEntries(parts.map(part => [part.type, part.value]));
+}
+
+function nextAutomaticRun(now = new Date()) {
+  // In 30-Minuten-Schritten suchen; dadurch wird Sommer-/Winterzeit automatisch berücksichtigt.
+  const start = new Date(now.getTime() + 60_000);
+  start.setUTCSeconds(0, 0);
+  for (let i = 0; i < 24 * 2 * 10; i++) {
+    const candidate = new Date(start.getTime() + i * 30 * 60_000);
+    const p = berlinParts(candidate);
+    const weekend = p.weekday === "Sa" || p.weekday === "So";
+    if (!weekend && ((p.hour === "09" && p.minute === "15") || (p.hour === "15" && p.minute === "45"))) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+function updateScheduleCountdown() {
+  const target = nextAutomaticRun();
+  const element = byId("scheduleCountdown");
+  if (!target || !element) return;
+  const milliseconds = Math.max(target - new Date(), 0);
+  const totalMinutes = Math.ceil(milliseconds / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const targetText = target.toLocaleString("de-DE", {
+    timeZone: "Europe/Berlin",
+    weekday: "short", hour: "2-digit", minute: "2-digit"
+  });
+  element.textContent = hours > 0
+    ? `Nächster Lauf in ${hours} Std. ${minutes} Min. · ${targetText}`
+    : `Nächster Lauf in ${minutes} Min. · ${targetText}`;
+}
+
+async function pollSharedState() {
+  updateScheduleCountdown();
+  try {
+    const run = await runControl("status");
+    setRunBadge(run);
+    if (!run?.running) {
+      // Nur den gespeicherten gemeinsamen Stand laden – keine Twelve-Data-Credits.
+      await loadSharedDashboard();
+    }
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
 function setSharedStatus(text) {
   byId("sharedStatus").textContent = text;
 }
@@ -807,6 +881,14 @@ async function saveSharedDashboard(settings) {
       updatedBy: settings.displayName,
       symbols: settings.symbols,
       interval: settings.interval,
+      marketBenchmark: settings.marketBenchmark,
+      sectorBenchmark: settings.sectorBenchmark,
+      rsiLength: settings.rsiLength,
+      rsiMaLength: settings.rsiMaLength,
+      buyThreshold: settings.buyThreshold,
+      sellThreshold: settings.sellThreshold,
+      minimumPotential: settings.minimumPotential,
+      crossLookback: settings.crossLookback,
       results
     })
   });
@@ -839,6 +921,11 @@ async function loadSharedDashboard() {
 
     if (dashboard.interval && [...byId("interval").options].some(option => option.value === dashboard.interval)) {
       byId("interval").value = dashboard.interval;
+    }
+
+    const sharedSettings = ["marketBenchmark","sectorBenchmark","rsiLength","rsiMaLength","buyThreshold","sellThreshold","minimumPotential","crossLookback"];
+    for (const key of sharedSettings) {
+      if (dashboard[key] !== undefined && byId(key)) byId(key).value = dashboard[key];
     }
 
     if (Array.isArray(dashboard.results)) {
@@ -908,6 +995,24 @@ async function runAnalysis() {
   }
 
   byId("refreshButton").disabled = true;
+
+  let lockAcquired = false;
+  try {
+    const run = await runControl("acquire", settings.displayName);
+    lockAcquired = Boolean(run?.running && run?.owner === settings.displayName);
+    if (!lockAcquired) {
+      setStatus(`Eine andere Prüfung läuft bereits${run?.owner ? ` – gestartet von ${run.owner}` : ""}.`);
+      setRunBadge(run);
+      byId("refreshButton").disabled = false;
+      return;
+    }
+    setRunBadge(run);
+  } catch (error) {
+    setStatus(`Prüfung konnte nicht gestartet werden: ${error.message}`);
+    byId("refreshButton").disabled = false;
+    return;
+  }
+
   results = [];
   render();
 
@@ -916,12 +1021,12 @@ async function runAnalysis() {
   try {
     if (settings.marketBenchmark) {
       setStatus(`Lade Marktvergleich ${settings.marketBenchmark} …`);
-      const marketData = await fetchMarketData(settings.marketBenchmark, settings.interval);
+      const marketData = await fetchMarketData(settings.marketBenchmark, settings.interval, "benchmark");
       benchmarkDaily = marketData.daily.values.map(row=>({close:Number(row.close),low:Number(row.low),high:Number(row.high),volume:Number(row.volume)}));
     }
     if (settings.sectorBenchmark) {
       setStatus(`Lade Sektorvergleich ${settings.sectorBenchmark} …`);
-      const sectorData = await fetchMarketData(settings.sectorBenchmark, settings.interval);
+      const sectorData = await fetchMarketData(settings.sectorBenchmark, settings.interval, "benchmark");
       sectorDaily = sectorData.daily.values.map(row=>({close:Number(row.close),low:Number(row.low),high:Number(row.high),volume:Number(row.volume)}));
     }
   } catch (error) {
@@ -976,6 +1081,14 @@ async function runAnalysis() {
   } catch (error) {
     setStatus(`Berechnet, aber nicht gemeinsam gespeichert: ${error.message}`);
   } finally {
+    if (lockAcquired) {
+      try {
+        const run = await runControl("release", settings.displayName);
+        setRunBadge(run);
+      } catch (error) {
+        console.warn("Sperre konnte nicht gelöst werden:", error);
+      }
+    }
     byId("refreshButton").disabled = false;
   }
 }
@@ -1029,13 +1142,11 @@ byId("settingsButton").addEventListener("click", () => byId("settingsDialog").sh
 byId("refreshButton").addEventListener("click", runAnalysis);
 byId("saveAndRunButton").addEventListener("click", () => {
   saveSettings();
-  setupAutoRefresh();
   byId("settingsDialog").close();
   runAnalysis();
 });
 byId("saveOnlyButton").addEventListener("click", () => {
   saveSettings();
-  setupAutoRefresh();
   byId("settingsDialog").close();
   setStatus("Einstellungen gespeichert.");
 });
@@ -1044,6 +1155,10 @@ byId("closeChartButton").addEventListener("click", () => byId("chartDialog").clo
 loadSettings();
 render();
 loadSharedDashboard();
+updateScheduleCountdown();
+runControl("status").then(setRunBadge).catch(() => {});
+setInterval(updateScheduleCountdown, 30 * 1000);
+setInterval(pollSharedState, 60 * 1000);
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
