@@ -1,10 +1,10 @@
 {
   "version": 1,
   "updatedBy": "Matthias",
-  "updatedAt": "2026-08-04T22:43:00.792Z",
+  "updatedAt": "2026-08-04T22:56:51.587Z",
   "apiUsageDate": "2026-08-05",
-  "apiCreditsToday": 23,
-  "lastRunCredits": 4,
+  "apiCreditsToday": 25,
+  "lastRunCredits": 2,
   "interval": "1h",
   "marketBenchmark": "SPY",
   "sectorBenchmark": "",
