@@ -96,3 +96,17 @@ Lösung:
 Empfehlung:
 US-Aktien einfach als AAPL, MSFT, INTC, NVDA usw. eintragen.
 Wenn eine eindeutige Börse erforderlich ist, das Präfix explizit angeben.
+
+
+VERSION 3 – GEMEINSAMES DASHBOARD
+- Beim Öffnen wird der letzte gemeinsame Stand aus Netlify Blobs geladen.
+- Das Öffnen und Aktualisieren der Browserseite verbraucht keine Twelve-Data-Credits.
+- Ergebnisse bleiben nach Refresh sowie auf anderen Geräten erhalten.
+- Wer „Jetzt prüfen“ drückt, erzeugt und speichert den neuen gemeinsamen Stand.
+- Angezeigt werden Erstellername und Zeitpunkt.
+- Alle Nutzer mit dem öffentlichen Link sehen dieselbe Watchlist und dieselben Ergebnisse.
+- Twelve-Data-Credits entstehen nur beim aktiven Klick auf „Jetzt prüfen“.
+
+Neue Dateien:
+- netlify/functions/shared-dashboard.js
+- package.json

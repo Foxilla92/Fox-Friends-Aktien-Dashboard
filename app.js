@@ -8,12 +8,13 @@ let activeFilter = "all";
 let autoRefreshTimer = null;
 
 const settingIds = [
-  "symbols","interval","autoRefresh","rsiLength","rsiMaLength",
+  "displayName","symbols","interval","autoRefresh","rsiLength","rsiMaLength",
   "buyThreshold","sellThreshold","minimumPotential","crossLookback"
 ];
 
 function getSettings() {
   return {
+    displayName: byId("displayName").value.trim(),
     symbols: [...new Set(
       byId("symbols").value.toUpperCase().split(/[\s,;]+/).map(v => v.trim()).filter(Boolean)
     )],
@@ -420,6 +421,89 @@ function render() {
   });
 }
 
+function setSharedStatus(text) {
+  byId("sharedStatus").textContent = text;
+}
+
+function sharedDateText(value) {
+  if (!value) return "noch nie";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "unbekannt" : date.toLocaleString("de-DE");
+}
+
+async function fetchSharedDashboard() {
+  const response = await fetch("/.netlify/functions/shared-dashboard", {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+    cache: "no-store"
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(`Gemeinsamer Speicher lieferte keine JSON-Antwort (HTTP ${response.status}).`);
+  }
+
+  const data = await response.json();
+  if (!response.ok || data.status === "error") {
+    throw new Error(data.message || "Gemeinsamer Stand konnte nicht geladen werden.");
+  }
+  return data.dashboard || null;
+}
+
+async function saveSharedDashboard(settings) {
+  const response = await fetch("/.netlify/functions/shared-dashboard", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({
+      updatedBy: settings.displayName,
+      symbols: settings.symbols,
+      interval: settings.interval,
+      results
+    })
+  });
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(`Gemeinsamer Speicher lieferte keine JSON-Antwort (HTTP ${response.status}).`);
+  }
+
+  const data = await response.json();
+  if (!response.ok || data.status === "error") {
+    throw new Error(data.message || "Ergebnisse konnten nicht gemeinsam gespeichert werden.");
+  }
+  return data.dashboard;
+}
+
+async function loadSharedDashboard() {
+  try {
+    setSharedStatus("Gemeinsamer Stand wird geladen …");
+    const dashboard = await fetchSharedDashboard();
+
+    if (!dashboard) {
+      setSharedStatus("Noch kein gemeinsamer Prüfstand vorhanden.");
+      return;
+    }
+
+    if (Array.isArray(dashboard.symbols) && dashboard.symbols.length) {
+      byId("symbols").value = dashboard.symbols.join("\n");
+    }
+
+    if (dashboard.interval && [...byId("interval").options].some(option => option.value === dashboard.interval)) {
+      byId("interval").value = dashboard.interval;
+    }
+
+    if (Array.isArray(dashboard.results)) {
+      results = dashboard.results;
+      render();
+    }
+
+    setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(dashboard.updatedAt)} · erstellt von ${dashboard.updatedBy || "Unbekannt"}`);
+    setStatus("Gespeicherte Ergebnisse geladen – keine Twelve-Data-Credits verbraucht.");
+  } catch (error) {
+    setSharedStatus(`Gemeinsamer Stand nicht verfügbar: ${error.message}`);
+  }
+}
+
 function setStatus(text) {
   byId("status").textContent = text;
 }
@@ -463,6 +547,11 @@ async function analyzeWithRetry(symbol, settings) {
 
 async function runAnalysis() {
   const settings = getSettings();
+  if (!settings.displayName) {
+    setStatus("Bitte unter ⚙️ zuerst deinen Namen eintragen.");
+    byId("settingsDialog").showModal();
+    return;
+  }
   if (!settings.symbols.length) {
     setStatus("Bitte mindestens eine Aktie eintragen.");
     byId("settingsDialog").showModal();
@@ -513,8 +602,16 @@ async function runAnalysis() {
     }
   }
 
-  setStatus(`Aktualisiert: ${new Date().toLocaleString("de-DE")}`);
-  byId("refreshButton").disabled = false;
+  try {
+    setStatus("Prüfung abgeschlossen. Gemeinsamer Stand wird gespeichert …");
+    const shared = await saveSharedDashboard(settings);
+    setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(shared.updatedAt)} · erstellt von ${shared.updatedBy || settings.displayName}`);
+    setStatus(`Aktualisiert und gemeinsam gespeichert: ${new Date().toLocaleString("de-DE")}`);
+  } catch (error) {
+    setStatus(`Berechnet, aber nicht gemeinsam gespeichert: ${error.message}`);
+  } finally {
+    byId("refreshButton").disabled = false;
+  }
 }
 
 function preferredTradingViewSymbol(symbol, resolvedTradingViewSymbol) {
@@ -580,6 +677,7 @@ byId("closeChartButton").addEventListener("click", () => byId("chartDialog").clo
 
 loadSettings();
 render();
+loadSharedDashboard();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});

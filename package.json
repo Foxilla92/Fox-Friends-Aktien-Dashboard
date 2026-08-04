@@ -1,0 +1,8 @@
+{
+  "name": "fox-friends-aktien-dashboard",
+  "version": "3.0.0",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "10.7.9"
+  }
+}

@@ -43,6 +43,7 @@
         <button id="refreshButton" class="primary-button">Jetzt prüfen</button>
       </div>
 
+      <div id="sharedStatus" class="shared-status">Gemeinsamer Stand wird geladen …</div>
       <div id="status" class="status-line">Bitte zuerst unter ⚙️ den API-Key und deine Aktien eintragen.</div>
     </section>
 
@@ -68,6 +69,12 @@
 
       <div class="form-grid">
 <label class="full">
+          <span>Dein Name</span>
+          <input id="displayName" type="text" maxlength="40" placeholder="z. B. Foxilla oder Max">
+          <small>Dieser Name wird beim gemeinsamen Ergebnis als Ersteller angezeigt.</small>
+        </label>
+
+        <label class="full">
           <span>Aktien / Symbole</span>
           <textarea id="symbols" placeholder="AAPL&#10;INTC&#10;MSFT&#10;NVDA&#10;AMD">AAPL
 INTC

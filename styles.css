@@ -146,3 +146,14 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
 }
 
 .secondary-metrics{margin-top:8px}.secondary-metrics .metric strong{font-size:13px}
+
+.shared-status {
+  margin-top: 13px;
+  padding: 10px 12px;
+  border: 1px solid #30415f;
+  border-radius: 12px;
+  background: #0d1728;
+  color: #cbd7ef;
+  font-size: 13px;
+  font-weight: 750;
+}
