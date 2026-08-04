@@ -440,6 +440,8 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     resolvedExchange,
     tradingViewSymbol,
     companyName,
+    currency,
+    eurRate,
     kind,
     label,
     price: latest.close,
@@ -691,7 +693,10 @@ function primaryPriceHtml(item, amount) {
   }
 
   const currency = detectedCurrency(item);
-  return `<strong>${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}</strong>`;
+  return `
+    <strong>${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}</strong>
+    ${currency && currency !== "EUR" ? `<small class="fx-unavailable">Euro-Umrechnung derzeit nicht verfügbar</small>` : ""}
+  `;
 }
 
 function profitLossExample(item, investmentAmount) {

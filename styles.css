@@ -936,3 +936,11 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
   font-size: 9px;
   font-weight: 600;
 }
+
+.fx-unavailable {
+  display: block;
+  margin-top: 2px;
+  color: #ffb47d;
+  font-size: 9px;
+  font-weight: 700;
+}

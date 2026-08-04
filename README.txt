@@ -415,3 +415,33 @@ VERSION 7.4 – EURO-UMRECHNUNG ENDGÜLTIG KORRIGIERT
 WICHTIG:
 Nach dem Deploy jede betroffene Aktie einmal neu prüfen. Erst diese neue Prüfung
 speichert den EUR-Wechselkurs im gemeinsamen Dashboard-Ergebnis.
+
+
+VERSION 7.5 – EURO-UMRECHNUNG ENDGÜLTIG DURCHGÄNGIG
+
+FEHLERURSACHE BEHOBEN
+- Das Backend lieferte currency und eurRate korrekt.
+- Diese beiden Felder wurden bei der technischen Analyse jedoch nicht in das
+  fertige Aktienergebnis übernommen.
+- Dadurch konnten Oberfläche und gemeinsamer GitHub-Speicher keinen Euro-Wert
+  anzeigen. Genau diese Datenweitergabe ist jetzt repariert.
+- Die automatische Hintergrundprüfung verwendet dieselbe korrigierte Logik.
+
+WECHSELKURS
+- Primär wird der offizielle Frankfurter-v1-Endpunkt verwendet:
+  api.frankfurter.dev/v1/latest
+- Kein API-Key und keine Twelve-Data-Credits erforderlich.
+- Falls Frankfurter ausfällt, nutzt das Dashboard Twelve Data als Tages-Fallback.
+- Der Kurs wird gemeinsam gecacht.
+- Alte CDN-Antworten werden bei Kursabfragen nicht mehr wiederverwendet.
+
+ANZEIGE
+- Euro groß, Originalwährung klein darunter.
+- Gilt im Kartenkopf sowie für aktuellen Kurs, Ziel und Stopp.
+- Sollte ausnahmsweise kein Kursdienst erreichbar sein, wird dies ausdrücklich
+  angezeigt statt still nur USD auszugeben.
+
+NACH DEM DEPLOY
+1. Strg + F5.
+2. Apple/Intel einmal neu prüfen.
+3. Danach muss im gemeinsamen Stand eurRate gespeichert sein.

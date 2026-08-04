@@ -109,10 +109,10 @@ async function writeAuxCache(path, cache, symbol) {
 }
 
 
-async function getCurrencyToEurRate(currency) {
+async function getCurrencyToEurRate(currency, apiKey) {
   const source = String(currency || "").trim().toUpperCase();
-  if (!source) return { rate: NaN, creditsUsed: 0 };
-  if (source === "EUR") return { rate: 1, creditsUsed: 0 };
+  if (!source) return { rate: NaN, creditsUsed: 0, source: "none" };
+  if (source === "EUR") return { rate: 1, creditsUsed: 0, source: "identity" };
 
   const today = berlinDate();
   const path = `shared/cache/FX_${safeKey(source)}_EUR.json`;
@@ -123,54 +123,96 @@ async function getCurrencyToEurRate(currency) {
     Number.isFinite(Number(stored.data?.rate)) &&
     Number(stored.data.rate) > 0
   ) {
-    return { rate: Number(stored.data.rate), creditsUsed: 0 };
+    return {
+      rate: Number(stored.data.rate),
+      creditsUsed: 0,
+      source: stored.data.source || "cache"
+    };
   }
 
+  // 1. Primär: offizieller, kostenfreier Frankfurter-v1-Endpunkt.
   try {
-    // Frankfurter liefert Referenzkurse auf Basis der EZB-Daten.
-    // Dafür wird kein zusätzlicher API-Key und kein Twelve-Data-Credit benötigt.
-    const url = new URL("https://api.frankfurter.app/latest");
-    url.searchParams.set("from", source);
-    url.searchParams.set("to", "EUR");
+    const url = new URL("https://api.frankfurter.dev/v1/latest");
+    url.searchParams.set("base", source);
+    url.searchParams.set("symbols", "EUR");
 
     const response = await fetch(url, {
       headers: { "Accept": "application/json" }
     });
+    const text = await response.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch {}
 
-    const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-      throw new Error(`Wechselkursdienst HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
     const rate = Number(data?.rates?.EUR);
-
-    if (!Number.isFinite(rate) || rate <= 0) {
-      throw new Error(`Kein EUR-Wechselkurs für ${source}.`);
+    if (!response.ok || !Number.isFinite(rate) || rate <= 0) {
+      throw new Error(`Frankfurter HTTP ${response.status}`);
     }
 
     await writeAuxCache(path, {
       date: today,
-      source,
-      target: "EUR",
-      rate
+      sourceCurrency: source,
+      targetCurrency: "EUR",
+      rate,
+      source: "frankfurter"
     }, `${source}/EUR`);
 
-    return { rate, creditsUsed: 0 };
-  } catch (error) {
-    // Falls der Tagesabruf vorübergehend scheitert, darf ein älterer
-    // gespeicherter Kurs weiterverwendet werden.
-    const fallbackRate = Number(stored.data?.rate);
-    if (Number.isFinite(fallbackRate) && fallbackRate > 0) {
-      console.warn(`Verwende älteren ${source}/EUR-Kurs:`, error.message);
-      return { rate: fallbackRate, creditsUsed: 0 };
-    }
-
-    console.warn(`${source}/EUR-Umrechnung nicht verfügbar:`, error.message);
-    return { rate: NaN, creditsUsed: 0 };
+    return { rate, creditsUsed: 0, source: "frankfurter" };
+  } catch (frankfurterError) {
+    console.warn(`Frankfurter ${source}/EUR fehlgeschlagen:`, frankfurterError.message);
   }
-}
 
+  // 2. Fallback: Twelve Data. Kostet höchstens einmal täglich einen Credit.
+  if (apiKey) {
+    try {
+      const direct = await fetchTwelveSeries(`${source}/EUR`, "1day", 5, apiKey, "");
+      const rate = Number(direct.values?.at(-1)?.close);
+
+      if (Number.isFinite(rate) && rate > 0) {
+        await writeAuxCache(path, {
+          date: today,
+          sourceCurrency: source,
+          targetCurrency: "EUR",
+          rate,
+          source: "twelve-data"
+        }, `${source}/EUR`);
+
+        return { rate, creditsUsed: 1, source: "twelve-data" };
+      }
+    } catch (directError) {
+      try {
+        const inverse = await fetchTwelveSeries(`EUR/${source}`, "1day", 5, apiKey, "");
+        const inverseRate = Number(inverse.values?.at(-1)?.close);
+        const rate = inverseRate > 0 ? 1 / inverseRate : NaN;
+
+        if (Number.isFinite(rate) && rate > 0) {
+          await writeAuxCache(path, {
+            date: today,
+            sourceCurrency: source,
+            targetCurrency: "EUR",
+            rate,
+            source: "twelve-data-inverse"
+          }, `${source}/EUR`);
+
+          return { rate, creditsUsed: 1, source: "twelve-data-inverse" };
+        }
+      } catch (inverseError) {
+        console.warn(`Twelve Data ${source}/EUR fehlgeschlagen:`, inverseError.message);
+      }
+    }
+  }
+
+  // 3. Letzter vorhandener Cache, auch wenn er älter ist.
+  const fallbackRate = Number(stored.data?.rate);
+  if (Number.isFinite(fallbackRate) && fallbackRate > 0) {
+    return {
+      rate: fallbackRate,
+      creditsUsed: 0,
+      source: stored.data?.source || "stale-cache"
+    };
+  }
+
+  return { rate: NaN, creditsUsed: 0, source: "unavailable" };
+}
 
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return response(200, { ok:true });
@@ -233,7 +275,7 @@ exports.handler = async function handler(event) {
     const currency = String(meta.currency || inferredCurrency).toUpperCase();
     let eurRate = currency === "EUR" ? 1 : NaN;
     if (currency && currency !== "EUR") {
-      const fx = await getCurrencyToEurRate(currency);
+      const fx = await getCurrencyToEurRate(currency, apiKey);
       eurRate = fx.rate;
       creditsUsed += fx.creditsUsed;
     }
@@ -252,6 +294,7 @@ exports.handler = async function handler(event) {
       companyName,
       currency,
       eurRate,
+      fxAvailable: Number.isFinite(eurRate) && eurRate > 0,
       intraday,
       daily,
       cacheInfo:{
@@ -260,7 +303,7 @@ exports.handler = async function handler(event) {
         creditsUsed
       },
       fetchedAt:new Date().toISOString()
-    }, true);
+    }, false);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unbekannter Datenfehler.";
     const rateLimited = /credit|current minute|rate limit|too many/i.test(message);

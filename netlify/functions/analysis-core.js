@@ -264,6 +264,14 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
   const resolvedSymbol = marketData.resolvedSymbol || symbol;
   const resolvedExchange = marketData.resolvedExchange || "";
   const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
+  const companyName = marketData.companyName || marketData.intraday?.meta?.name || marketData.daily?.meta?.name || resolvedSymbol;
+  const exchangeForCurrency = String(marketData.resolvedExchange || marketData.intraday?.meta?.exchange || marketData.daily?.meta?.exchange || "").toUpperCase();
+  const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(exchangeForCurrency) ? "USD"
+    : ["XETRA","XETR","GETTEX","FWB","TRADEGATE"].includes(exchangeForCurrency) ? "EUR"
+    : exchangeForCurrency.includes("ASX") ? "AUD"
+    : "";
+  const currency = String(marketData.currency || marketData.intraday?.meta?.currency || marketData.daily?.meta?.currency || inferredCurrency).toUpperCase();
+  const eurRate = Number(marketData.eurRate);
   const earningsInfo = marketData.earnings || { available: false, next: null };
 
   const intradayCloses = intradayData.values.map(row => Number(row.close));
@@ -351,6 +359,9 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
     resolvedSymbol,
     resolvedExchange,
     tradingViewSymbol,
+    companyName,
+    currency,
+    eurRate,
     kind,
     label,
     price: latest.close,
