@@ -232,6 +232,9 @@ async function analyzeSymbol(symbol, settings) {
   const marketData = await fetchMarketData(symbol, settings.interval);
   const intradayData = marketData.intraday;
   const dailyData = marketData.daily;
+  const resolvedSymbol = marketData.resolvedSymbol || symbol;
+  const resolvedExchange = marketData.resolvedExchange || "";
+  const tradingViewSymbol = marketData.tradingViewSymbol || symbol;
 
   const intradayCloses = intradayData.values.map(row => Number(row.close));
   const rsiValues = calculateRsi(intradayCloses, settings.rsiLength);
@@ -312,6 +315,9 @@ async function analyzeSymbol(symbol, settings) {
 
   return {
     symbol,
+    resolvedSymbol,
+    resolvedExchange,
+    tradingViewSymbol,
     kind,
     label,
     price: latest.close,
@@ -360,7 +366,7 @@ function cardHtml(item) {
       <div class="signal-card-header">
         <div>
           <div class="symbol">${item.symbol}</div>
-          <div class="price">Kurs ${formatNumber(item.price, 2)}</div>
+          <div class="price">Kurs ${formatNumber(item.price, 2)}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
         </div>
         <span class="signal-pill ${item.kind}">${item.label}</span>
       </div>
@@ -392,7 +398,7 @@ function cardHtml(item) {
       <div class="explanation">${explanation}</div>
 
       <div class="card-actions">
-        <button class="chart-button" data-chart="${item.symbol}">TradingView-Chart öffnen</button>
+        <button class="chart-button" data-chart="${item.symbol}" data-tv-symbol="${item.tradingViewSymbol || ""}">TradingView-Chart öffnen</button>
       </div>
     </article>`;
 }
@@ -410,7 +416,7 @@ function render() {
   byId("sellCount").textContent = results.filter(item => item.kind === "sell").length;
 
   document.querySelectorAll("[data-chart]").forEach(button => {
-    button.addEventListener("click", () => openTradingView(button.dataset.chart));
+    button.addEventListener("click", () => openTradingView(button.dataset.chart, button.dataset.tvSymbol || ""));
   });
 }
 
@@ -509,14 +515,14 @@ async function runAnalysis() {
   byId("refreshButton").disabled = false;
 }
 
-function preferredTradingViewSymbol(symbol) {
-  if (symbol.includes(":")) return symbol;
-  return `LS:${symbol}`;
+function preferredTradingViewSymbol(symbol, resolvedTradingViewSymbol) {
+  if (resolvedTradingViewSymbol) return resolvedTradingViewSymbol;
+  return symbol;
 }
 
-function openTradingView(symbol) {
-  const tradingViewSymbol = preferredTradingViewSymbol(symbol);
-  byId("chartTitle").textContent = `${symbol} · LS Exchange`;
+function openTradingView(symbol, resolvedTradingViewSymbol = "") {
+  const tradingViewSymbol = preferredTradingViewSymbol(symbol, resolvedTradingViewSymbol);
+  byId("chartTitle").textContent = tradingViewSymbol;
   const container = byId("tradingViewContainer");
   container.innerHTML = "";
 

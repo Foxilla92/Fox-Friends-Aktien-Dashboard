@@ -18,13 +18,39 @@ function response(statusCode, body, cache = false) {
   };
 }
 
-async function fetchTwelveSeries(symbol, interval, outputsize, apiKey) {
+const EXCHANGE_PRIORITY = [
+  { exchange: "NASDAQ", tv: "NASDAQ" },
+  { exchange: "NYSE", tv: "NYSE" },
+  { exchange: "XETRA", tv: "XETR" },
+  { exchange: "LSE", tv: "LSE" }
+];
+
+function parseInput(input) {
+  if (!input.includes(":")) return { symbol: input, explicitExchange: "" };
+  const [prefix, symbol] = input.split(":", 2);
+  const aliases = {
+    NASDAQ: "NASDAQ",
+    NYSE: "NYSE",
+    XETR: "XETRA",
+    XETRA: "XETRA",
+    LSE: "LSE"
+  };
+  return { symbol, explicitExchange: aliases[prefix] || prefix };
+}
+
+function tvPrefix(exchange) {
+  const found = EXCHANGE_PRIORITY.find(item => item.exchange === exchange);
+  return found ? found.tv : exchange;
+}
+
+async function fetchTwelveSeries(symbol, interval, outputsize, apiKey, exchange = "") {
   const url = new URL("https://api.twelvedata.com/time_series");
   url.searchParams.set("symbol", symbol);
   url.searchParams.set("interval", interval);
   url.searchParams.set("outputsize", String(outputsize));
   url.searchParams.set("order", "ASC");
   url.searchParams.set("apikey", apiKey);
+  if (exchange) url.searchParams.set("exchange", exchange);
 
   const upstream = await fetch(url);
   const text = await upstream.text();
@@ -37,9 +63,59 @@ async function fetchTwelveSeries(symbol, interval, outputsize, apiKey) {
   }
 
   if (!upstream.ok || data.status === "error" || !Array.isArray(data.values)) {
-    throw new Error(data.message || `Keine Kursdaten für ${symbol}.`);
+    const error = new Error(data.message || `Keine Kursdaten für ${symbol}.`);
+    error.status = upstream.status;
+    throw error;
   }
   return data;
+}
+
+function shouldTryNextExchange(message) {
+  return /not found|no data|symbol|available starting with|upgrade|plan|exchange/i.test(String(message || ""));
+}
+
+async function resolveAndFetch(rawInput, interval, apiKey) {
+  const parsed = parseInput(rawInput);
+  const attempts = parsed.explicitExchange
+    ? [{ exchange: parsed.explicitExchange, tv: tvPrefix(parsed.explicitExchange) }]
+    : [...EXCHANGE_PRIORITY, { exchange: "", tv: "" }];
+
+  let lastError = null;
+
+  for (const attempt of attempts) {
+    try {
+      const [intraday, daily] = await Promise.all([
+        fetchTwelveSeries(parsed.symbol, interval, 450, apiKey, attempt.exchange),
+        fetchTwelveSeries(parsed.symbol, "1day", 300, apiKey, attempt.exchange)
+      ]);
+
+      const metaExchange =
+        intraday?.meta?.exchange ||
+        daily?.meta?.exchange ||
+        attempt.exchange ||
+        "";
+
+      const resolvedSymbol =
+        intraday?.meta?.symbol ||
+        daily?.meta?.symbol ||
+        parsed.symbol;
+
+      return {
+        intraday,
+        daily,
+        resolvedSymbol,
+        resolvedExchange: metaExchange,
+        tradingViewSymbol: metaExchange
+          ? `${tvPrefix(metaExchange)}:${resolvedSymbol}`
+          : resolvedSymbol
+      };
+    } catch (error) {
+      lastError = error;
+      if (parsed.explicitExchange || !shouldTryNextExchange(error.message)) throw error;
+    }
+  }
+
+  throw lastError || new Error(`Kein passender Handelsplatz für ${rawInput} gefunden.`);
 }
 
 exports.handler = async function handler(event) {
@@ -57,19 +133,19 @@ exports.handler = async function handler(event) {
   }
 
   const params = event.queryStringParameters || {};
-  const symbol = String(params.symbol || "").trim().toUpperCase();
+  const rawSymbol = String(params.symbol || "").trim().toUpperCase();
   const interval = String(params.interval || "1h");
 
-  // Opening the function URL without parameters acts as a health check.
-  if (!symbol) {
+  if (!rawSymbol) {
     return response(200, {
       status: "ok",
       message: "Fox & Friends Backend läuft.",
-      apiKeyConfigured: true
+      apiKeyConfigured: true,
+      exchangePriority: ["NASDAQ", "NYSE", "XETRA", "LSE", "AUTO"]
     });
   }
 
-  if (!SYMBOL_PATTERN.test(symbol)) {
+  if (!SYMBOL_PATTERN.test(rawSymbol)) {
     return response(400, { status: "error", message: "Ungültiges Aktiensymbol." });
   }
   if (!ALLOWED_INTERVALS.has(interval)) {
@@ -77,17 +153,11 @@ exports.handler = async function handler(event) {
   }
 
   try {
-    const [intraday, daily] = await Promise.all([
-      fetchTwelveSeries(symbol, interval, 450, apiKey),
-      fetchTwelveSeries(symbol, "1day", 300, apiKey)
-    ]);
-
+    const result = await resolveAndFetch(rawSymbol, interval, apiKey);
     return response(200, {
       status: "ok",
-      symbol,
-      interval,
-      intraday,
-      daily,
+      requestedSymbol: rawSymbol,
+      ...result,
       fetchedAt: new Date().toISOString()
     }, true);
   } catch (error) {

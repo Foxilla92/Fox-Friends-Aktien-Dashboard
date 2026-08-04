@@ -59,3 +59,20 @@ oder Symbole können im kostenlosen Tarif nicht verfügbar sein.
 US-Aktien sollten im Dashboard grundsätzlich über ihr Hauptsymbol analysiert werden:
 AAPL, INTC, NVDA, MSFT, AMD usw. Handeln kannst du dieselbe Aktie anschließend
 weiterhin über Trade Republic in Euro.
+
+
+VERSION 2.1 – AUTOMATISCHE BÖRSENAUSWAHL
+
+- TradingView erhält kein pauschales LS:-Präfix mehr.
+- Das Backend versucht Börsen in dieser Reihenfolge:
+  1. NASDAQ
+  2. NYSE
+  3. XETRA
+  4. LSE
+  5. automatische Twelve-Data-Auswahl
+- Der erfolgreich verwendete Handelsplatz wird an das Dashboard zurückgegeben.
+- Der TradingView-Chart öffnet das aufgelöste Symbol, z. B. NASDAQ:MSFT.
+- Eine explizite Eingabe bleibt möglich, z. B. XETR:RHM oder NASDAQ:MSFT.
+
+Hinweis: Jeder fehlgeschlagene Börsenversuch kann API-Credits verbrauchen. Das Ergebnis
+wird über Netlify zwischengespeichert, wodurch wiederholte identische Abrufe reduziert werden.
