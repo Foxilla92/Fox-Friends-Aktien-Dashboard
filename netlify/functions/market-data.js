@@ -109,38 +109,68 @@ async function writeAuxCache(path, cache, symbol) {
 }
 
 
-async function getEurRate(apiKey) {
+async function getCurrencyToEurRate(currency) {
+  const source = String(currency || "").trim().toUpperCase();
+  if (!source) return { rate: NaN, creditsUsed: 0 };
+  if (source === "EUR") return { rate: 1, creditsUsed: 0 };
+
   const today = berlinDate();
-  const path = "shared/cache/FX_USD_EUR.json";
+  const path = `shared/cache/FX_${safeKey(source)}_EUR.json`;
   const stored = await readJson(path);
-  if (stored.data?.date === today && Number.isFinite(Number(stored.data?.rate))) {
+
+  if (
+    stored.data?.date === today &&
+    Number.isFinite(Number(stored.data?.rate)) &&
+    Number(stored.data.rate) > 0
+  ) {
     return { rate: Number(stored.data.rate), creditsUsed: 0 };
   }
 
-  // Bevorzugt USD/EUR direkt. Falls der Feed das Paar nicht akzeptiert,
-  // wird EUR/USD geladen und mathematisch umgedreht.
   try {
-    const direct = await fetchTwelveSeries("USD/EUR", "1day", 5, apiKey, "");
-    const rate = Number(direct.values?.at(-1)?.close);
-    if (Number.isFinite(rate) && rate > 0) {
-      await writeAuxCache(path, { date: today, rate }, "USD/EUR");
-      return { rate, creditsUsed: 1 };
+    // Frankfurter liefert Referenzkurse auf Basis der EZB-Daten.
+    // Dafür wird kein zusätzlicher API-Key und kein Twelve-Data-Credit benötigt.
+    const url = new URL("https://api.frankfurter.app/latest");
+    url.searchParams.set("from", source);
+    url.searchParams.set("to", "EUR");
+
+    const response = await fetch(url, {
+      headers: { "Accept": "application/json" }
+    });
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("application/json")) {
+      throw new Error(`Wechselkursdienst HTTP ${response.status}`);
     }
-  } catch (directError) {
-    try {
-      const inverse = await fetchTwelveSeries("EUR/USD", "1day", 5, apiKey, "");
-      const eurUsd = Number(inverse.values?.at(-1)?.close);
-      const rate = eurUsd > 0 ? 1 / eurUsd : NaN;
-      if (Number.isFinite(rate)) {
-        await writeAuxCache(path, { date: today, rate }, "EUR/USD");
-        return { rate, creditsUsed: 1 };
-      }
-    } catch (inverseError) {
-      console.warn("EUR-Umrechnung nicht verfügbar:", inverseError.message);
+
+    const data = await response.json();
+    const rate = Number(data?.rates?.EUR);
+
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error(`Kein EUR-Wechselkurs für ${source}.`);
     }
+
+    await writeAuxCache(path, {
+      date: today,
+      source,
+      target: "EUR",
+      rate
+    }, `${source}/EUR`);
+
+    return { rate, creditsUsed: 0 };
+  } catch (error) {
+    // Falls der Tagesabruf vorübergehend scheitert, darf ein älterer
+    // gespeicherter Kurs weiterverwendet werden.
+    const fallbackRate = Number(stored.data?.rate);
+    if (Number.isFinite(fallbackRate) && fallbackRate > 0) {
+      console.warn(`Verwende älteren ${source}/EUR-Kurs:`, error.message);
+      return { rate: fallbackRate, creditsUsed: 0 };
+    }
+
+    console.warn(`${source}/EUR-Umrechnung nicht verfügbar:`, error.message);
+    return { rate: NaN, creditsUsed: 0 };
   }
-  return { rate: NaN, creditsUsed: 0 };
 }
+
 
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return response(200, { ok:true });
@@ -202,8 +232,8 @@ exports.handler = async function handler(event) {
       : "";
     const currency = String(meta.currency || inferredCurrency).toUpperCase();
     let eurRate = currency === "EUR" ? 1 : NaN;
-    if (currency === "USD") {
-      const fx = await getEurRate(apiKey);
+    if (currency && currency !== "EUR") {
+      const fx = await getCurrencyToEurRate(currency);
       eurRate = fx.rate;
       creditsUsed += fx.creditsUsed;
     }

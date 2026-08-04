@@ -1,4 +1,4 @@
-const CACHE = "fox-friends-dashboard-v7-3-euro-konsequent";
+const CACHE = "fox-friends-dashboard-v7-4-euro-umrechnung-fix";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener("activate", event => event.waitUntil(

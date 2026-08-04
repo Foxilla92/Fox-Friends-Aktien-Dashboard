@@ -397,3 +397,21 @@ VERSION 7.3 – EURO KONSEQUENT
 - Bei Euro-Aktien erscheint nur der Euro-Wert.
 - Nach dem Deploy müssen die Aktien einmal neu geprüft werden, damit der
   aktuelle Wechselkurs im gemeinsamen Ergebnis gespeichert wird.
+
+
+VERSION 7.4 – EURO-UMRECHNUNG ENDGÜLTIG KORRIGIERT
+
+- Der Wechselkurs wird nicht mehr über Twelve Data geladen.
+- Stattdessen wird ein kostenfreier EUR-Referenzkurs ohne zusätzlichen API-Key genutzt.
+- Dadurch entstehen für die Euro-Umrechnung keine Twelve-Data-Credits.
+- Unterstützt werden alle vom Kursdienst verfügbaren Währungen, unter anderem:
+  USD, AUD, GBP, JPY, CAD und CHF.
+- Der jeweilige Wechselkurs wird täglich im gemeinsamen GitHub-Cache gespeichert.
+- Falls der Kursdienst kurzfristig nicht erreichbar ist, wird ein vorhandener
+  älterer Kurs weiterverwendet.
+- Euro wird oben in der Karte sowie bei aktuellem Kurs, Ziel und Stopp groß angezeigt.
+- Die Originalwährung steht kleiner darunter.
+
+WICHTIG:
+Nach dem Deploy jede betroffene Aktie einmal neu prüfen. Erst diese neue Prüfung
+speichert den EUR-Wechselkurs im gemeinsamen Dashboard-Ergebnis.
