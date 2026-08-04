@@ -397,16 +397,16 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   let label = "NEUTRAL";
   if (buyScore >= settings.buyThreshold && upsidePotential >= settings.minimumPotential && buyScore >= sellScore) {
     kind = "buy";
-    label = "KAUFEN";
+    label = "KAUFCHANCE";
   } else if (buyScore >= 60 && upsidePotential >= Math.min(3, settings.minimumPotential) && buyScore >= sellScore) {
     kind = "watch";
     label = "KAUF PRÜFEN";
   } else if (sellScore >= settings.sellThreshold && sellScore > buyScore) {
     kind = "sell";
-    label = "VERKAUFEN";
+    label = "VERKAUFSRISIKO";
   } else if (sellScore >= 60 && sellScore > buyScore) {
     kind = "watch";
-    label = "VERKAUF PRÜFEN";
+    label = "GEWINNMITNAHME PRÜFEN";
   }
 
   const marketRelative = benchmarkDaily ? relativePerformance(daily, benchmarkDaily) : {benchmarkReturn:NaN,relative:NaN};
@@ -510,6 +510,57 @@ function earningsDisplay(item) {
   return { text: `Quartalszahlen: ${formatted} (${relative})${session}`, className };
 }
 
+
+
+function entryScoreLabel(score) {
+  if (!Number.isFinite(score)) return "Nicht bewertbar";
+  if (score >= 76) return "Sehr attraktiv";
+  if (score >= 51) return "Interessant";
+  if (score >= 26) return "Abwarten";
+  return "Eher ungünstig";
+}
+
+function exitScoreLabel(score) {
+  if (!Number.isFinite(score)) return "Nicht bewertbar";
+  if (score >= 76) return "Hohes Verkaufsrisiko";
+  if (score >= 51) return "Gewinnmitnahme prüfen";
+  if (score >= 26) return "Beobachten";
+  return "Geringer Verkaufsdruck";
+}
+
+function valuationScore(item) {
+  const pricePosition = 100 - (item.threeMonthPosition * 0.7 + item.oneYearPosition * 0.3);
+  const fibSupport = Number.isFinite(item.fibonacciBuyScore) ? item.fibonacciBuyScore : 50;
+  return clamp(pricePosition * 0.7 + fibSupport * 0.3, 0, 100);
+}
+
+function scoreExplanation(item) {
+  const valuation = valuationScore(item);
+  const score = item.kind === "sell" ? item.sellScore : item.buyScore;
+  const label = item.kind === "sell" ? exitScoreLabel(score) : entryScoreLabel(score);
+
+  const strongest = [
+    { name: "Trend", value: item.trendScore },
+    { name: "Schwung", value: item.momentumScore },
+    { name: "Bewertung", value: valuation },
+    { name: "Chance", value: item.chanceScore }
+  ].filter(part => Number.isFinite(part.value)).sort((a,b) => b.value - a.value)[0];
+
+  const weakest = [
+    { name: "Trend", value: item.trendScore },
+    { name: "Schwung", value: item.momentumScore },
+    { name: "Bewertung", value: valuation },
+    { name: "Chance", value: item.chanceScore }
+  ].filter(part => Number.isFinite(part.value)).sort((a,b) => a.value - b.value)[0];
+
+  return {
+    valuation,
+    label,
+    text: strongest && weakest
+      ? `${strongest.name} stützt die Bewertung am stärksten. ${weakest.name} bremst sie aktuell am meisten.`
+      : "Die Bewertung ergibt sich aus mehreren technischen Teilwerten."
+  };
+}
 
 function scoreWord(score) {
   if (!Number.isFinite(score)) return "Unbekannt";
@@ -629,17 +680,48 @@ function cardHtml(item) {
         <span class="signal-pill ${item.kind}">${item.label}</span>
       </div>
 
+      ${(() => {
+        const scoreInfo = scoreExplanation(item);
+        return `
       <section class="verdict-panel ${item.kind}">
-        <div class="verdict-score">
-          <strong>${formatNumber(mainScore, 0)}</strong>
-          <span>/100</span>
+        <div class="verdict-score-block">
+          <div class="verdict-score">
+            <strong>${formatNumber(mainScore, 0)}</strong>
+            <span>/100</span>
+          </div>
+          <span class="score-meaning">${scoreInfo.label}</span>
         </div>
         <div class="verdict-copy">
           <span class="verdict-kicker">${mainLabel}</span>
           <h3>${summary.headline}</h3>
-          <p>${summary.text}</p>
+          <p>${scoreInfo.text}</p>
         </div>
       </section>
+
+      <section class="score-explainer">
+        <div class="score-explainer-header">
+          <div>
+            <span>So setzt sich der Score zusammen</span>
+            <strong>Je höher, desto positiver für einen Einstieg</strong>
+          </div>
+          <button type="button" class="score-help-toggle">Skala anzeigen</button>
+        </div>
+
+        <div class="score-breakdown">
+          ${beginnerMetric("Trend", item.trendScore, "Sind kurz-, mittel- und langfristiger Trend positiv?")}
+          ${beginnerMetric("Schwung", item.momentumScore, "Unterstützen RSI, MACD und Bollinger die Bewegung?")}
+          ${beginnerMetric("Bewertung", scoreInfo.valuation, "Liegt der Kurs eher günstig in seiner 3-Monats- und Jahresspanne?")}
+          ${beginnerMetric("Chance", item.chanceScore, "Wie viel technischer Spielraum ist nach oben vorhanden?")}
+        </div>
+
+        <div class="score-scale">
+          <div><span>0–25</span><strong>Eher ungünstig</strong></div>
+          <div><span>26–50</span><strong>Abwarten</strong></div>
+          <div><span>51–75</span><strong>Interessant</strong></div>
+          <div><span>76–100</span><strong>Sehr attraktiv</strong></div>
+        </div>
+      </section>`;
+      })()}
 
       <div class="confidence-row">
         <span>Signal-Vertrauen</span>
@@ -647,13 +729,11 @@ function cardHtml(item) {
       </div>
       <div class="progress confidence-progress"><i style="width:${clamp(item.confidence, 0, 100)}%"></i></div>
 
-      <section class="beginner-section">
-        <h3>Einfach erklärt</h3>
+      <section class="beginner-section compact-overview">
+        <h3>Zusätzliche Einordnung</h3>
         <div class="beginner-grid">
-          ${beginnerMetric("Trend", item.trendScore, "Zeigt, ob sich der Kurs grundsätzlich aufwärts oder abwärts bewegt.")}
-          ${beginnerMetric("Schwung", item.momentumScore, "Bewertet, ob die aktuelle Bewegung neue Stärke gewinnt oder nachlässt.")}
-          ${beginnerMetric("Sicherheit", item.riskScore, "Je höher, desto günstiger sind Volatilität und Chancen-Risiko-Verhältnis.")}
-          ${beginnerMetric("Kurspotenzial", item.chanceScore, "Bewertet den verfügbaren Raum nach oben und die aktuelle Preisposition.")}
+          ${beginnerMetric("Sicherheit", item.riskScore, "Je höher, desto günstiger wirken Volatilität und Chancen-Risiko-Verhältnis.")}
+          ${beginnerMetric("Signal-Vertrauen", item.confidence, "Je höher, desto besser bestätigen sich die Indikatoren gegenseitig.")}
         </div>
       </section>
 
@@ -1177,4 +1257,15 @@ document.querySelectorAll("[data-close]").forEach(button => {
   button.addEventListener("click", () => {
     document.getElementById(button.dataset.close)?.close();
   });
+});
+
+
+document.addEventListener("click", event => {
+  const button = event.target.closest(".score-help-toggle");
+  if (!button) return;
+  const section = button.closest(".score-explainer");
+  const scale = section?.querySelector(".score-scale");
+  if (!scale) return;
+  scale.classList.toggle("visible");
+  button.textContent = scale.classList.contains("visible") ? "Skala ausblenden" : "Skala anzeigen";
 });

@@ -245,3 +245,18 @@ TYPISCHER VERBRAUCH
 - Optionaler Sektorbenchmark: beim ersten Lauf des Tages 1 Credit, danach 0 Credits.
 
 Der Hilfscache wird unter shared/cache/ im GitHub-Repository gespeichert.
+
+
+VERSION 6.1 – SCORE VERSTÄNDLICH ERKLÄRT
+
+- Neutralere Labels:
+  Kaufchance, Beobachten, Gewinnmitnahme prüfen, Verkaufsrisiko.
+- Einstiegsscore wird direkt eingeordnet:
+  0–25 eher ungünstig, 26–50 abwarten, 51–75 interessant, 76–100 sehr attraktiv.
+- Direkte Aufteilung des Scores in:
+  Trend, Schwung, Bewertung und Chance.
+- Automatische Erklärung, welcher Teilwert die Bewertung am stärksten stützt
+  und welcher sie am meisten bremst.
+- Score-Skala lässt sich direkt auf der Aktienkarte ein- und ausblenden.
+- Klarer Hinweis: Das Dashboard weiß nicht, ob jemand die Aktie besitzt.
+- Keine zusätzlichen API-Abfragen.
