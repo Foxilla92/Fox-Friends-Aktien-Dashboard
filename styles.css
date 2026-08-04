@@ -881,3 +881,37 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
   border-color: #30415f;
   background: #101a2d;
 }
+
+/* Version 7.2 – echtes kompaktes Einklappen */
+#cards {
+  align-items: start !important;
+  grid-auto-rows: auto !important;
+}
+
+.signal-card {
+  align-self: start !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+.signal-card.collapsed {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 14px 16px !important;
+}
+
+.signal-card.collapsed .card-collapsible,
+.signal-card.collapsed .indicator-details,
+.signal-card.collapsed .card-actions,
+.signal-card.collapsed .chart-button {
+  display: none !important;
+}
+
+.signal-card.collapsed .signal-card-header {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.signal-card.collapsed .signal-card-header + * {
+  display: none !important;
+}

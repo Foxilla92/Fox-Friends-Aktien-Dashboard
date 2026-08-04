@@ -370,3 +370,16 @@ WIRTSCHAFTSKALENDER
 - HTML-Fehlerantworten werden nicht mehr als JSON verarbeitet.
 - Ohne TRADING_ECONOMICS_API_KEY erscheint eine klare Aktivierungsinformation.
 - Mit API-Key werden High-Impact-Termine weiterhin geladen und gecacht.
+
+
+VERSION 7.2 – KARTEN- UND EURO-FIX
+
+- Eingeklappte Aktienkarten zeigen nur noch:
+  Ticker, ausgeschriebenen Firmennamen, Börse, Kurs und Status.
+- Technische Details und TradingView werden vollständig ausgeblendet.
+- Die leere Resthöhe der Karten wurde entfernt.
+- Der eingeklappte Zustand bleibt nach Refresh und automatischen Aktualisierungen erhalten.
+- Die Euro-Erkennung verwendet zusätzlich den Börsenplatz, falls Twelve Data
+  keine Währung im gemeinsamen Ergebnis gespeichert hat.
+- Für die tatsächliche Euro-Umrechnung muss die Aktie nach dem Deploy einmal
+  neu geprüft werden, damit der aktuelle Wechselkurs gespeichert wird.

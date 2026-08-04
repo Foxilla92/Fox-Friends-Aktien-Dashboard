@@ -641,10 +641,28 @@ function beginnerMetric(title, score, explanation) {
 }
 
 
+function detectedCurrency(item) {
+  const explicit = String(item.currency || "").toUpperCase();
+  if (explicit) return explicit;
+
+  const exchange = String(item.resolvedExchange || "").toUpperCase();
+  if (["NASDAQ", "NYSE", "AMEX", "NYSE ARCA"].some(value => exchange.includes(value))) return "USD";
+  if (["XETRA", "XETR", "GETTEX", "FWB", "TRADEGATE"].some(value => exchange.includes(value))) return "EUR";
+  if (exchange.includes("ASX")) return "AUD";
+  return "";
+}
+
 function euroValue(item, amount) {
   if (!Number.isFinite(amount)) return "–";
-  if ((item.currency || "").toUpperCase() === "EUR") return formatNumber(amount, 2) + " €";
-  if (Number.isFinite(item.eurRate)) return formatNumber(amount * item.eurRate, 2) + " €";
+
+  const currency = detectedCurrency(item);
+  if (currency === "EUR") return formatNumber(amount, 2) + " €";
+
+  const rate = Number(item.eurRate);
+  if (Number.isFinite(rate) && rate > 0) {
+    return formatNumber(amount * rate, 2) + " €";
+  }
+
   return "–";
 }
 
@@ -672,6 +690,29 @@ function scoreBand(score) {
   return { cls: "band-bad", label: "Eher ungünstig", range: "0–25" };
 }
 
+
+const COLLAPSED_CARDS_KEY = "foxFriendsCollapsedCards";
+
+function getCollapsedCards() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(COLLAPSED_CARDS_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function isCardCollapsed(symbol) {
+  return getCollapsedCards().has(String(symbol || "").toUpperCase());
+}
+
+function setCardCollapsed(symbol, collapsed) {
+  const cards = getCollapsedCards();
+  const key = String(symbol || "").toUpperCase();
+  if (collapsed) cards.add(key);
+  else cards.delete(key);
+  localStorage.setItem(COLLAPSED_CARDS_KEY, JSON.stringify([...cards]));
+}
+
 function cardHtml(item) {
   const mainScore = item.kind === "sell" ? item.sellScore : item.buyScore;
   const mainLabel = item.kind === "sell" ? "Ausstiegsscore" : "Einstiegsscore";
@@ -687,7 +728,7 @@ function cardHtml(item) {
     : "";
 
   return `
-    <article class="signal-card ${item.kind}">
+    <article class="signal-card ${item.kind} ${isCardCollapsed(item.symbol) ? "collapsed" : ""}" data-card-symbol="${item.symbol}">
       <div class="signal-card-header">
         <div class="card-identity">
           <div class="symbol">${item.symbol}</div>
@@ -696,7 +737,7 @@ function cardHtml(item) {
         </div>
         <div class="card-header-actions">
           <span class="signal-pill ${item.kind}">${item.label}</span>
-          <button class="card-collapse-button" type="button" aria-label="Aktienkarte einklappen">⌃</button>
+          <button class="card-collapse-button" type="button" aria-label="${isCardCollapsed(item.symbol) ? "Aktienkarte ausklappen" : "Aktienkarte einklappen"}">${isCardCollapsed(item.symbol) ? "⌄" : "⌃"}</button>
         </div>
       </div>
 
@@ -772,7 +813,8 @@ function cardHtml(item) {
       ${(() => {
         const amount = Number(byId("investmentAmount")?.value || 1000);
         const example = profitLossExample(item, amount);
-        const symbolCurrency = item.currency ? ` ${item.currency}` : "";
+        const displayCurrency = detectedCurrency(item);
+        const symbolCurrency = displayCurrency ? ` ${displayCurrency}` : "";
         return `
       <section class="trade-plan">
         <div class="trade-plan-header">
@@ -789,17 +831,17 @@ function cardHtml(item) {
           <div>
             <span>Aktueller Kurs</span>
             <strong>${euroValue(item, item.price) !== "–" ? euroValue(item, item.price) : `${formatNumber(item.price, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.price) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.price, 2)} ${item.currency || "USD"}</small>` : ""}
+            ${euroValue(item, item.price) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.price, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Mögliches Ziel</span>
             <strong>${euroValue(item, item.crvTarget) !== "–" ? euroValue(item, item.crvTarget) : `${formatNumber(item.crvTarget, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.crvTarget) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvTarget, 2)} ${item.currency || "USD"}</small>` : ""}
+            ${euroValue(item, item.crvTarget) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvTarget, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Rechnerischer Stopp</span>
             <strong>${euroValue(item, item.crvStop) !== "–" ? euroValue(item, item.crvStop) : `${formatNumber(item.crvStop, 2)}${symbolCurrency}`}</strong>
-            ${euroValue(item, item.crvStop) !== "–" && item.currency !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvStop, 2)} ${item.currency || "USD"}</small>` : ""}
+            ${euroValue(item, item.crvStop) !== "–" && detectedCurrency(item) !== "EUR" ? `<small class="original-currency">${formatNumber(item.crvStop, 2)} ${detectedCurrency(item) || "USD"}</small>` : ""}
           </div>
           <div>
             <span>Potenzial zum 3M-Hoch</span>
@@ -1349,9 +1391,16 @@ document.addEventListener("click", event => {
 document.addEventListener("click", event => {
   const button = event.target.closest(".card-collapse-button");
   if (!button) return;
+
   const card = button.closest(".signal-card");
-  card?.classList.toggle("collapsed");
-  button.textContent = card?.classList.contains("collapsed") ? "⌄" : "⌃";
+  if (!card) return;
+
+  card.classList.toggle("collapsed");
+  const collapsed = card.classList.contains("collapsed");
+
+  setCardCollapsed(card.dataset.cardSymbol, collapsed);
+  button.textContent = collapsed ? "⌄" : "⌃";
+  button.setAttribute("aria-label", collapsed ? "Aktienkarte ausklappen" : "Aktienkarte einklappen");
 });
 
 let macroEvents = [];
