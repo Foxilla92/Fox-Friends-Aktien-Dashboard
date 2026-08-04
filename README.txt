@@ -110,3 +110,33 @@ VERSION 3 – GEMEINSAMES DASHBOARD
 Neue Dateien:
 - netlify/functions/shared-dashboard.js
 - package.json
+
+
+VERSION 3.1 – GEMEINSAMER SPEICHER ÜBER GITHUB
+
+Netlify Blobs wurde entfernt. Der gemeinsame Stand wird jetzt als
+shared/dashboard.json im GitHub-Repository gespeichert.
+
+Zusätzliche Netlify-Umgebungsvariable:
+- GITHUB_DASHBOARD_TOKEN
+
+Optional, bereits passend vorbelegt:
+- GITHUB_DASHBOARD_OWNER = Foxilla92
+- GITHUB_DASHBOARD_REPO = Fox-Friends-Aktien-Dashboard
+- GITHUB_DASHBOARD_BRANCH = main
+
+Der Token benötigt Schreibzugriff auf Repository-Inhalte.
+Empfohlen wird ein Fine-grained Personal Access Token nur für dieses Repository
+mit der Repository-Berechtigung „Contents: Read and write“.
+
+Ablauf:
+- Seite öffnen/refreshen: shared/dashboard.json wird über das Backend gelesen.
+  Keine Twelve-Data-Credits.
+- „Jetzt prüfen“: Twelve Data wird abgefragt; anschließend wird der fertige
+  gemeinsame Stand in shared/dashboard.json gespeichert.
+- GitHub löst dadurch einen neuen Netlify-Deploy aus. Die bereits offene Seite
+  erhält das Ergebnis direkt aus der Function-Antwort; spätere Besucher laden
+  den gespeicherten Stand.
+
+Hinweis:
+Jede erfolgreiche Prüfung erzeugt einen kleinen Commit in GitHub.

@@ -2,6 +2,8 @@
 
 const MAX_RESULTS = 100;
 const MAX_SYMBOLS = 100;
+const DATA_PATH = "shared/dashboard.json";
+const API_VERSION = "2022-11-28";
 
 function json(statusCode, body) {
   return {
@@ -63,20 +65,96 @@ function sanitizeResults(results) {
   }));
 }
 
+function githubHeaders(token) {
+  return {
+    "Accept": "application/vnd.github+json",
+    "Authorization": `Bearer ${token}`,
+    "X-GitHub-Api-Version": API_VERSION,
+    "User-Agent": "fox-friends-aktien-dashboard"
+  };
+}
+
+function apiUrl(owner, repo) {
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${DATA_PATH}`;
+}
+
+async function readDashboard(owner, repo, token, branch) {
+  const url = new URL(apiUrl(owner, repo));
+  url.searchParams.set("ref", branch);
+
+  const response = await fetch(url, { headers: githubHeaders(token) });
+
+  if (response.status === 404) {
+    return { dashboard: null, sha: null };
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `GitHub-Lesefehler (HTTP ${response.status}).`);
+  }
+
+  const decoded = Buffer.from(String(data.content || "").replace(/\n/g, ""), "base64").toString("utf8");
+  return {
+    dashboard: JSON.parse(decoded),
+    sha: data.sha || null
+  };
+}
+
+async function writeDashboard(owner, repo, token, branch, dashboard) {
+  const existing = await readDashboard(owner, repo, token, branch);
+  const content = Buffer.from(JSON.stringify(dashboard, null, 2), "utf8").toString("base64");
+
+  const payload = {
+    message: `Gemeinsamen Dashboard-Stand aktualisieren: ${dashboard.updatedBy}`,
+    content,
+    branch,
+    committer: {
+      name: "Fox Friends Dashboard",
+      email: "dashboard@users.noreply.github.com"
+    }
+  };
+
+  if (existing.sha) payload.sha = existing.sha;
+
+  const response = await fetch(apiUrl(owner, repo), {
+    method: "PUT",
+    headers: {
+      ...githubHeaders(token),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `GitHub-Schreibfehler (HTTP ${response.status}).`);
+  }
+
+  return dashboard;
+}
+
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return json(200, { ok: true });
   if (!["GET", "POST"].includes(event.httpMethod)) {
     return json(405, { status: "error", message: "Nur GET und POST sind erlaubt." });
   }
 
-  try {
-    const { getStore } = await import("@netlify/blobs");
-    const store = getStore("fox-friends-shared-dashboard");
-    const key = "current-dashboard";
+  const token = process.env.GITHUB_DASHBOARD_TOKEN;
+  const owner = process.env.GITHUB_DASHBOARD_OWNER || "Foxilla92";
+  const repo = process.env.GITHUB_DASHBOARD_REPO || "Fox-Friends-Aktien-Dashboard";
+  const branch = process.env.GITHUB_DASHBOARD_BRANCH || "main";
 
+  if (!token) {
+    return json(500, {
+      status: "error",
+      message: "In Netlify fehlt die Umgebungsvariable GITHUB_DASHBOARD_TOKEN."
+    });
+  }
+
+  try {
     if (event.httpMethod === "GET") {
-      const dashboard = await store.get(key, { type: "json", consistency: "strong" });
-      return json(200, { status: "ok", dashboard: dashboard || null });
+      const stored = await readDashboard(owner, repo, token, branch);
+      return json(200, { status: "ok", dashboard: stored.dashboard });
     }
 
     let body;
@@ -104,12 +182,12 @@ exports.handler = async function handler(event) {
       results: sanitizeResults(body.results)
     };
 
-    await store.setJSON(key, dashboard);
+    await writeDashboard(owner, repo, token, branch, dashboard);
     return json(200, { status: "ok", dashboard });
   } catch (error) {
     return json(500, {
       status: "error",
-      message: error instanceof Error ? error.message : "Gemeinsamer Speicherfehler."
+      message: error instanceof Error ? error.message : "GitHub-Speicherfehler."
     });
   }
 };
