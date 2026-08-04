@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Fox & Friends Aktien Dashboard – kompakte Aktienübersicht nach RSI-, Preis- und Potenzialregeln.">
+  <title>Fox & Friends Aktien Dashboard</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">DEIN PERSÖNLICHES AKTIEN-DASHBOARD</div>
+        <h1>Fox & Friends Aktien Dashboard</h1>
+        <p>In wenigen Sekunden sehen, welche Aktien nach deinen Regeln interessant sind.</p>
+      </div>
+      <button id="settingsButton" class="icon-button" aria-label="Einstellungen öffnen">⚙️</button>
+    </header>
+
+    <section class="overview-card">
+      <div class="overview-grid">
+        <button class="overview-stat overview-buy" data-filter="buy">
+          <span>Kaufen</span><strong id="buyCount">0</strong>
+        </button>
+        <button class="overview-stat overview-watch" data-filter="watch">
+          <span>Prüfen</span><strong id="watchCount">0</strong>
+        </button>
+        <button class="overview-stat overview-sell" data-filter="sell">
+          <span>Verkaufen</span><strong id="sellCount">0</strong>
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-tabs" role="tablist">
+          <button class="filter-tab active" data-filter="all">Alle</button>
+          <button class="filter-tab" data-filter="buy">Kaufen</button>
+          <button class="filter-tab" data-filter="watch">Prüfen</button>
+          <button class="filter-tab" data-filter="sell">Verkaufen</button>
+        </div>
+        <button id="refreshButton" class="primary-button">Jetzt prüfen</button>
+      </div>
+
+      <div id="status" class="status-line">Bitte zuerst unter ⚙️ den API-Key und deine Aktien eintragen.</div>
+    </section>
+
+    <main>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">📡</div>
+        <h2>Noch keine Signale geladen</h2>
+        <p>Öffne die Einstellungen, trage deinen API-Key und deine Watchlist ein und starte die Prüfung.</p>
+      </div>
+      <div id="cards" class="signal-grid"></div>
+    </main>
+  </div>
+
+  <dialog id="settingsDialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">WATCHLIST EINRICHTEN</div>
+          <h2>Einstellungen</h2>
+        </div>
+        <button class="icon-button secondary-icon" value="cancel" aria-label="Schließen">✕</button>
+      </div>
+
+      <div class="form-grid">
+<label class="full">
+          <span>Aktien / Symbole</span>
+          <textarea id="symbols" placeholder="AAPL&#10;INTC&#10;MSFT&#10;NVDA&#10;AMD">AAPL
+INTC
+MSFT
+NVDA
+AMD</textarea>
+          <small>Eine Aktie pro Zeile oder kommagetrennt. Nutze die Symbolschreibweise des Datenanbieters.</small>
+        </label>
+
+        <label>
+          <span>RSI-Zeitrahmen</span>
+          <select id="interval">
+            <option value="30min">30 Minuten</option>
+            <option value="1h" selected>1 Stunde</option>
+            <option value="2h">2 Stunden</option>
+            <option value="4h">4 Stunden</option>
+            <option value="1day">1 Tag</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Automatische Aktualisierung</span>
+          <select id="autoRefresh">
+            <option value="0">Aus</option>
+            <option value="15">Alle 15 Minuten</option>
+            <option value="30">Alle 30 Minuten</option>
+            <option value="60">Stündlich</option>
+          </select>
+        </label>
+
+        <label>
+          <span>RSI-Länge</span>
+          <input id="rsiLength" type="number" min="2" max="50" value="14">
+        </label>
+
+        <label>
+          <span>Gelbe RSI-Linie</span>
+          <input id="rsiMaLength" type="number" min="2" max="50" value="14">
+        </label>
+
+        <label>
+          <span>Kaufen ab Score</span>
+          <input id="buyThreshold" type="number" min="1" max="100" value="70">
+        </label>
+
+        <label>
+          <span>Verkaufen ab Score</span>
+          <input id="sellThreshold" type="number" min="1" max="100" value="70">
+        </label>
+
+        <label>
+          <span>Mindestpotenzial für „Kaufen“</span>
+          <input id="minimumPotential" type="number" min="0" max="50" step="0.5" value="5">
+        </label>
+
+        <label>
+          <span>Frische Kreuzung gilt für Kerzen</span>
+          <input id="crossLookback" type="number" min="1" max="10" value="3">
+        </label>
+      </div>
+
+      <details class="weight-details">
+        <summary>Aktuelle Gewichtung</summary>
+        <div class="weight-list">
+          <div><span>RSI-Lage</span><strong>45 %</strong></div>
+          <div><span>3-Monats-Preisbereich</span><strong>20 %</strong></div>
+          <div><span>Jahres-Preisbereich</span><strong>10 %</strong></div>
+          <div><span>RSI-Kreuzung</span><strong>10 %</strong></div>
+          <div><span>Fibonacci-Lage & nächstes Ziel</span><strong>10 %</strong></div>
+          <div><span>Relatives Handelsvolumen</span><strong>5 %</strong></div>
+        </div>
+        <p>Das kurzfristige Potenzial bis zum 3-Monats-Hoch wird zusätzlich angezeigt und beeinflusst die Sortierung. Fibonacci nutzt die 3-Monats-Spanne und bewertet typische Rücklaufzonen sowie den Abstand zum nächsten Fib-Ziel.</p>
+      </details>
+
+      <div class="modal-actions">
+        <button id="saveAndRunButton" type="button" class="primary-button">Speichern & prüfen</button>
+        <button id="saveOnlyButton" type="button" class="secondary-button">Nur speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="chartDialog" class="modal chart-modal">
+    <div class="chart-card">
+      <div class="modal-header chart-header">
+        <div>
+          <div class="eyebrow">TRADINGVIEW-KONTROLLE</div>
+          <h2 id="chartTitle">Chart</h2>
+        </div>
+        <button id="closeChartButton" class="icon-button secondary-icon" aria-label="Schließen">✕</button>
+      </div>
+      <div id="tradingViewContainer" class="tradingview-wrap"></div>
+    </div>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "Fox & Friends Aktien Dashboard",
+  "short_name": "Aktien Dashboard",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080c17",
+  "theme_color": "#0b1020",
+  "description": "Kompaktes Aktien-Signalboard nach RSI-, Preis- und Potenzialregeln.",
+  "icons": []
+}
