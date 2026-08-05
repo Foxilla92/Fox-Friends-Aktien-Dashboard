@@ -14,3 +14,14 @@
 
 [functions."auto-refresh-scheduled"]
   schedule = "*/15 * * * 1-5"
+
+
+# Automatische Prüfung – Netlify-Zeitpläne laufen in UTC.
+# Während der deutschen Sommerzeit:
+# 07:15 UTC = 09:15 MESZ
+# 13:45 UTC = 15:45 MESZ
+[functions."auto-refresh-morning"]
+  schedule = "15 7 * * 1-5"
+
+[functions."auto-refresh-afternoon"]
+  schedule = "45 13 * * 1-5"

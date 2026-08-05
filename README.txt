@@ -445,3 +445,39 @@ NACH DEM DEPLOY
 1. Strg + F5.
 2. Apple/Intel einmal neu prüfen.
 3. Danach muss im gemeinsamen Stand eurRate gespeichert sein.
+
+
+VERSION 7.6 – AUTOMATIK ENDGÜLTIG KORRIGIERT
+
+ENTFERNT
+- Der falsche Cronjob „alle 15 Minuten“ wurde vollständig entfernt.
+- auto-refresh-scheduled.js existiert nicht mehr.
+
+NEU
+- auto-refresh-morning: werktags einmal um 09:15 Uhr MESZ.
+- auto-refresh-afternoon: werktags einmal um 15:45 Uhr MESZ.
+- Beide Funktionen starten die eigentliche Prüfung als Netlify-Background-Function.
+- Ausführliche Logs zeigen künftig:
+  - wann die Prüfung gestartet wurde,
+  - ob eine Sperre aktiv war,
+  - wie viele Aktien gespeichert wurden,
+  - wie viele API-Credits verbraucht wurden,
+  - sowie konkrete Fehlermeldungen.
+
+AKTUELLE CRONZEITEN
+- 15 7 * * 1-5 = 09:15 Uhr während der deutschen Sommerzeit.
+- 45 13 * * 1-5 = 15:45 Uhr während der deutschen Sommerzeit.
+
+WICHTIG ZUR WINTERZEIT
+Netlify-Cronjobs laufen fest in UTC. Nach der Umstellung auf deutsche Winterzeit
+müssen die Zeiten auf 08:15 UTC und 14:45 UTC geändert werden:
+- 15 8 * * 1-5
+- 45 14 * * 1-5
+
+TEST NACH DEM DEPLOY
+In Netlify unter Functions müssen zwei Scheduled Functions erscheinen:
+- auto-refresh-morning
+- auto-refresh-afternoon
+
+Die alte Funktion auto-refresh-scheduled darf dort nicht mehr erscheinen.
+Beide neuen Funktionen können über „Run now“ getestet werden.

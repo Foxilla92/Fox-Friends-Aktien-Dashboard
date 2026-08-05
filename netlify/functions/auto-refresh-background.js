@@ -32,9 +32,13 @@ async function marketData(symbol, interval, mode = "full") {
   return data;
 }
 
-async function runAutomatic() {
+async function runAutomatic(trigger = "scheduled") {
+  console.log(`[Automatik] Start durch ${trigger}: ${new Date().toISOString()}`);
   const lock = await acquire("Automatik", "automatic");
-  if (lock.owner !== "Automatik" || lock.mode !== "automatic") return;
+  if (lock.owner !== "Automatik" || lock.mode !== "automatic") {
+    console.log("[Automatik] Übersprungen: Es läuft bereits eine andere Prüfung.", lock);
+    return { status: "skipped", reason: "locked" };
+  }
 
   try {
     const stored = await readJson(DASHBOARD_PATH);
@@ -107,13 +111,25 @@ async function runAutomatic() {
     };
     await writeJson(DASHBOARD_PATH, updated, "Automatische Dashboard-Prüfung");
     await release("Automatik", true);
+    console.log(`[Automatik] Erfolgreich gespeichert: ${results.length} Aktien, ${automaticCredits} Credits.`);
+    return { status: "ok", count: results.length, credits: automaticCredits };
   } catch (error) {
-    console.error(error);
+    console.error("[Automatik] Fehler:", error);
     await release("Automatik", false).catch(() => {});
+    return { status: "error", message: error.message || "Unbekannter Fehler" };
   }
 }
 
-exports.handler = function() {
-  runAutomatic();
-  return { statusCode: 202 };
+exports.runAutomatic = runAutomatic;
+
+// Der Dateiname "-background" sorgt bei Netlify dafür, dass die Ausführung
+// nach der 202-Antwort im Hintergrund weiterlaufen darf.
+exports.handler = function(event) {
+  const trigger = event?.headers?.["x-fox-trigger"] || "http-background";
+  runAutomatic(trigger).catch(error => console.error("[Automatik] Unbehandelter Fehler:", error));
+  return {
+    statusCode: 202,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ status: "accepted", trigger })
+  };
 };
