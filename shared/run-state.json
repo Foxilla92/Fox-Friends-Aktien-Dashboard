@@ -1,8 +1,9 @@
 {
-  "running": true,
-  "owner": "Thomas",
-  "mode": "manual",
-  "startedAt": "2026-08-05T13:47:09.008Z",
-  "expiresAt": "2026-08-05T14:07:09.008Z",
-  "lastAutomaticAt": null
+  "running": false,
+  "owner": "",
+  "mode": "",
+  "startedAt": null,
+  "expiresAt": null,
+  "lastAutomaticAt": null,
+  "lastCompletedBy": "Thomas"
 }
