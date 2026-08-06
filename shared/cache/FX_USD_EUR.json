@@ -1,4 +1,7 @@
 {
-  "date": "2026-08-05",
-  "rate": 0.86736
+  "date": "2026-08-06",
+  "sourceCurrency": "USD",
+  "targetCurrency": "EUR",
+  "rate": 0.8655,
+  "source": "frankfurter"
 }
