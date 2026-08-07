@@ -481,3 +481,64 @@ In Netlify unter Functions müssen zwei Scheduled Functions erscheinen:
 
 Die alte Funktion auto-refresh-scheduled darf dort nicht mehr erscheinen.
 Beide neuen Funktionen können über „Run now“ getestet werden.
+
+
+VERSION 7.7 – BUGFIX-PAKET
+
+1. AUTOMATISCHE MARKTPRÜFUNG
+- Automatische Analyse werktags alle 15 Minuten von 15:30 bis einschließlich 22:00 Uhr.
+- Außerhalb dieses Zeitfensters wird KEINE Twelve-Data-Prüfung gestartet.
+- Europe/Berlin wird intern ausgewertet, daher funktioniert Sommer-/Winterzeit automatisch.
+- Der Netlify-Scheduler läuft nur in einem groben UTC-Fenster; außerhalb 15:30–22:00
+  beendet sich die Trigger-Funktion ohne Marktdatenabruf.
+- Die Background Function wartet jetzt korrekt auf die vollständige Analyse, statt
+  einen nicht zuverlässig fortlaufenden Fire-and-Forget-Aufruf zu verwenden.
+- Alte Scheduler 09:15 / 15:45 sowie der fehlerhafte globale 15-Minuten-Scheduler
+  wurden entfernt.
+
+2. DOPPELTE AKTIEN
+- Während einer lokalen Prüfung lädt das 60-Sekunden-Polling keine fremden Ergebnisse mehr hinein.
+- Ergebnisse werden beim Hinzufügen, Rendern, Laden und Speichern nach Aktiensymbol dedupliziert.
+- Auch der gemeinsame GitHub-Speicher entfernt doppelte Resultate serverseitig.
+- Ein zweiter manueller Lauf auf demselben Gerät kann nicht parallel gestartet werden.
+
+3. KEINE AUTOMATISCHE ERSATZSUCHE
+- Problematische Alias-Umleitungen wie DRH -> DRO wurden entfernt.
+- Twelve Data muss das angefragte Symbol tatsächlich liefern.
+- Liefert der Provider ein anderes Symbol, erscheint sofort ein Fehler.
+- Rate-Limit-Retry bleibt bestehen; dies ist keine Symbol-Ersatzsuche.
+
+4. SEKTORVERGLEICH
+- SOXX ist nun der sichtbare Standard-Sektorvergleich.
+- Wenn INTC in der Watchlist steht und der Sektorvergleich leer ist, wird SOXX verwendet.
+- Dies gilt auch für automatische Prüfungen und ältere gemeinsam gespeicherte Einstellungen.
+
+NETLIFY NACH DEPLOY
+Unter Functions sollte nur noch diese Scheduled Function für die Automatik erscheinen:
+- auto-refresh-market-window
+
+Die früheren Scheduled Functions
+- auto-refresh-scheduled
+- auto-refresh-morning
+- auto-refresh-afternoon
+dürfen nach dem neuen Production Deploy nicht mehr als aktive Scheduler geführt werden.
+
+
+VERSION 7.8 – MARKT-KONTEXT + NACHRICHTEN
+
+NEU: AKTUELLE NACHRICHTEN
+- Der Markt-Kontext enthält jetzt neben High-Impact-Terminen auch aktuelle Nachrichten.
+- Drei Ebenen werden berücksichtigt:
+  1. Gesamtmarkt: FED/FOMC, Inflation/CPI, US-Arbeitsmarkt, Nasdaq, S&P 500.
+  2. Branche: abhängig vom Sektorvergleich; bei SOXX insbesondere Halbleiter/Chip-Sektor.
+  3. Watchlist: Nachrichten zu den aktuell gespeicherten Aktien.
+- Die Nachrichten werden ohne zusätzlichen API-Key über den GDELT DOC 2.0 Dienst geladen.
+- Dafür werden KEINE Twelve-Data-Credits verbraucht.
+- Nachrichten werden höchstens alle 15 Minuten neu abgerufen und zusätzlich gemeinsam gecacht.
+- Im Markt-Kontext steht bei fehlendem High-Impact-Termin die neueste relevante Nachricht.
+- Unter „Details“ werden Termine und Nachrichten getrennt und übersichtlich angezeigt.
+- Nachrichten öffnen sich bei Klick in einem neuen Tab.
+
+WICHTIG
+- Die Nachrichten beeinflussen den Einstiegsscore NICHT automatisch.
+- Sie dienen als zusätzlicher Kontext, damit technische Signale nicht isoliert betrachtet werden.

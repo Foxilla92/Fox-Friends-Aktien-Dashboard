@@ -12,16 +12,16 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 
-[functions."auto-refresh-scheduled"]
-  schedule = "*/15 * * * 1-5"
-
-
 # Automatische Prüfung – Netlify-Zeitpläne laufen in UTC.
 # Während der deutschen Sommerzeit:
 # 07:15 UTC = 09:15 MESZ
 # 13:45 UTC = 15:45 MESZ
-[functions."auto-refresh-morning"]
-  schedule = "15 7 * * 1-5"
 
-[functions."auto-refresh-afternoon"]
-  schedule = "45 13 * * 1-5"
+
+
+# Marktfenster-Automatik:
+# Netlify-Cron läuft in UTC. Das breite UTC-Fenster deckt Sommer- und Winterzeit ab.
+# Die Funktion selbst startet eine Prüfung ausschließlich zwischen 15:30 und 22:00
+# Europe/Berlin und ausschließlich auf :00/:15/:30/:45.
+[functions."auto-refresh-market-window"]
+  schedule = "*/15 13-21 * * 1-5"

@@ -33,14 +33,9 @@ function parseInput(input) {
     "META": { symbol:"META", exchange:"NASDAQ", expectedName:"Meta", displayName:"Meta Platforms, Inc." },
     "TSLA": { symbol:"TSLA", exchange:"NASDAQ", expectedName:"Tesla", displayName:"Tesla, Inc." },
     "SIE": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens", displayName:"Siemens AG" },
-    "SIEMENS": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens", displayName:"Siemens AG" },
     "ENR": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy", displayName:"Siemens Energy AG" },
-    "SIEMENS ENERGY": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy", displayName:"Siemens Energy AG" },
     "RHM": { symbol:"RHM", exchange:"XETRA", expectedName:"Rheinmetall", displayName:"Rheinmetall AG" },
-    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
-    "DRH": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
-    "DRONESHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" },
-    "DRONE SHIELD": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" }
+    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" }
   };
   if (known[normalized]) return { ...known[normalized], original:normalized };
   if (!normalized.includes(":")) return { symbol:normalized, exchange:"", expectedName:"", original:normalized };
@@ -263,6 +258,13 @@ exports.handler = async function handler(event) {
     const providerCompanyName = String(meta.name || meta.instrument_name || meta.symbol_name || "");
     const companyName = String(parsed.displayName || providerCompanyName || parsed.expectedName || parsed.symbol);
     const rawExchange = String(meta.exchange || parsed.exchange || "").toUpperCase();
+    const providerSymbol = String(meta.symbol || parsed.symbol || "").toUpperCase();
+
+    // Nie still auf ein anderes Wertpapier ausweichen.
+    // Wenn Twelve Data das exakte Kürzel nicht liefert, wird ein Fehler ausgegeben.
+    if (providerSymbol && providerSymbol !== String(parsed.symbol || "").toUpperCase()) {
+      throw new Error(`Twelve Data lieferte ${providerSymbol} statt ${parsed.symbol}. Keine automatische Ersatzsuche durchgeführt.`);
+    }
     if (parsed.exchange && rawExchange && !rawExchange.includes(parsed.exchange)) {
       throw new Error(`Falscher Handelsplatz geliefert: erwartet ${parsed.exchange}, erhalten ${rawExchange}.`);
     }

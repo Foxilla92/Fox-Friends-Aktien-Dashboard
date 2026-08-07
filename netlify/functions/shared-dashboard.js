@@ -30,7 +30,15 @@ function finiteOrNull(value) {
 
 function sanitizeResults(results) {
   if (!Array.isArray(results)) return [];
-  return results.slice(0, MAX_RESULTS).map(item => ({
+
+  const unique = new Map();
+  for (const item of results) {
+    const key = cleanText(item?.symbol || item?.resolvedSymbol, 40).toUpperCase();
+    if (!key) continue;
+    unique.set(key, item);
+  }
+
+  return [...unique.values()].slice(0, MAX_RESULTS).map(item => ({
     symbol: cleanText(item.symbol, 40),
     resolvedSymbol: cleanText(item.resolvedSymbol, 40),
     resolvedExchange: cleanText(item.resolvedExchange, 30),
@@ -217,7 +225,8 @@ exports.handler = async function handler(event) {
       lastRunCredits: Number(body.runCredits || 0),
       interval: cleanText(body.interval, 20) || "1h",
       marketBenchmark: cleanText(body.marketBenchmark, 30) || "SPY",
-      sectorBenchmark: cleanText(body.sectorBenchmark, 30),
+      sectorBenchmark: cleanText(body.sectorBenchmark, 30) ||
+        (symbols.map(v => String(v).toUpperCase()).includes("INTC") ? "SOXX" : ""),
       rsiLength: Number(body.rsiLength) || 14,
       rsiMaLength: Number(body.rsiMaLength) || 14,
       buyThreshold: Number(body.buyThreshold) || 70,

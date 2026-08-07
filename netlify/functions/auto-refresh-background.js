@@ -33,6 +33,7 @@ async function marketData(symbol, interval, mode = "full") {
 }
 
 async function runAutomatic(trigger = "scheduled") {
+  automaticCredits = 0;
   console.log(`[Automatik] Start durch ${trigger}: ${new Date().toISOString()}`);
   const lock = await acquire("Automatik", "automatic");
   if (lock.owner !== "Automatik" || lock.mode !== "automatic") {
@@ -48,7 +49,8 @@ async function runAutomatic(trigger = "scheduled") {
     const settings = {
       interval: dashboard.interval || "1h",
       marketBenchmark: dashboard.marketBenchmark || "SPY",
-      sectorBenchmark: dashboard.sectorBenchmark || "",
+      sectorBenchmark: dashboard.sectorBenchmark ||
+        (dashboard.symbols.map(v => String(v).toUpperCase()).includes("INTC") ? "SOXX" : ""),
       rsiLength: Number(dashboard.rsiLength) || 14,
       rsiMaLength: Number(dashboard.rsiMaLength) || 14,
       buyThreshold: Number(dashboard.buyThreshold) || 70,
@@ -124,12 +126,13 @@ exports.runAutomatic = runAutomatic;
 
 // Der Dateiname "-background" sorgt bei Netlify dafür, dass die Ausführung
 // nach der 202-Antwort im Hintergrund weiterlaufen darf.
-exports.handler = function(event) {
+exports.handler = async function(event) {
   const trigger = event?.headers?.["x-fox-trigger"] || "http-background";
-  runAutomatic(trigger).catch(error => console.error("[Automatik] Unbehandelter Fehler:", error));
+  const result = await runAutomatic(trigger);
+
   return {
-    statusCode: 202,
+    statusCode: result?.status === "error" ? 500 : 200,
     headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ status: "accepted", trigger })
+    body: JSON.stringify({ trigger, ...result })
   };
 };

@@ -58,10 +58,10 @@
       <div id="sharedStatus" class="shared-status">Gemeinsamer Stand wird geladen …</div>
       <div id="schedulePanel" class="schedule-panel">
         <div class="schedule-main">
-          <span class="schedule-kicker">AUTOMATISCHE PRÜFUNG</span>
+          <span class="schedule-kicker">AUTOMATISCHE MARKTPRÜFUNG</span>
           <strong id="scheduleNext">Nächster Lauf wird berechnet …</strong>
           <span id="scheduleCountdown" class="countdown-value">–</span>
-          <small id="scheduleTimes">Werktags um 09:15 Uhr und 15:45 Uhr</small>
+          <small id="scheduleTimes">Werktags alle 15 Min. von 15:30 bis einschließlich 22:00 Uhr</small>
         </div>
         <div class="schedule-side">
           <span id="runBadge" class="run-badge idle">Bereit</span>
@@ -133,8 +133,8 @@ AMD</textarea>
 
         <label>
           <span>Sektorvergleich (optional)</span>
-          <input id="sectorBenchmark" type="text" maxlength="20" placeholder="z. B. SOXX, XLK oder XLF">
-          <small>Leer lassen, wenn kein Sektor-ETF genutzt werden soll.</small>
+          <input id="sectorBenchmark" type="text" maxlength="20" value="SOXX" placeholder="z. B. SOXX, XLK oder XLF">
+          <small>Standard: SOXX für Halbleiterwerte wie Intel. Kann bei Bedarf geändert werden.</small>
         </label>
 <label>
           <span>RSI-Länge</span>

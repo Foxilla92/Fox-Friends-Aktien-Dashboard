@@ -6,6 +6,7 @@ const SETTINGS_KEY = "foxilla-signal-radar-settings-v2";
 let results = [];
 let currentRunCredits = 0;
 let activeFilter = "all";
+let analysisInProgress = false;
 
 const settingIds = [
   "displayName","symbols","interval","marketBenchmark","sectorBenchmark","rsiLength","rsiMaLength",
@@ -13,14 +14,19 @@ const settingIds = [
 ];
 
 function getSettings() {
+  const symbols = [...new Set(
+    byId("symbols").value.toUpperCase().split(/[\s,;]+/).map(v => v.trim()).filter(Boolean)
+  )];
+
+  const enteredSector = byId("sectorBenchmark").value.trim().toUpperCase();
+  const sectorBenchmark = enteredSector || (symbols.includes("INTC") ? "SOXX" : "");
+
   return {
     displayName: byId("displayName").value.trim(),
-    symbols: [...new Set(
-      byId("symbols").value.toUpperCase().split(/[\s,;]+/).map(v => v.trim()).filter(Boolean)
-    )],
+    symbols,
     interval: byId("interval").value,
     marketBenchmark: byId("marketBenchmark").value.trim().toUpperCase(),
-    sectorBenchmark: byId("sectorBenchmark").value.trim().toUpperCase(),
+    sectorBenchmark,
     investmentAmount: Number(byId("investmentAmount").value || 1000),
     rsiLength: Number(byId("rsiLength").value || 14),
     rsiMaLength: Number(byId("rsiMaLength").value || 14),
@@ -954,6 +960,31 @@ function cardHtml(item) {
     </article>`;
 }
 
+
+function resultKey(item) {
+  return String(item?.symbol || item?.requestedSymbol || item?.resolvedSymbol || "")
+    .trim()
+    .toUpperCase();
+}
+
+function dedupeResults(items) {
+  const map = new Map();
+  for (const item of Array.isArray(items) ? items : []) {
+    const key = resultKey(item);
+    if (!key) continue;
+    map.set(key, item); // letzter Stand gewinnt
+  }
+  return [...map.values()];
+}
+
+function upsertResult(item) {
+  const key = resultKey(item);
+  results = dedupeResults([
+    ...results.filter(existing => resultKey(existing) !== key),
+    item
+  ]);
+}
+
 function render() {
   const filtered = results
     .filter(item => activeFilter === "all" || item.kind === activeFilter)
@@ -1007,19 +1038,22 @@ function berlinParts(date) {
 }
 
 function nextAutomaticRun(now = new Date()) {
-  // Auf das nächste volle 15-Minuten-Raster springen.
-  // So werden 09:15 und 15:45 unabhängig von der aktuellen Minute sicher gefunden.
   const start = new Date(now.getTime() + 60_000);
   start.setUTCSeconds(0, 0);
-  const minute = start.getUTCMinutes();
-  const minutesToNextQuarter = (15 - (minute % 15)) % 15;
-  start.setUTCMinutes(minute + minutesToNextQuarter);
 
+  // Auf das nächste Viertelstunden-Raster springen.
+  const minute = start.getUTCMinutes();
+  const add = (15 - (minute % 15)) % 15;
+  start.setUTCMinutes(minute + add);
+
+  // Bis zu 10 Tage suchen; Europe/Berlin berücksichtigt Sommer-/Winterzeit.
   for (let i = 0; i < 24 * 4 * 10; i++) {
     const candidate = new Date(start.getTime() + i * 15 * 60_000);
     const p = berlinParts(candidate);
     const weekend = p.weekday === "Sa" || p.weekday === "So";
-    if (!weekend && ((p.hour === "09" && p.minute === "15") || (p.hour === "15" && p.minute === "45"))) {
+    const total = Number(p.hour) * 60 + Number(p.minute);
+
+    if (!weekend && total >= (15 * 60 + 30) && total <= (22 * 60) && Number(p.minute) % 15 === 0) {
       return candidate;
     }
   }
@@ -1056,8 +1090,9 @@ async function pollSharedState() {
   try {
     const run = await runControl("status");
     setRunBadge(run);
-    if (!run?.running) {
+    if (!run?.running && !analysisInProgress) {
       // Nur den gespeicherten gemeinsamen Stand laden – keine Twelve-Data-Credits.
+      // Während einer lokalen Prüfung niemals fremde Ergebnisse hineinmischen.
       await loadSharedDashboard();
     }
   } catch (error) {
@@ -1150,9 +1185,14 @@ async function loadSharedDashboard() {
     for (const key of sharedSettings) {
       if (dashboard[key] !== undefined && byId(key)) byId(key).value = dashboard[key];
     }
+    if ((!dashboard.sectorBenchmark || !String(dashboard.sectorBenchmark).trim()) &&
+        Array.isArray(dashboard.symbols) &&
+        dashboard.symbols.map(v => String(v).toUpperCase()).includes("INTC")) {
+      byId("sectorBenchmark").value = "SOXX";
+    }
 
     if (Array.isArray(dashboard.results)) {
-      results = dashboard.results;
+      results = dedupeResults(dashboard.results);
       render();
     }
 
@@ -1206,6 +1246,11 @@ async function analyzeWithRetry(symbol, settings, benchmarkDaily = null, sectorD
 }
 
 async function runAnalysis() {
+  if (analysisInProgress) {
+    setStatus("Auf diesem Gerät läuft bereits eine Prüfung.");
+    return;
+  }
+
   const settings = getSettings();
   if (!settings.displayName) {
     setStatus("Bitte unter ⚙️ zuerst deinen Namen eintragen.");
@@ -1231,6 +1276,7 @@ async function runAnalysis() {
       return;
     }
     setRunBadge(run);
+    analysisInProgress = true;
   } catch (error) {
     setStatus(`Prüfung konnte nicht gestartet werden: ${error.message}`);
     byId("refreshButton").disabled = false;
@@ -1267,10 +1313,10 @@ async function runAnalysis() {
 
     try {
       const item = await analyzeWithRetry(symbol, settings, benchmarkDaily, sectorDaily);
-      results.push(item);
+      upsertResult(item);
       render();
     } catch (error) {
-      results.push({
+      upsertResult({
         symbol,
         kind: "neutral",
         label: "FEHLER",
@@ -1300,6 +1346,7 @@ async function runAnalysis() {
 
   try {
     setStatus("Prüfung abgeschlossen. Gemeinsamer Stand wird gespeichert …");
+    results = dedupeResults(results);
     const shared = await saveSharedDashboard(settings);
     setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(shared.updatedAt)} · erstellt von ${shared.updatedBy || settings.displayName}`);
     setStatus(`Aktualisiert und gemeinsam gespeichert: ${new Date().toLocaleString("de-DE")}`);
@@ -1314,6 +1361,7 @@ async function runAnalysis() {
         console.warn("Sperre konnte nicht gelöst werden:", error);
       }
     }
+    analysisInProgress = false;
     byId("refreshButton").disabled = false;
   }
 }
@@ -1431,12 +1479,36 @@ document.addEventListener("click", event => {
 });
 
 let macroEvents = [];
+let contextNews = [];
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function macroDateText(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "Zeit unbekannt" : date.toLocaleString("de-DE", {
     timeZone:"Europe/Berlin", weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"
   });
 }
+
+function newsDateText(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("de-DE", {
+    timeZone:"Europe/Berlin",
+    day:"2-digit",
+    month:"2-digit",
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
 function macroDistance(value) {
   const minutes = Math.round((new Date(value) - new Date()) / 60000);
   if (!Number.isFinite(minutes)) return "";
@@ -1446,6 +1518,7 @@ function macroDistance(value) {
   if (minutes < 1440) return `in ${Math.floor(minutes/60)} Std. ${minutes%60} Min.`;
   return `in ${Math.ceil(minutes/1440)} Tagen`;
 }
+
 function macroWarningText(event) {
   const value = `${event.event || ""} ${event.category || ""}`.toLowerCase();
   if (/interest rate|fed|fomc|ezb|ecb/.test(value)) return "Zinsentscheid kann starke marktweite Bewegungen auslösen.";
@@ -1453,32 +1526,112 @@ function macroWarningText(event) {
   if (/non farm|nfp|payroll|employment|arbeitsmarkt/.test(value)) return "Arbeitsmarktdaten können den US-Markt kurzfristig stark bewegen.";
   return "Technische Signale können rund um diesen Termin kurzfristig weniger zuverlässig sein.";
 }
+
+function categoryLabel(category) {
+  if (category === "stocks") return "Watchlist";
+  if (category === "sector") return "Branche";
+  return "Markt";
+}
+
 function renderMacroPanel() {
   const panel=byId("macroPanel"), headline=byId("macroHeadline"), detail=byId("macroDetail");
-  const upcoming=macroEvents.filter(e=>new Date(e.date)>=new Date(Date.now()-60*60000)).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const upcoming=macroEvents
+    .filter(e=>new Date(e.date)>=new Date(Date.now()-60*60000))
+    .sort((a,b)=>new Date(a.date)-new Date(b.date));
   const next=upcoming[0];
-  panel.className="macro-panel "+(next ? "macro-warning" : "macro-safe");
-  if (!next) { headline.textContent="Keine High-Impact-Termine in den nächsten Tagen"; detail.textContent="Technische Signale haben aktuell keinen bekannten Makro-Termin direkt vor sich."; return; }
-  headline.textContent=`${next.country || ""}: ${next.event || next.category}`;
-  detail.textContent=`${macroDateText(next.date)} · ${macroDistance(next.date)} · ${macroWarningText(next)}`;
+
+  if (next) {
+    panel.className="macro-panel macro-warning";
+    headline.textContent=`${next.country || ""}: ${next.event || next.category}`;
+    detail.textContent=`${macroDateText(next.date)} · ${macroDistance(next.date)} · ${macroWarningText(next)}`;
+    return;
+  }
+
+  if (contextNews.length) {
+    const latest = contextNews[0];
+    panel.className="macro-panel macro-safe";
+    headline.textContent="Keine High-Impact-Termine · aktuelle Nachrichten vorhanden";
+    detail.textContent=`📰 ${categoryLabel(latest.category)}: ${latest.title}`;
+    return;
+  }
+
+  panel.className="macro-panel macro-safe";
+  headline.textContent="Keine High-Impact-Termine in den nächsten Tagen";
+  detail.textContent="Aktuell liegen keine relevanten Markt-Nachrichten aus der letzten Abfrage vor.";
 }
+
 function renderMacroDialog() {
-  const content=byId("macroDialogContent");
-  if (!macroEvents.length) { content.innerHTML="<p>Keine High-Impact-Termine verfügbar.</p>"; return; }
-  content.innerHTML=`<div class="macro-event-list">${macroEvents.map(event=>`<article><div><strong>${event.event || event.category}</strong><span>${event.country || ""} · ${macroDateText(event.date)} · ${macroDistance(event.date)}</span></div><p>${macroWarningText(event)}</p></article>`).join("")}</div>`;
+  const eventContent = byId("macroEventsContent");
+  const newsContent = byId("newsContextContent");
+
+  if (eventContent) {
+    if (!macroEvents.length) {
+      eventContent.innerHTML='<div class="context-empty">✅ Keine High-Impact-Termine verfügbar.</div>';
+    } else {
+      eventContent.innerHTML=`<div class="macro-event-list">${macroEvents.map(event=>`
+        <article>
+          <div>
+            <strong>${escapeHtml(event.event || event.category)}</strong>
+            <span>${escapeHtml(event.country || "")} · ${escapeHtml(macroDateText(event.date))} · ${escapeHtml(macroDistance(event.date))}</span>
+          </div>
+          <p>${escapeHtml(macroWarningText(event))}</p>
+        </article>`).join("")}</div>`;
+    }
+  }
+
+  if (newsContent) {
+    if (!contextNews.length) {
+      newsContent.innerHTML='<div class="context-empty">Derzeit keine passenden Nachrichten gefunden.</div>';
+    } else {
+      newsContent.innerHTML=`<div class="news-list">${contextNews.map(item=>`
+        <a class="news-item" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+          <div class="news-meta">
+            <span class="news-category">${escapeHtml(categoryLabel(item.category))}</span>
+            ${item.date ? `<span>${escapeHtml(newsDateText(item.date))}</span>` : ""}
+            ${item.source ? `<span>${escapeHtml(item.source)}</span>` : ""}
+          </div>
+          <strong>${escapeHtml(item.title)}</strong>
+        </a>`).join("")}</div>`;
+    }
+  }
 }
+
 async function loadMacroCalendar() {
   try {
     const response=await fetch("/.netlify/functions/macro-calendar",{cache:"no-store"});
     const data=await response.json();
     if (!response.ok || data.status==="error") throw new Error(data.message||"Kalender nicht verfügbar");
     macroEvents=Array.isArray(data.events)?data.events:[];
-    renderMacroPanel(); renderMacroDialog();
   } catch(error) {
-    byId("macroHeadline").textContent="Wirtschaftskalender derzeit nicht verfügbar";
-    byId("macroDetail").textContent=error.message;
+    console.warn("Wirtschaftskalender:", error);
+    macroEvents=[];
   }
+  renderMacroPanel();
+  renderMacroDialog();
 }
-byId("macroDetailsButton")?.addEventListener("click",()=>{renderMacroDialog();byId("macroDialog")?.showModal();});
+
+async function loadNewsContext() {
+  try {
+    const response = await fetch("/.netlify/functions/news-context", { cache:"no-store" });
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!response.ok || data.status === "error") throw new Error(data.message || "Nachrichten nicht verfügbar");
+    contextNews = Array.isArray(data.news) ? data.news : [];
+  } catch (error) {
+    console.warn("Nachrichten-Kontext:", error);
+    contextNews = [];
+  }
+  renderMacroPanel();
+  renderMacroDialog();
+}
+
+byId("macroDetailsButton")?.addEventListener("click",()=>{
+  renderMacroDialog();
+  byId("macroDialog")?.showModal();
+});
+
 loadMacroCalendar();
+loadNewsContext();
 setInterval(loadMacroCalendar,30*60*1000);
+setInterval(loadNewsContext,15*60*1000);
