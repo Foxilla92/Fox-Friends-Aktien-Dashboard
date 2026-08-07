@@ -22,30 +22,35 @@ function response(statusCode, body, cache = false) {
 
 function parseInput(input, mode = "full") {
   const normalized = String(input || "").trim().toUpperCase();
+  if (!normalized) {
+    throw new Error("Kein Aktiensymbol eingegeben.");
+  }
 
-  // Benchmarks dürfen weiterhin ihren eigenen Handelsplatz verwenden,
-  // weil z. B. Markt-/Sektor-ETFs nicht zwingend an der NASDAQ notieren.
-  if (mode === "benchmark") {
-    if (!normalized.includes(":")) {
-      return {
-        symbol: normalized,
-        exchange: "",
-        expectedName: "",
-        displayName: "",
-        original: normalized
-      };
-    }
-
+  // Exakte Eingabe verwenden.
+  // Beispiele:
+  //   QBTS         -> symbol=QBTS, keine Börse erzwungen
+  //   NASDAQ:QBTS  -> symbol=QBTS, exchange=NASDAQ
+  //   XETR:RHM     -> symbol=RHM, exchange=XETRA
+  //
+  // Es gibt KEINE Alias-Suche, KEINE Ersatzbörse und KEIN automatisches
+  // Ausprobieren eines anderen Symbols.
+  if (normalized.includes(":")) {
     const [prefix, symbol] = normalized.split(":", 2);
     const aliases = {
       NASDAQ: "NASDAQ",
       NYSE: "NYSE",
+      AMEX: "AMEX",
       XETR: "XETRA",
       XETRA: "XETRA",
+      GETTEX: "GETTEX",
+      FWB: "FWB",
       LSE: "LSE",
-      ASX: "ASX",
-      AMEX: "AMEX"
+      ASX: "ASX"
     };
+
+    if (!symbol) {
+      throw new Error(`Ungültige Eingabe: ${normalized}`);
+    }
 
     return {
       symbol,
@@ -56,28 +61,9 @@ function parseInput(input, mode = "full") {
     };
   }
 
-  // Für die eigentlichen Watchlist-Aktien gilt ab jetzt strikt:
-  // jedes eingegebene Kürzel wird ausschließlich an der NASDAQ gesucht.
-  // Ein anderes Börsenpräfix wird nicht akzeptiert.
-  if (normalized.includes(":")) {
-    const [prefix, symbol] = normalized.split(":", 2);
-    if (prefix !== "NASDAQ") {
-      throw new Error(
-        `Nur NASDAQ-Aktien sind zulässig. ${normalized} wurde nicht geprüft. Bitte nur das reine NASDAQ-Kürzel eingeben.`
-      );
-    }
-    return {
-      symbol,
-      exchange: "NASDAQ",
-      expectedName: "",
-      displayName: "",
-      original: normalized
-    };
-  }
-
   return {
     symbol: normalized,
-    exchange: "NASDAQ",
+    exchange: "",
     expectedName: "",
     displayName: "",
     original: normalized
@@ -297,10 +283,14 @@ exports.handler = async function handler(event) {
     // Nie still auf ein anderes Wertpapier ausweichen.
     // Wenn Twelve Data das exakte Kürzel nicht liefert, wird ein Fehler ausgegeben.
     if (providerSymbol && providerSymbol !== String(parsed.symbol || "").toUpperCase()) {
-      throw new Error(`Twelve Data lieferte ${providerSymbol} statt ${parsed.symbol}. Keine automatische Ersatzsuche durchgeführt.`);
+      throw new Error(
+        `Twelve Data lieferte ${providerSymbol} statt ${parsed.symbol}. Es wird kein anderes Symbol verwendet.`
+      );
     }
     if (parsed.exchange && rawExchange && !rawExchange.includes(parsed.exchange)) {
-      throw new Error(`Falscher Handelsplatz geliefert: erwartet ${parsed.exchange}, erhalten ${rawExchange}.`);
+      throw new Error(
+        `Twelve Data lieferte ${parsed.symbol} am Handelsplatz ${rawExchange}, erwartet war ${parsed.exchange}. Es wird keine Ersatzbörse verwendet.`
+      );
     }
 
     if (mode !== "benchmark" && rawExchange && !rawExchange.includes("NASDAQ")) {

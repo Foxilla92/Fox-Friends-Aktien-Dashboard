@@ -968,33 +968,6 @@ function resultKey(item) {
 }
 
 
-function enforceNasdaqResult(item) {
-  const exchange = String(item?.resolvedExchange || "").toUpperCase();
-
-  // Fehlerobjekte bleiben Fehlerobjekte.
-  if (item?.kind === "error") return item;
-
-  // Alte gespeicherte Ergebnisse von NYSE/XETRA/ASX usw. werden nicht mehr
-  // als gültige Aktienkarte übernommen.
-  if (exchange && !exchange.includes("NASDAQ")) {
-    return {
-      ...item,
-      kind: "error",
-      label: "FEHLER",
-      rank: -1,
-      buyScore: 0,
-      sellScore: 0,
-      error: `Nur NASDAQ ist zulässig. Gespeicherter Handelsplatz: ${exchange}. Bitte Aktie erneut prüfen.`
-    };
-  }
-
-  return item;
-}
-
-function enforceNasdaqResults(items) {
-  return (Array.isArray(items) ? items : []).map(enforceNasdaqResult);
-}
-
 function dedupeResults(items) {
   const map = new Map();
   for (const item of Array.isArray(items) ? items : []) {
@@ -1014,7 +987,7 @@ function upsertResult(item) {
 }
 
 function render() {
-  results = dedupeResults(enforceNasdaqResults(results));
+  results = dedupeResults(results);
   const filtered = results
     .filter(item => activeFilter === "all" || item.kind === activeFilter)
     .sort((a, b) => b.rank - a.rank);
@@ -1221,7 +1194,7 @@ async function loadSharedDashboard() {
     }
 
     if (Array.isArray(dashboard.results)) {
-      results = dedupeResults(enforceNasdaqResults(dashboard.results));
+      results = dedupeResults(dashboard.results);
       render();
     }
 
@@ -1375,7 +1348,7 @@ async function runAnalysis() {
 
   try {
     setStatus("Prüfung abgeschlossen. Gemeinsamer Stand wird gespeichert …");
-    results = dedupeResults(enforceNasdaqResults(results));
+    results = dedupeResults(results);
     const shared = await saveSharedDashboard(settings);
     setSharedStatus(`Gemeinsamer Stand: ${sharedDateText(shared.updatedAt)} · erstellt von ${shared.updatedBy || settings.displayName}`);
     setStatus(`Aktualisiert und gemeinsam gespeichert: ${new Date().toLocaleString("de-DE")}`);

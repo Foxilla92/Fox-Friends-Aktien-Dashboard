@@ -566,3 +566,32 @@ BENCHMARKS
 - Markt- und Sektor-Benchmarks sind von dieser Einschränkung ausgenommen.
 - Dadurch können Vergleichs-ETFs weiterhin funktionieren, auch wenn deren
   Handelsplatz nicht NASDAQ ist.
+
+
+VERSION 8.0 – EXAKTES SYMBOL, KEINE ERSATZSUCHE
+
+- Das Dashboard verwendet exakt die Eingabe des Nutzers.
+- Keine automatische Börsensuche.
+- Keine Alias-Umleitung.
+- Keine Suche nach "nächstbesten" Treffern.
+- Kein Wechsel auf ein anderes Symbol.
+
+Beispiele:
+- QBTS        -> Twelve Data wird exakt mit QBTS angefragt.
+- AMD         -> Twelve Data wird exakt mit AMD angefragt.
+- NASDAQ:QBTS -> exakt QBTS an NASDAQ.
+- XETR:RHM    -> exakt RHM an XETRA.
+
+Wenn Twelve Data für die exakte Eingabe keine Daten liefert:
+-> Fehlerkarte.
+
+Wenn Twelve Data ein anderes Symbol zurückliefert:
+-> Fehlerkarte.
+
+Wenn der Nutzer explizit eine Börse angibt und Twelve Data eine andere liefert:
+-> Fehlerkarte.
+
+Wichtig:
+Bei einem reinen Kürzel ohne Börsenpräfix wird KEINE Börse vom Dashboard
+hinzuerfunden. Falls ein Kürzel an mehreren Börsen existiert und du eine ganz
+bestimmte Börse erzwingen willst, gib sie ausdrücklich mit Präfix ein.
