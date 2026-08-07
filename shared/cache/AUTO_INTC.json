@@ -1,5 +1,5 @@
 {
-  "dailyDate": "2026-08-05",
+  "dailyDate": "2026-08-07",
   "daily": {
     "meta": {
       "symbol": "INTC",
@@ -11,30 +11,6 @@
       "type": "Common Stock"
     },
     "values": [
-      {
-        "datetime": "2025-05-23",
-        "open": "20.16000",
-        "high": "20.27000",
-        "low": "19.94000",
-        "close": "20.049999",
-        "volume": "68206100"
-      },
-      {
-        "datetime": "2025-05-27",
-        "open": "20.44000",
-        "high": "20.67000",
-        "low": "20.18000",
-        "close": "20.55000",
-        "volume": "69504600"
-      },
-      {
-        "datetime": "2025-05-28",
-        "open": "20.57000",
-        "high": "20.64000",
-        "low": "20.33000",
-        "close": "20.37000",
-        "volume": "46096500"
-      },
       {
         "datetime": "2025-05-29",
         "open": "20.54000",
@@ -2393,30 +2369,49 @@
         "high": "97.90000",
         "low": "90.13000",
         "close": "90.20000",
-        "volume": "108664200"
+        "volume": "109039500"
       },
       {
         "datetime": "2026-08-03",
         "open": "88.40000",
-        "high": "91.67510",
+        "high": "91.68000",
         "low": "85.62000",
         "close": "91",
-        "volume": "93454443"
+        "volume": "96633600"
       },
       {
         "datetime": "2026-08-04",
-        "open": "95.31900",
-        "high": "101.39",
+        "open": "95.24000",
+        "high": "101.39000",
         "low": "94.32000",
-        "close": "100.84500",
-        "volume": "94308955"
+        "close": "100.86000",
+        "volume": "124355100"
+      },
+      {
+        "datetime": "2026-08-05",
+        "open": "99.30000",
+        "high": "102.83000",
+        "low": "97.90000",
+        "close": "101.059998",
+        "volume": "85388400"
+      },
+      {
+        "datetime": "2026-08-06",
+        "open": "98.22200",
+        "high": "103.37990",
+        "low": "95.60000",
+        "close": "99.81000",
+        "volume": "77177595"
+      },
+      {
+        "datetime": "2026-08-07",
+        "open": "102.5",
+        "high": "103.65000",
+        "low": "98.029999",
+        "close": "101.65000",
+        "volume": "67336981"
       }
     ],
     "status": "ok"
-  },
-  "earningsDate": "2026-08-05",
-  "earnings": {
-    "available": false,
-    "reason": "/earnings_calendar is available exclusively with grow or pro or ultra or venture or enterprise plans. Consider upgrading your API Key now at https://twelvedata.com/pricing"
   }
 }
