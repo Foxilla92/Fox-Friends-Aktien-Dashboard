@@ -1,10 +1,10 @@
 {
   "version": 1,
   "updatedBy": "Matthias",
-  "updatedAt": "2026-08-07T21:01:17.664Z",
+  "updatedAt": "2026-08-07T21:02:12.615Z",
   "apiUsageDate": "2026-08-07",
-  "apiCreditsToday": 7,
-  "lastRunCredits": 7,
+  "apiCreditsToday": 12,
+  "lastRunCredits": 5,
   "interval": "1h",
   "marketBenchmark": "SPY",
   "sectorBenchmark": "",
@@ -21,8 +21,8 @@
     "QCOM",
     "NVDA",
     "AMD",
-    "ENR",
-    "4SO"
+    "A2DPZC",
+    "A1JX4P"
   ],
   "results": [
     {
@@ -326,7 +326,7 @@
       "error": null
     },
     {
-      "symbol": "ENR",
+      "symbol": "A2DPZC",
       "resolvedSymbol": "",
       "resolvedExchange": "",
       "tradingViewSymbol": "",
@@ -386,7 +386,7 @@
       "error": "**symbol** or **figi** parameter is missing or invalid. Please provide a valid symbol according to API documentation: https://twelvedata.com/docs#reference-data"
     },
     {
-      "symbol": "4SO",
+      "symbol": "A1JX4P",
       "resolvedSymbol": "",
       "resolvedExchange": "",
       "tradingViewSymbol": "",
@@ -443,7 +443,7 @@
       "currency": "",
       "eurRate": null,
       "rank": -1,
-      "error": "This symbol is available starting with the Pro or Venture plan. Consider upgrading now at https://twelvedata.com/pricing"
+      "error": "**symbol** or **figi** parameter is missing or invalid. Please provide a valid symbol according to API documentation: https://twelvedata.com/docs#reference-data"
     }
   ]
 }
