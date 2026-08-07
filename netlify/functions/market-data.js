@@ -20,34 +20,68 @@ function response(statusCode, body, cache = false) {
   };
 }
 
-function parseInput(input) {
+function parseInput(input, mode = "full") {
   const normalized = String(input || "").trim().toUpperCase();
-  const known = {
-    "INTC": { symbol:"INTC", exchange:"NASDAQ", expectedName:"Intel", displayName:"Intel Corporation" },
-    "AAPL": { symbol:"AAPL", exchange:"NASDAQ", expectedName:"Apple", displayName:"Apple Inc." },
-    "MSFT": { symbol:"MSFT", exchange:"NASDAQ", expectedName:"Microsoft", displayName:"Microsoft Corporation" },
-    "NVDA": { symbol:"NVDA", exchange:"NASDAQ", expectedName:"NVIDIA", displayName:"NVIDIA Corporation" },
-    "AMD": { symbol:"AMD", exchange:"NASDAQ", expectedName:"Advanced Micro Devices", displayName:"Advanced Micro Devices, Inc." },
-    "AMZN": { symbol:"AMZN", exchange:"NASDAQ", expectedName:"Amazon", displayName:"Amazon.com, Inc." },
-    "GOOGL": { symbol:"GOOGL", exchange:"NASDAQ", expectedName:"Alphabet", displayName:"Alphabet Inc." },
-    "META": { symbol:"META", exchange:"NASDAQ", expectedName:"Meta", displayName:"Meta Platforms, Inc." },
-    "TSLA": { symbol:"TSLA", exchange:"NASDAQ", expectedName:"Tesla", displayName:"Tesla, Inc." },
-    "SIE": { symbol:"SIE", exchange:"XETRA", expectedName:"Siemens", displayName:"Siemens AG" },
-    "ENR": { symbol:"ENR", exchange:"XETRA", expectedName:"Siemens Energy", displayName:"Siemens Energy AG" },
-    "RHM": { symbol:"RHM", exchange:"XETRA", expectedName:"Rheinmetall", displayName:"Rheinmetall AG" },
-    "DRO": { symbol:"DRO", exchange:"ASX", expectedName:"DroneShield", displayName:"DroneShield Limited" }
-  };
-  if (known[normalized]) return { ...known[normalized], original:normalized };
-  if (!normalized.includes(":")) return { symbol:normalized, exchange:"", expectedName:"", original:normalized };
-  const [prefix, symbol] = normalized.split(":", 2);
-  const aliases = { NASDAQ:"NASDAQ", NYSE:"NYSE", XETR:"XETRA", XETRA:"XETRA", LSE:"LSE", ASX:"ASX" };
-  const explicit = { symbol, exchange:aliases[prefix] || prefix, expectedName:"", displayName:"", original:normalized };
-  const exactKnown = known[symbol];
-  if (exactKnown && exactKnown.exchange === explicit.exchange) {
-    explicit.expectedName = exactKnown.expectedName;
-    explicit.displayName = exactKnown.displayName || "";
+
+  // Benchmarks dürfen weiterhin ihren eigenen Handelsplatz verwenden,
+  // weil z. B. Markt-/Sektor-ETFs nicht zwingend an der NASDAQ notieren.
+  if (mode === "benchmark") {
+    if (!normalized.includes(":")) {
+      return {
+        symbol: normalized,
+        exchange: "",
+        expectedName: "",
+        displayName: "",
+        original: normalized
+      };
+    }
+
+    const [prefix, symbol] = normalized.split(":", 2);
+    const aliases = {
+      NASDAQ: "NASDAQ",
+      NYSE: "NYSE",
+      XETR: "XETRA",
+      XETRA: "XETRA",
+      LSE: "LSE",
+      ASX: "ASX",
+      AMEX: "AMEX"
+    };
+
+    return {
+      symbol,
+      exchange: aliases[prefix] || prefix,
+      expectedName: "",
+      displayName: "",
+      original: normalized
+    };
   }
-  return explicit;
+
+  // Für die eigentlichen Watchlist-Aktien gilt ab jetzt strikt:
+  // jedes eingegebene Kürzel wird ausschließlich an der NASDAQ gesucht.
+  // Ein anderes Börsenpräfix wird nicht akzeptiert.
+  if (normalized.includes(":")) {
+    const [prefix, symbol] = normalized.split(":", 2);
+    if (prefix !== "NASDAQ") {
+      throw new Error(
+        `Nur NASDAQ-Aktien sind zulässig. ${normalized} wurde nicht geprüft. Bitte nur das reine NASDAQ-Kürzel eingeben.`
+      );
+    }
+    return {
+      symbol,
+      exchange: "NASDAQ",
+      expectedName: "",
+      displayName: "",
+      original: normalized
+    };
+  }
+
+  return {
+    symbol: normalized,
+    exchange: "NASDAQ",
+    expectedName: "",
+    displayName: "",
+    original: normalized
+  };
 }
 
 function tradingViewPrefix(exchange) {
@@ -230,10 +264,10 @@ exports.handler = async function handler(event) {
   if (!SYMBOL_PATTERN.test(rawSymbol)) return response(400, { status:"error", message:"Ungültiges Aktiensymbol." });
   if (!ALLOWED_INTERVALS.has(interval)) return response(400, { status:"error", message:"Ungültiger Zeitraum." });
 
-  const parsed = parseInput(rawSymbol);
   const today = berlinDate();
 
   try {
+    const parsed = parseInput(rawSymbol, mode);
     const { path, cache } = await readAuxCache(parsed);
 
     let daily = cache.dailyDate === today ? cache.daily : null;
@@ -267,6 +301,12 @@ exports.handler = async function handler(event) {
     }
     if (parsed.exchange && rawExchange && !rawExchange.includes(parsed.exchange)) {
       throw new Error(`Falscher Handelsplatz geliefert: erwartet ${parsed.exchange}, erhalten ${rawExchange}.`);
+    }
+
+    if (mode !== "benchmark" && rawExchange && !rawExchange.includes("NASDAQ")) {
+      throw new Error(
+        `Das Kürzel ${parsed.symbol} wurde nicht als NASDAQ-Aktie geliefert (erhalten: ${rawExchange}). Keine Ersatzbörse wird verwendet.`
+      );
     }
     if (parsed.expectedName && providerCompanyName && !providerCompanyName.toLowerCase().includes(parsed.expectedName.toLowerCase())) {
       throw new Error(`Symbol-Zuordnung stimmt nicht: erwartet ${parsed.expectedName}, erhalten ${companyName}. Bitte Börsenpräfix verwenden.`);

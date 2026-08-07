@@ -542,3 +542,27 @@ NEU: AKTUELLE NACHRICHTEN
 WICHTIG
 - Die Nachrichten beeinflussen den Einstiegsscore NICHT automatisch.
 - Sie dienen als zusätzlicher Kontext, damit technische Signale nicht isoliert betrachtet werden.
+
+
+VERSION 7.9 – NASDAQ STRICT
+
+WICHTIGSTE ÄNDERUNG
+- Jedes normale Aktienkürzel aus der Watchlist wird ausschließlich an der NASDAQ abgefragt.
+- Beispiel:
+  QBTS -> NASDAQ:QBTS
+  AMD  -> NASDAQ:AMD
+  INTC -> NASDAQ:INTC
+- Es gibt KEINE automatische Suche nach NYSE, XETRA, ASX, Gettex oder einer anderen Ersatzbörse.
+- Ist das Kürzel bei Twelve Data an der NASDAQ nicht verfügbar, erscheint sofort ein Fehler.
+- Wird ausdrücklich ein anderes Präfix eingegeben, z. B. NYSE:XYZ oder XETRA:SIE,
+  erscheint ebenfalls sofort ein Fehler.
+
+ALTE GESPEICHERTE ERGEBNISSE
+- Bereits gespeicherte Ergebnisse mit NYSE/XETRA/ASX usw. werden im Dashboard
+  nicht mehr als gültige Analyse angezeigt.
+- Sie werden als Fehler markiert und müssen bei Bedarf neu geprüft werden.
+
+BENCHMARKS
+- Markt- und Sektor-Benchmarks sind von dieser Einschränkung ausgenommen.
+- Dadurch können Vergleichs-ETFs weiterhin funktionieren, auch wenn deren
+  Handelsplatz nicht NASDAQ ist.
