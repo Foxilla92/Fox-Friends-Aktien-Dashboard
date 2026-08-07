@@ -1,6 +1,7 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  ignore = "node ./netlify-ignore-build.js"
 
 [functions]
   node_bundler = "esbuild"

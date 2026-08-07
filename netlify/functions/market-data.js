@@ -1,6 +1,6 @@
 "use strict";
 
-const { connect, readJson, writeJson } = require("./runtime-store");
+const { readJson, writeJson } = require("./github-store");
 
 const ALLOWED_INTERVALS = new Set(["30min", "1h", "2h", "4h", "1day"]);
 const SYMBOL_PATTERN = /^[A-Z0-9 ÄÖÜ:._-]{1,60}$/;
@@ -230,7 +230,6 @@ async function getCurrencyToEurRate(currency, apiKey) {
 }
 
 exports.handler = async function handler(event) {
-  connect(event);
   if (event.httpMethod === "OPTIONS") return response(200, { ok:true });
   if (event.httpMethod !== "GET") return response(405, { status:"error", message:"Nur GET-Anfragen sind erlaubt." });
 

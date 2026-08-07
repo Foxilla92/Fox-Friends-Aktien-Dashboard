@@ -40,6 +40,18 @@ async function readJson(path) {
 async function writeJson(path, data, message) {
   const cfg = envConfig();
   const existing = await readJson(path);
+
+  // Kein Commit, wenn sich der gespeicherte Inhalt überhaupt nicht verändert hat.
+  // Das reduziert unnötige GitHub-Aktivität zusätzlich.
+  if (existing.data !== null) {
+    try {
+      if (JSON.stringify(existing.data) === JSON.stringify(data)) {
+        console.log(`[GitHub Store] Unverändert, kein Commit: ${path}`);
+        return data;
+      }
+    } catch {}
+  }
+
   const payload = {
     message,
     content: Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64"),
@@ -47,11 +59,13 @@ async function writeJson(path, data, message) {
     committer: { name: "Fox Friends Dashboard", email: "dashboard@users.noreply.github.com" }
   };
   if (existing.sha) payload.sha = existing.sha;
+
   const response = await fetch(apiUrl(cfg.owner, cfg.repo, path), {
     method: "PUT",
     headers: { ...headers(cfg.token), "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
+
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || `GitHub-Schreibfehler ${response.status}`);
   return data;

@@ -1,6 +1,6 @@
 "use strict";
 
-const { connect, readJson, writeJson } = require("./runtime-store");
+const { readJson, writeJson } = require("./github-store");
 const { acquire, release } = require("./run-control");
 const { analyzeMarketData } = require("./analysis-core");
 
@@ -127,7 +127,6 @@ exports.runAutomatic = runAutomatic;
 // Der Dateiname "-background" sorgt bei Netlify dafür, dass die Ausführung
 // nach der 202-Antwort im Hintergrund weiterlaufen darf.
 exports.handler = async function(event) {
-  connect(event);
   const trigger = event?.headers?.["x-fox-trigger"] || "http-background";
   const result = await runAutomatic(trigger);
 

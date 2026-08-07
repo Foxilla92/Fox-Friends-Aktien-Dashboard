@@ -1,6 +1,6 @@
 "use strict";
 
-const { connect, readJson, writeJson } = require("./runtime-store");
+const { readJson, writeJson } = require("./github-store");
 
 const DASHBOARD_PATH = "shared/dashboard.json";
 const CACHE_PATH = "shared/cache/news-context.json";
@@ -131,8 +131,7 @@ function dedupe(items) {
   return result;
 }
 
-exports.handler = async function(event) {
-  connect(event);
+exports.handler = async function() {
   try {
     const cached = await readJson(CACHE_PATH);
     if (cacheFresh(cached.data)) {

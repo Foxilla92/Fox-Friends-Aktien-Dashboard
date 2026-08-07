@@ -1,11 +1,9 @@
 "use strict";
 
-const { connect, readJson, writeJson } = require("./runtime-store");
-const { readJson: readGithubJson } = require("./github-store");
-
 const MAX_RESULTS = 100;
 const MAX_SYMBOLS = 100;
 const DATA_PATH = "shared/dashboard.json";
+const API_VERSION = "2022-11-28";
 
 function json(statusCode, body) {
   return {
@@ -102,42 +100,96 @@ function sanitizeResults(results) {
   }));
 }
 
+function githubHeaders(token) {
+  return {
+    "Accept": "application/vnd.github+json",
+    "Authorization": `Bearer ${token}`,
+    "X-GitHub-Api-Version": API_VERSION,
+    "User-Agent": "fox-friends-aktien-dashboard"
+  };
+}
 
-async function readDashboardWithMigration() {
-  const stored = await readJson(DATA_PATH);
-  if (stored.data) return stored.data;
+function apiUrl(owner, repo) {
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${DATA_PATH}`;
+}
 
-  // Einmalige Migration des bisher gemeinsam gespeicherten GitHub-Standes.
-  // GitHub wird hierbei NUR GELESEN. Es wird niemals mehr zur Laufzeit committed.
-  try {
-    const legacy = await readGithubJson(DATA_PATH);
-    if (legacy.data) {
-      await writeJson(DATA_PATH, legacy.data);
-      console.log("[Runtime Store] Alter gemeinsamer Dashboard-Stand aus GitHub nach Netlify Blobs migriert.");
-      return legacy.data;
-    }
-  } catch (error) {
-    console.warn("[Runtime Store] GitHub-Migration nicht möglich:", error.message);
+async function readDashboard(owner, repo, token, branch) {
+  const url = new URL(apiUrl(owner, repo));
+  url.searchParams.set("ref", branch);
+
+  const response = await fetch(url, { headers: githubHeaders(token) });
+
+  if (response.status === 404) {
+    return { dashboard: null, sha: null };
   }
 
-  return null;
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `GitHub-Lesefehler (HTTP ${response.status}).`);
+  }
+
+  const decoded = Buffer.from(String(data.content || "").replace(/\n/g, ""), "base64").toString("utf8");
+  return {
+    dashboard: JSON.parse(decoded),
+    sha: data.sha || null
+  };
+}
+
+async function writeDashboard(owner, repo, token, branch, dashboard) {
+  const existing = await readDashboard(owner, repo, token, branch);
+  const content = Buffer.from(JSON.stringify(dashboard, null, 2), "utf8").toString("base64");
+
+  const payload = {
+    message: `Gemeinsamen Dashboard-Stand aktualisieren: ${dashboard.updatedBy}`,
+    content,
+    branch,
+    committer: {
+      name: "Fox Friends Dashboard",
+      email: "dashboard@users.noreply.github.com"
+    }
+  };
+
+  if (existing.sha) payload.sha = existing.sha;
+
+  const response = await fetch(apiUrl(owner, repo), {
+    method: "PUT",
+    headers: {
+      ...githubHeaders(token),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || `GitHub-Schreibfehler (HTTP ${response.status}).`);
+  }
+
+  return dashboard;
 }
 
 exports.handler = async function handler(event) {
-  connect(event);
-
   if (event.httpMethod === "OPTIONS") return json(200, { ok: true });
   if (!["GET", "POST"].includes(event.httpMethod)) {
     return json(405, { status: "error", message: "Nur GET und POST sind erlaubt." });
   }
 
+  const token = process.env.GITHUB_DASHBOARD_TOKEN;
+  const owner = process.env.GITHUB_DASHBOARD_OWNER || "Foxilla92";
+  const repo = process.env.GITHUB_DASHBOARD_REPO || "Fox-Friends-Aktien-Dashboard";
+  const branch = process.env.GITHUB_DASHBOARD_BRANCH || "main";
+
+  if (!token) {
+    return json(500, {
+      status: "error",
+      message: "In Netlify fehlt die Umgebungsvariable GITHUB_DASHBOARD_TOKEN."
+    });
+  }
+
   try {
     if (event.httpMethod === "GET") {
-      return json(200, {
-        status: "ok",
-        dashboard: await readDashboardWithMigration(),
-        storage: "netlify-blobs"
-      });
+      const stored = await readDashboard(owner, repo, token, branch);
+      return json(200, { status: "ok", dashboard: stored.dashboard });
     }
 
     let body;
@@ -156,20 +208,16 @@ exports.handler = async function handler(event) {
       ? [...new Set(body.symbols.map(value => cleanText(value, 40)).filter(Boolean))].slice(0, MAX_SYMBOLS)
       : [];
 
-    const existingDashboard = await readDashboardWithMigration();
+    const existingDashboard = await readDashboard(owner, repo, token, branch);
     const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Europe/Berlin",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
+      timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit"
     }).format(new Date());
-
-    const previousCredits = existingDashboard?.apiUsageDate === today
-      ? Number(existingDashboard?.apiCreditsToday || 0)
+    const previousCredits = existingDashboard.dashboard?.apiUsageDate === today
+      ? Number(existingDashboard.dashboard?.apiCreditsToday || 0)
       : 0;
 
     const dashboard = {
-      version: 2,
+      version: 1,
       updatedBy,
       updatedAt: new Date().toISOString(),
       apiUsageDate: today,
@@ -190,17 +238,12 @@ exports.handler = async function handler(event) {
       results: sanitizeResults(body.results)
     };
 
-    await writeJson(DATA_PATH, dashboard);
-
-    return json(200, {
-      status: "ok",
-      dashboard,
-      storage: "netlify-blobs"
-    });
+    await writeDashboard(owner, repo, token, branch, dashboard);
+    return json(200, { status: "ok", dashboard });
   } catch (error) {
     return json(500, {
       status: "error",
-      message: error instanceof Error ? error.message : "Runtime-Speicherfehler."
+      message: error instanceof Error ? error.message : "GitHub-Speicherfehler."
     });
   }
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-const { connect, readJson, writeJson } = require("./runtime-store");
+const { readJson, writeJson } = require("./github-store");
 const PATH = "shared/run-state.json";
 const MAX_AGE_MS = 20 * 60 * 1000;
 
@@ -69,7 +69,6 @@ async function release(owner, automatic = false) {
 }
 
 exports.handler = async function(event) {
-  connect(event);
   if (event.httpMethod === "OPTIONS") return json(200, { ok: true });
   try {
     if (event.httpMethod === "GET") {
