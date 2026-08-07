@@ -1,4 +1,4 @@
-const CACHE = "fox-friends-dashboard-v8-0-exact-symbol";
+const CACHE = "fox-friends-dashboard-v8-1-no-runtime-deploys";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener("activate", event => event.waitUntil(

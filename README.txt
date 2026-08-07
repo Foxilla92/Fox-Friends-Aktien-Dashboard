@@ -595,3 +595,55 @@ Wichtig:
 Bei einem reinen Kürzel ohne Börsenpräfix wird KEINE Börse vom Dashboard
 hinzuerfunden. Falls ein Kürzel an mehreren Börsen existiert und du eine ganz
 bestimmte Börse erzwingen willst, gib sie ausdrücklich mit Präfix ein.
+
+
+VERSION 8.1 – KEINE AUTOMATISCHEN DEPLOYS DURCH LAUFZEITDATEN
+
+KRITISCHER FIX
+Bisher wurden Laufzeitdaten in das GitHub-Repository geschrieben. Jeder einzelne
+GitHub-Commit konnte dadurch einen neuen Netlify Production Deploy auslösen.
+
+Betroffen waren unter anderem:
+- Tagesdaten-Cache pro Aktie
+- EUR-Wechselkurs-Cache
+- Nachrichten-Cache
+- Makro-Kalender-Cache
+- Run-Control / Prüfung gestartet / beendet
+- gemeinsamer Dashboard-Stand
+- automatische Dashboard-Aktualisierungen
+
+DAS IST JETZT KOMPLETT ENTFERNT.
+
+NEUER SPEICHER
+- Alle Laufzeitdaten werden in Netlify Blobs gespeichert.
+- Ein Blob-Schreibvorgang verändert das GitHub-Repository nicht.
+- Dadurch wird kein Production Deploy ausgelöst.
+- Der gemeinsame Stand bleibt über neue Deploys hinweg erhalten.
+- Marktcache, Währungscache, Nachrichten, Kalender und Locks liegen ebenfalls dort.
+
+MIGRATION
+- Beim ersten Laden nach diesem Deploy wird der bisherige gemeinsame Stand einmal
+  aus GitHub GELESEN und nach Netlify Blobs übernommen.
+- Diese Migration erzeugt KEINEN GitHub-Commit und KEINEN weiteren Deploy.
+- Danach arbeitet das Dashboard vollständig mit Netlify Blobs.
+
+GITHUB
+- Das Repository wird zur Laufzeit nicht mehr beschrieben.
+- GitHub dient nur noch deinem Quellcode und dem normalen Deployment.
+- Die alten Dateien unter shared/cache können im Repository liegen bleiben;
+  sie werden von der neuen Runtime nicht mehr aktualisiert.
+
+ABHÄNGIGKEIT
+- @netlify/blobs 10.7.10 wurde in package.json ergänzt.
+- Netlify Functions konfigurieren Site-ID und Zugriff automatisch.
+
+NACH DEM DEPLOY PRÜFEN
+1. Einmal "Prüfen" klicken.
+2. In GitHub darf KEIN Commit wie
+   "Tagesdaten-Cache aktualisieren: AAPL"
+   "Prüfung gestartet"
+   "Prüfung beendet"
+   "Gemeinsamen Dashboard-Stand aktualisieren"
+   erscheinen.
+3. In Netlify darf dadurch KEIN neuer Production Deploy entstehen.
+4. Der gemeinsame Stand muss nach Seiten-Refresh trotzdem erhalten bleiben.

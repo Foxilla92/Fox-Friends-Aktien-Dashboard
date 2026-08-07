@@ -1,6 +1,6 @@
 "use strict";
 
-const { readJson, writeJson } = require("./github-store");
+const { connect, readJson, writeJson } = require("./runtime-store");
 const CACHE_PATH = "shared/cache/macro-calendar.json";
 
 function json(statusCode, body) {
@@ -34,7 +34,8 @@ function normalize(event) {
   };
 }
 
-exports.handler = async function() {
+exports.handler = async function(event) {
+  connect(event);
   try {
     const stored = await readJson(CACHE_PATH);
     if (cacheFresh(stored.data)) {
