@@ -1,90 +1,106 @@
 {
-  "fetchedAt": "2026-08-07T22:59:38.139Z",
+  "fetchedAt": "2026-08-08T05:49:39.668Z",
   "news": [
     {
-      "id": "http://www.baltimorestar.com/news/279223815/anthropic-builds-custom-ai-chip-team-amid-hardware-shortages",
-      "title": "Anthropic builds custom AI chip team amid hardware shortages",
-      "url": "http://www.baltimorestar.com/news/279223815/anthropic-builds-custom-ai-chip-team-amid-hardware-shortages",
+      "id": "https://www.rappler.com/voices/thought-leaders/opinion-filipinos-distrust-pax-silica-us-data-center-comparison/",
+      "title": "[ OPINION ] What America AI boom teaches us about scrutinizing Pax Silica",
+      "url": "https://www.rappler.com/voices/thought-leaders/opinion-filipinos-distrust-pax-silica-us-data-center-comparison/",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "http://www.northkoreatimes.com/news/279223815/anthropic-builds-custom-ai-chip-team-amid-hardware-shortages",
-      "title": "Anthropic builds custom AI chip team amid hardware shortages",
-      "url": "http://www.northkoreatimes.com/news/279223815/anthropic-builds-custom-ai-chip-team-amid-hardware-shortages",
+      "id": "https://www.rappler.com/technology/ask-me-anything-carlo-ybanez-ibon-foundation-pax-silica-debate/",
+      "title": "Ask Me Anything with lawyer Carlo Ybanez , and IBON Foundation on the Pax Silica debate",
+      "url": "https://www.rappler.com/technology/ask-me-anything-carlo-ybanez-ibon-foundation-pax-silica-debate/",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "http://www.baltimorestar.com/news/279226837/tech-surge-powers-nasdaq-higher-as-wall-street-closes-week-on-upbeat-note",
-      "title": "Tech surge powers Nasdaq higher as Wall Street closes week on upbeat note",
-      "url": "http://www.baltimorestar.com/news/279226837/tech-surge-powers-nasdaq-higher-as-wall-street-closes-week-on-upbeat-note",
+      "id": "https://www.gsmarena.com/sk_hynix_promises_to_invest_over_38_billion_in_new_dram_and_nand_fabs-news-74075.php",
+      "title": "SK Hynix promises to invest over $38 billion in new DRAM and NAND fabs",
+      "url": "https://www.gsmarena.com/sk_hynix_promises_to_invest_over_38_billion_in_new_dram_and_nand_fabs-news-74075.php",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://finance.yahoo.com/technology/ai/articles/southeast-asia-next-growth-engine-143030560.html",
-      "title": "Southeast Asia Next Growth Engine Runs on AI Infrastructure , United Overseas Bank Says",
-      "url": "https://finance.yahoo.com/technology/ai/articles/southeast-asia-next-growth-engine-143030560.html",
+      "id": "http://www.bruneinews.net/news/279223771/korean-chipmakers-test-chinese-tools-as-export-risks-grow",
+      "title": "Korean chipmakers test Chinese tools as export risks grow",
+      "url": "http://www.bruneinews.net/news/279223771/korean-chipmakers-test-chinese-tools-as-export-risks-grow",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://www.insidermonkey.com/blog/google-clouds-taiwan-launch-hints-at-alphabets-googl-next-growth-phase-1808265/",
-      "title": "Google Cloud Taiwan Launch Hints at Alphabet ( GOOGL ) Next Growth Phase",
-      "url": "https://www.insidermonkey.com/blog/google-clouds-taiwan-launch-hints-at-alphabets-googl-next-growth-phase-1808265/",
+      "id": "http://www.bruneinews.net/news/279227088/metaoptics-sharpens-focus-on-metalens-commercialisation-withdraws-nasdaq-listing-application-and-defers-us-dual-listing-plan",
+      "title": "MetaOptics Sharpens Focus on Metalens Commercialisation ; Withdraws Nasdaq Listing Application , and Defers U . S . Dual Listing Plan",
+      "url": "http://www.bruneinews.net/news/279227088/metaoptics-sharpens-focus-on-metalens-commercialisation-withdraws-nasdaq-listing-application-and-defers-us-dual-listing-plan",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://abc6onyourside.com/news/entertainment/lindsey-buckingham-says-he-and-stevie-nicks-talk-all-the-time",
-      "title": "Lindsey Buckingham says he and Stevie Nicks talk all the time",
-      "url": "https://abc6onyourside.com/news/entertainment/lindsey-buckingham-says-he-and-stevie-nicks-talk-all-the-time",
+      "id": "https://www.tribunnews.com/nasional/7865667/kasus-temuan-senjata-polisi-periksa-mantan-ketua-yayasan-sekolah-di-pondok-pinang-pekan-depan",
+      "title": "Kasus Temuan Senjata , Polisi Periksa Mantan Ketua Yayasan Sekolah di Pondok Pinang Pekan Depan",
+      "url": "https://www.tribunnews.com/nasional/7865667/kasus-temuan-senjata-polisi-periksa-mantan-ketua-yayasan-sekolah-di-pondok-pinang-pekan-depan",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.uab.edu/news/research-innovation/uab-startup-lifenuclear-launches-theraguide-a-digital-platform-for-post-treatment-radiation-safety",
-      "title": "UAB startup LifeNuclear launches TheraGuide , a digital platform for post - treatment radiation safety",
-      "url": "https://www.uab.edu/news/research-innovation/uab-startup-lifenuclear-launches-theraguide-a-digital-platform-for-post-treatment-radiation-safety",
+      "id": "https://9to5mac.com/2026/08/07/whatsapp-makes-parent-managed-accounts-easier-to-set-up-on-iphone/",
+      "title": "WhatsApp makes parent - managed accounts easier to set up on iPhone",
+      "url": "https://9to5mac.com/2026/08/07/whatsapp-makes-parent-managed-accounts-easier-to-set-up-on-iphone/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://collider.com/rooster-fighter-season-1-limited-edition-blu-ray/",
-      "title": "2026 Most Unhinged Anime Is Now Available to Own",
-      "url": "https://collider.com/rooster-fighter-season-1-limited-edition-blu-ray/",
+      "id": "https://therightscoop.com/breaking-iran-trying-to-bar-both-us-warships-and-israeli-ships-from-strait-of-hormuz/",
+      "title": "BREAKING : Iran trying to BAR both US warships and Israeli ships from Strait of Hormuz – The Right Scoop",
+      "url": "https://therightscoop.com/breaking-iran-trying-to-bar-both-us-warships-and-israeli-ships-from-strait-of-hormuz/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.businessinsider.com/guides/streaming/best-new-movies-tv-shows-streaming-this-weekend-2026-8-7",
-      "title": "The 6 Best New Movies and TV Shows Streaming This Weekend",
-      "url": "https://www.businessinsider.com/guides/streaming/best-new-movies-tv-shows-streaming-this-weekend-2026-8-7",
+      "id": "https://www.tribunnews.com/metropolitan/7865663/polisi-jadwalkan-pemeriksaan-eks-ketua-yayasan-iwd-soal-penemuan-ratusan-senjata-di-sekolah-jaksel",
+      "title": "Polisi Jadwalkan Pemeriksaan Eks Ketua Yayasan IWD Soal Penemuan Ratusan Senjata di Sekolah Jaksel",
+      "url": "https://www.tribunnews.com/metropolitan/7865663/polisi-jadwalkan-pemeriksaan-eks-ketua-yayasan-iwd-soal-penemuan-ratusan-senjata-di-sekolah-jaksel",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.soundersfc.com/news/seavqro-101-preview-all-you-need-to-know-when-the-sounders-host-queretaro-in-leagues-cup-on-sunday",
-      "title": "SEAvQRO 101 Preview : All you need to know when the Sounders host Querétaro in Leagues Cup on Sunday",
-      "url": "https://www.soundersfc.com/news/seavqro-101-preview-all-you-need-to-know-when-the-sounders-host-queretaro-in-leagues-cup-on-sunday",
+      "id": "https://finance.sina.com.cn/tech/roll/2026-08-08/doc-inimqptt4303523.shtml",
+      "title": "马斯克豪掷超百亿美元打造 ！ 全球最大芯片厂面积将超900万平",
+      "url": "https://finance.sina.com.cn/tech/roll/2026-08-08/doc-inimqptt4303523.shtml",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://myq1075.com/ixp/683/p/collin-raye-five-flags-contest/",
-      "title": "Enter to Win Tickets to Collin Raye at the Five Flags Theater",
-      "url": "https://myq1075.com/ixp/683/p/collin-raye-five-flags-contest/",
+      "id": "https://www.manilatimes.net/2026/08/08/business/foreign-business/us-stocks-jump-as-employers-unexpectedly-cut-23000-jobs-raising-hopes-that-rate-hikes-can-wait/2401320",
+      "title": "US stocks jump as employers unexpectedly cut 23 , 000 jobs , raising hopes that rate hikes can wait",
+      "url": "https://www.manilatimes.net/2026/08/08/business/foreign-business/us-stocks-jump-as-employers-unexpectedly-cut-23000-jobs-raising-hopes-that-rate-hikes-can-wait/2401320",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://m.mp.oeeee.com/a/BAAFRD0000202608071639923.html",
+      "title": "焕新开园 ！ 深圳园博园多国主题花园免费开放 ， 解锁园林新经济",
+      "url": "https://m.mp.oeeee.com/a/BAAFRD0000202608071639923.html",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://finance.sina.com.cn/stock/t/2026-08-08/doc-inimqptt4279186.shtml",
+      "title": "Agentic AI新趋势 ： 亚马逊AWS出现 CPU短缺 _ 新浪财经 _ 新浪网",
+      "url": "https://finance.sina.com.cn/stock/t/2026-08-08/doc-inimqptt4279186.shtml",
       "source": "",
       "date": "",
       "category": "stocks"
