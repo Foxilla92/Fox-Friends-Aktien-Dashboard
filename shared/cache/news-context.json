@@ -1,14 +1,6 @@
 {
-  "fetchedAt": "2026-08-10T13:21:58.030Z",
+  "fetchedAt": "2026-08-10T13:48:31.955Z",
   "news": [
-    {
-      "id": "https://www.rttnews.com/story.aspx?Id=3678435",
-      "title": "ChipMOS Technologies July Revenue Rises 43 . 6 % Y - o - Y ; Shares Up",
-      "url": "https://www.rttnews.com/story.aspx?Id=3678435",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
     {
       "id": "https://www.dailypolitical.com/2026/08/10/large-cap-stocks-to-research-august-7th.html",
       "title": "Large Cap Stocks To Research – August 7th",
@@ -42,65 +34,73 @@
       "category": "sector"
     },
     {
-      "id": "https://cleantechnica.com/2026/08/10/10-billion-tesla-solar-factory-in-texas-and-20-25-billion-terafab-project-in-midst-of-ai-bubble/",
-      "title": "$10 Billion Tesla Solar Factory in Texas ? And $20 – 25 Billion TERAFAB Project in Midst of AI Bubble ?",
-      "url": "https://cleantechnica.com/2026/08/10/10-billion-tesla-solar-factory-in-texas-and-20-25-billion-terafab-project-in-midst-of-ai-bubble/",
+      "id": "https://www.ntdtv.com/b5/2026/08/10/a104122705.html",
+      "title": "【 新聞直擊 】 伊官媒露餡 小哈命危 ？ 以色列還要打 | 穆吉塔巴 | 病危 | 美伊談判",
+      "url": "https://www.ntdtv.com/b5/2026/08/10/a104122705.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://finance.yahoo.com/markets/stocks/articles/intel-launches-15-billion-share-120506693.html",
+      "title": "Intel plans $15 billion share sale as turnaround rally lifts stock",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/intel-launches-15-billion-share-120506693.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.notizie.it/bambino-trovato-morto-armadio-madre-accusa-compagno-abusi/",
-      "title": "Bambino trovato morto nellarmadio : la madre accusa il compagno di abusi",
-      "url": "https://www.notizie.it/bambino-trovato-morto-armadio-madre-accusa-compagno-abusi/",
+      "id": "https://www.bicesteradvertiser.net/news/national/uk-today/26449786.aldi-6-99-pumpkin-dupe-65-cheaper-anthropologie-candle/",
+      "title": "Aldi £6 . 99 pumpkin dupe is 65 % cheaper than Anthropologie candle",
+      "url": "https://www.bicesteradvertiser.net/news/national/uk-today/26449786.aldi-6-99-pumpkin-dupe-65-cheaper-anthropologie-candle/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.notizie.it/paura-san-marino-bambino-rischia-di-annegare-piscina-in-terapia-intensiva/",
-      "title": "Paura a San Marino , bambino rischia di annegare in piscina : è in terapia intensiva",
-      "url": "https://www.notizie.it/paura-san-marino-bambino-rischia-di-annegare-piscina-in-terapia-intensiva/",
+      "id": "https://www.notizie.it/le-due-premier-propongono-centri-di-rimpatrio-in-paesi-terzi-per-gestire-la-crisi-migratoria/",
+      "title": "Le due premier propongono centri di rimpatrio in Paesi terzi per gestire la crisi migratoria",
+      "url": "https://www.notizie.it/le-due-premier-propongono-centri-di-rimpatrio-in-paesi-terzi-per-gestire-la-crisi-migratoria/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.thenewsherald.com/2026/08/10/macbook-neo-adapters-monitors-mouse-accessories-2/",
-      "title": "Adapters , monitors , mouse : Key gear to go with your MacBook Neo",
-      "url": "https://www.thenewsherald.com/2026/08/10/macbook-neo-adapters-monitors-mouse-accessories-2/",
+      "id": "https://www.lifo.gr/now/greece/prosgeiosi-elikopteroy-sto-sarakiniko-den-emfanistikan-gia-exigiseis-heiristis-kai",
+      "title": "Προσγείωση ελικοπτέρου στο Σαρακήνικο : Δεν εμφανίστηκαν για εξηγήσεις χειριστής και ιδιοκτήτης",
+      "url": "https://www.lifo.gr/now/greece/prosgeiosi-elikopteroy-sto-sarakiniko-den-emfanistikan-gia-exigiseis-heiristis-kai",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.sunjournal.com/2026/08/10/maine-movie-theaters-adding-variety-to-standard-film-fare/",
-      "title": "Maine movie theaters adding variety to standard film fare",
-      "url": "https://www.sunjournal.com/2026/08/10/maine-movie-theaters-adding-variety-to-standard-film-fare/",
+      "id": "https://timesca.com/abai-day-in-kazakhstan/",
+      "title": "Abai Day in Kazakhstan : The Enduring Legacy of a National Poet - The Times Of Central Asia",
+      "url": "https://timesca.com/abai-day-in-kazakhstan/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.cna.com.tw:443/news/ait/202608100282.aspx",
-      "title": "祖克柏籲美放寬開源AI模型限制 應對中國競爭 | 科技",
-      "url": "https://www.cna.com.tw:443/news/ait/202608100282.aspx",
+      "id": "https://www.newspim.com/news/view/20260810001349",
+      "title": "[ 미국 특징주 ] 인텔 , 150억 달러 신주 발행 추진 소식에 개장 전 하락",
+      "url": "https://www.newspim.com/news/view/20260810001349",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.forbes.com/sites/hughmcintyre/2026/08/10/morgan-wallen-ties-ariana-grandes-chart-record/",
-      "title": "Morgan Wallen Ties Ariana Grande Chart Record",
-      "url": "https://www.forbes.com/sites/hughmcintyre/2026/08/10/morgan-wallen-ties-ariana-grandes-chart-record/",
+      "id": "https://www.notizie.it/netanyahu-apre-al-piano-usa-per-gaza-iniziato-il-ritiro-dell-esercito/",
+      "title": "Netanyahu apre al piano united states per Gaza : iniziato il ritiro dellesercito",
+      "url": "https://www.notizie.it/netanyahu-apre-al-piano-usa-per-gaza-iniziato-il-ritiro-dell-esercito/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.notizie.it/bollo-auto-nuove-regole-cosa-cambia-e-da-quando/",
-      "title": "Bollo auto , nuove regole : cosa cambia e da quando",
-      "url": "https://www.notizie.it/bollo-auto-nuove-regole-cosa-cambia-e-da-quando/",
+      "id": "https://www.notizie.it/eclissi-sole-12-agosto-quando-osservarla-come-proteggersi-evitare-rischi/",
+      "title": "Eclissi di sole 12 agosto : quando osservarla e come proteggersi per evitare rischi",
+      "url": "https://www.notizie.it/eclissi-sole-12-agosto-quando-osservarla-come-proteggersi-evitare-rischi/",
       "source": "",
       "date": "",
       "category": "stocks"
