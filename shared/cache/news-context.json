@@ -1,66 +1,106 @@
 {
-  "fetchedAt": "2026-08-15T14:35:25.118Z",
+  "fetchedAt": "2026-08-16T19:46:54.765Z",
   "news": [
     {
-      "id": "https://wcyy.com/ixp/443/p/sublime-until-sun-explodes/",
-      "title": "Sublime First Album In 30 Years Honors Bradley Nowell",
-      "url": "https://wcyy.com/ixp/443/p/sublime-until-sun-explodes/",
+      "id": "https://www.themarketsdaily.com/2026/08/16/value-stocks-to-add-to-your-watchlist-august-16th.html",
+      "title": "Value Stocks To Add to Your Watchlist – August 16th",
+      "url": "https://www.themarketsdaily.com/2026/08/16/value-stocks-to-add-to-your-watchlist-august-16th.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://hindi.moneycontrol.com/news/markets/small-cap-stocks-is-now-the-right-time-to-invest-after-correction-ambit-asset-management-explains-five-reasons-for-better-returns-in-smallcaps-2431383.html",
+      "title": "Small Cap Stocks : क्या अब स्मॉलकैप स्टॉक्स में निवेश का सही मौका है ? Ambit ने बताए अच्छे रिटर्न के 5 बड़े संकेत",
+      "url": "https://hindi.moneycontrol.com/news/markets/small-cap-stocks-is-now-the-right-time-to-invest-after-correction-ambit-asset-management-explains-five-reasons-for-better-returns-in-smallcaps-2431383.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.setn.com/news/1889493",
+      "title": "三大事業體走揚 ！「 這化學大廠 」 卡位高階CCL材料市場 Q2毛利率衝新高 | 財經",
+      "url": "https://www.setn.com/news/1889493",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "http://www.epochtimes.com.tw/n509616/%E5%82%B3%E5%BE%B7%E5%9C%8B%E7%A0%94%E7%A9%B6%E4%B8%AD%E5%9C%8B%E7%B6%93%E6%BF%9F%E5%BC%B1%E9%BB%9E.html",
+      "title": "傳德國研究中國經濟弱點 | 中國 | 德國 | 武器化",
+      "url": "http://www.epochtimes.com.tw/n509616/%E5%82%B3%E5%BE%B7%E5%9C%8B%E7%A0%94%E7%A9%B6%E4%B8%AD%E5%9C%8B%E7%B6%93%E6%BF%9F%E5%BC%B1%E9%BB%9E.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.manilatimes.net/2026/08/17/news/senate-to-maintain-strict-oversight-over-pax-silica-initiative/2406405",
+      "title": "Senate to maintain strict oversight over Pax Silica initiative",
+      "url": "https://www.manilatimes.net/2026/08/17/news/senate-to-maintain-strict-oversight-over-pax-silica-initiative/2406405",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.geeky-gadgets.com/apple-watch-series-12-rumors-4/",
+      "title": "Apple Watch Series 12 Rumors and Expected Features",
+      "url": "https://www.geeky-gadgets.com/apple-watch-series-12-rumors-4/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.163.com/dy/article/L4DEVDKS0511CPVM.html",
-      "title": "行业首款大阔折大获成功 ！ 华为Pura X Max销量突破68万台 ： 10999元起",
-      "url": "https://www.163.com/dy/article/L4DEVDKS0511CPVM.html",
+      "id": "https://sandiegomagazine.com/food-drink/food-news/madison-on-park-temporarily-closing-next-month/",
+      "title": "Madison on Park Temporarily Closing Next Month",
+      "url": "https://sandiegomagazine.com/food-drink/food-news/madison-on-park-temporarily-closing-next-month/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://tsn.ua/other/iak-zberihaty-kartopliu-shchob-vona-ne-prorostala-dopomoze-odyn-frukt-3149324.html",
-      "title": "Картопля не проростатиме довше : який фрукт покласти поруч Різне",
-      "url": "https://tsn.ua/other/iak-zberihaty-kartopliu-shchob-vona-ne-prorostala-dopomoze-odyn-frukt-3149324.html",
+      "id": "https://www.haberler.com/spor/feyzullah-akturk-kirkpinar-kemeri-icin-sonuna-20150510-haberi/",
+      "title": "Feyzullah Aktürkten Kırkpınar Kemeri Sözü",
+      "url": "https://www.haberler.com/spor/feyzullah-akturk-kirkpinar-kemeri-icin-sonuna-20150510-haberi/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.163.com/dy/article/L4DDAA3H0530KP1K.html",
-      "title": "段永平狂买拼多多 ， 景林彻底清空英伟达 ， 高瓴 、 高毅两大私募巨头最新调仓揭晓",
-      "url": "https://www.163.com/dy/article/L4DDAA3H0530KP1K.html",
+      "id": "https://dailybruin.com/2026/08/15/bruin-to-bruin-ucla-associate-of-the-chancellor-health-economist-felicia-knaul",
+      "title": "Bruin to Bruin : UCLA Associate of the Chancellor , health economist Felicia Marie Knaul",
+      "url": "https://dailybruin.com/2026/08/15/bruin-to-bruin-ucla-associate-of-the-chancellor-health-economist-felicia-knaul",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://ichannela.com/news/detail/000000545340.do",
-      "title": "광고 안 합니다 … 뉴욕 한복판 역발상 사과 광고",
-      "url": "https://ichannela.com/news/detail/000000545340.do",
+      "id": "https://finance.yahoo.com/markets/stocks/articles/satya-nadellas-microsoft-stock-jumped-185000909.html",
+      "title": "Satya Nadella Microsoft Stock Jumped 18 % in a Week After Azure Annual Revenue Topped $100 Billion for the First Time . Is It Still a Buy ?",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/satya-nadellas-microsoft-stock-jumped-185000909.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://arynews.tv/apple-adds-these-iphone-macbook-models-to-obsolete-list",
-      "title": "Apple adds these iPhone , MacBook models to obsolete list",
-      "url": "https://arynews.tv/apple-adds-these-iphone-macbook-models-to-obsolete-list",
+      "id": "https://www.lapatria.com/sucesos/incendios-ponen-correr-bomberos-en-el-oriente-de-caldas",
+      "title": "Incendios ponen a correr a Bomberos en el Oriente de Caldas",
+      "url": "https://www.lapatria.com/sucesos/incendios-ponen-correr-bomberos-en-el-oriente-de-caldas",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.madata.gr/epikairotita/social/972501-arsi-apagoreytikoy-apoploy-se-rafina-kai-layrio-anachoroyn-ta-ploia.html",
-      "title": "Άρση απαγορευτικού απόπλου σε Ραφήνα και Λαύριο : αναχωρούν τα πλοία",
-      "url": "https://www.madata.gr/epikairotita/social/972501-arsi-apagoreytikoy-apoploy-se-rafina-kai-layrio-anachoroyn-ta-ploia.html",
+      "id": "https://1045theteam.com/ixp/498/p/upstate-new-york-fall-weather-outlook/",
+      "title": "Old Farmer Almanac Fall 2026 Forecast For Upstate New York",
+      "url": "https://1045theteam.com/ixp/498/p/upstate-new-york-fall-weather-outlook/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.latercera.com/pulso/noticia/presidente-de-sonda-con-la-ia-son-cada-vez-menos-utiles-las-personas-automatas-necesitamos-personas-mas-integrales/",
-      "title": "Presidente de Sonda : Con la IA son cada vez menos útiles las personas autómatas , necesitamos personas más integrales",
-      "url": "https://www.latercera.com/pulso/noticia/presidente-de-sonda-con-la-ia-son-cada-vez-menos-utiles-las-personas-automatas-necesitamos-personas-mas-integrales/",
+      "id": "https://ibcworldnews.com/2026/08/16/fda-suspends-parle-agros-licence/",
+      "title": "FDA suspends Parle Agro licence | IBC World News",
+      "url": "https://ibcworldnews.com/2026/08/16/fda-suspends-parle-agros-licence/",
       "source": "",
       "date": "",
       "category": "stocks"
