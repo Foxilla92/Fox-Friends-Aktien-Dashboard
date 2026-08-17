@@ -638,3 +638,27 @@ WICHTIGER TEST NACH DEM DEPLOY
    In Netlify kann höchstens ein übersprungener/canceled Build-Eintrag erscheinen.
 5. Eine echte Codeänderung (z. B. app.js/index.html/netlify.toml) muss weiterhin
    ganz normal deployen.
+
+
+VERSION 8.3 – NASDAQ/ORIGINALKURS ALS HAUPTWERT
+
+- Bei Nicht-Euro-Aktien wird der Originalkurs der analysierten Börse groß angezeigt.
+- Der umgerechnete EUR-Wert steht kleiner und dezent darunter.
+- Gilt oben in der Aktienkarte sowie bei aktuellem Kurs, Ziel und Stopp.
+- Bei Euro-Aktien bleibt nur der EUR-Wert sichtbar.
+- Score und Analyseberechnung bleiben unverändert.
+
+
+VERSION 8.4 – AKTUELLER KURS GETRENNT VON ANALYSEKERZEN
+
+- Der sichtbare Aktienkurs wird jetzt separat über Twelve Data /price abgefragt.
+- RSI, MACD, EMA, Fibonacci, Volumen und der Einstiegsscore bleiben auf den
+  bisherigen time_series-/Tagesdaten.
+- Damit kann eine ältere/noch nicht aktualisierte Analysekerze nicht mehr den
+  sichtbaren "aktuellen Kurs" bestimmen.
+- Der CRV-Anzeigebereich verwendet ebenfalls den aktuellen /price-Kurs.
+- Die Score-Berechnung wurde dadurch NICHT verändert; ihr CRV-Anteil verwendet
+  weiterhin dieselbe Analysebasis wie bisher.
+- Falls /price vorübergehend scheitert, fällt die Anzeige auf den letzten
+  Intraday-Close zurück, statt die komplette Aktie als Fehler zu verwerfen.
+- /price kostet bei Twelve Data einen zusätzlichen API-Credit pro Aktie/Prüflauf.

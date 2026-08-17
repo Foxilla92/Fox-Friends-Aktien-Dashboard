@@ -229,6 +229,37 @@ async function getCurrencyToEurRate(currency, apiKey) {
   return { rate: NaN, creditsUsed: 0, source: "unavailable" };
 }
 
+async function fetchLatestPrice(symbol, exchange, apiKey) {
+  const url = new URL("https://api.twelvedata.com/price");
+  url.searchParams.set("symbol", symbol);
+  if (exchange) url.searchParams.set("exchange", exchange);
+  url.searchParams.set("apikey", apiKey);
+
+  const response = await fetch(url, {
+    headers: { "Accept": "application/json" }
+  });
+
+  const body = await response.text();
+  let data;
+  try {
+    data = JSON.parse(body);
+  } catch {
+    throw new Error(`Twelve Data /price lieferte keine gültige JSON-Antwort (HTTP ${response.status}).`);
+  }
+
+  if (!response.ok || data?.status === "error") {
+    throw new Error(data?.message || `Twelve Data /price HTTP ${response.status}`);
+  }
+
+  const price = Number(data?.price);
+  if (!Number.isFinite(price) || price <= 0) {
+    throw new Error("Twelve Data /price lieferte keinen gültigen aktuellen Kurs.");
+  }
+
+  return price;
+}
+
+
 exports.handler = async function handler(event) {
   if (event.httpMethod === "OPTIONS") return response(200, { ok:true });
   if (event.httpMethod !== "GET") return response(405, { status:"error", message:"Nur GET-Anfragen sind erlaubt." });
@@ -317,6 +348,25 @@ exports.handler = async function handler(event) {
       ? `${tradingViewPrefix(resolvedExchange)}:${resolvedSymbol}`
       : resolvedSymbol;
 
+    // Der sichtbare aktuelle Kurs wird bewusst getrennt von den Analyse-Kerzen geladen.
+    // time_series bleibt für RSI/MACD/EMA usw.; /price ist nur der aktuelle Kurs.
+    let currentPrice = NaN;
+    let currentPriceSource = "unavailable";
+    if (mode !== "benchmark") {
+      try {
+        currentPrice = await fetchLatestPrice(parsed.symbol, parsed.exchange, apiKey);
+        creditsUsed += 1;
+        currentPriceSource = "price";
+      } catch (error) {
+        console.warn(`[Aktueller Kurs] ${parsed.original || parsed.symbol}:`, error.message);
+        const fallback = Number(intraday?.values?.at(-1)?.close);
+        if (Number.isFinite(fallback) && fallback > 0) {
+          currentPrice = fallback;
+          currentPriceSource = "time_series_fallback";
+        }
+      }
+    }
+
     return response(200, {
       status:"ok",
       requestedSymbol:rawSymbol,
@@ -324,6 +374,8 @@ exports.handler = async function handler(event) {
       resolvedExchange,
       tradingViewSymbol,
       companyName,
+      price: currentPrice,
+      priceSource: currentPriceSource,
       currency,
       eurRate,
       fxAvailable: Number.isFinite(eurRate) && eurRate > 0,

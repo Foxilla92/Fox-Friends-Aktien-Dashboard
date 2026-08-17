@@ -359,6 +359,8 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     volume: Number(row.volume)
   }));
   const latest = daily.at(-1);
+  const backendPrice = Number(marketData.price);
+  const currentPrice = Number.isFinite(backendPrice) && backendPrice > 0 ? backendPrice : latest.close;
   const threeMonths = daily.slice(-63);
   const oneYear = daily.slice(-252);
   const dailyCloses = daily.map(row=>row.close);
@@ -387,6 +389,7 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
   const upsidePotential = Math.max((threeMonthHigh / latest.close - 1) * 100, 0);
   const downsidePotential = Math.max((1 - threeMonthLow / latest.close) * 100, 0);
   const crvData = calculateCrv(latest.close, threeMonthHigh, fibonacci.nextLowerPrice, atr.atr);
+  const displayCrvData = calculateCrv(currentPrice, threeMonthHigh, fibonacci.nextLowerPrice, atr.atr);
   const trendScore = scoreTrend(latest.close, ema20, ema50, ema200);
   const momentumScore = scoreMomentum(currentRsi, macd, bollinger);
   const riskScore = scoreRisk(atr.percent, crvData.crv);
@@ -450,7 +453,8 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     eurRate,
     kind,
     label,
-    price: latest.close,
+    price: currentPrice,
+    priceSource: marketData.priceSource || "unknown",
     rsi: currentRsi,
     rsiAverage: currentRsiAverage,
     threeMonthPosition,
@@ -484,9 +488,9 @@ async function analyzeSymbol(symbol, settings, benchmarkDaily = null, sectorDail
     bollingerPosition: bollinger.position,
     atr: atr.atr,
     atrPercent: atr.percent,
-    crv: crvData.crv,
-    crvTarget: crvData.target,
-    crvStop: crvData.stop,
+    crv: displayCrvData.crv,
+    crvTarget: displayCrvData.target,
+    crvStop: displayCrvData.stop,
     trendScore,
     momentumScore,
     riskScore,
@@ -688,20 +692,27 @@ function originalCurrencyText(item, amount) {
 }
 
 function primaryPriceHtml(item, amount) {
+  const currency = detectedCurrency(item);
   const euro = euroValue(item, amount);
-  const original = originalCurrencyText(item, amount);
+
+  if (currency === "EUR") {
+    return `<strong>${formatNumber(amount, 2)} €</strong>`;
+  }
+
+  const original = Number.isFinite(amount)
+    ? `${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}`
+    : "–";
 
   if (euro !== "–") {
     return `
-      <strong>${euro}</strong>
-      ${original ? `<small class="original-currency">${original}</small>` : ""}
+      <strong>${original}</strong>
+      <small class="converted-eur">≈ ${euro}</small>
     `;
   }
 
-  const currency = detectedCurrency(item);
   return `
-    <strong>${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}</strong>
-    ${currency && currency !== "EUR" ? `<small class="fx-unavailable">Euro-Umrechnung derzeit nicht verfügbar</small>` : ""}
+    <strong>${original}</strong>
+    ${currency && currency !== "EUR" ? `<small class="fx-unavailable">EUR-Umrechnung derzeit nicht verfügbar</small>` : ""}
   `;
 }
 

@@ -1003,3 +1003,16 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
   background: #1d3156;
   color: #bcd1ff;
 }
+
+/* Version 8.3 – NASDAQ/Originalkurs als Hauptwert */
+.converted-eur {
+  display: block;
+  margin-top: 2px;
+  color: #7f8da8;
+  font-size: 9px;
+  font-weight: 600;
+  opacity: .85;
+}
+.header-price .converted-eur {
+  margin-top: 0;
+}
