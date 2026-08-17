@@ -1016,3 +1016,42 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
 .header-price .converted-eur {
   margin-top: 0;
 }
+
+/* Version 8.6 – EUR wieder Hauptwert, Originalkurs klein */
+.market-price-block {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 1px !important;
+  line-height: 1.05;
+}
+
+.market-price-main {
+  display: block !important;
+  font-size: 16px !important;
+  line-height: 1.1 !important;
+  font-weight: 850 !important;
+  color: #f3f7ff !important;
+}
+
+.market-price-original {
+  display: block !important;
+  margin-top: 2px !important;
+  font-size: 9px !important;
+  line-height: 1.1 !important;
+  font-weight: 600 !important;
+  color: #7f8da8 !important;
+  opacity: .78 !important;
+}
+
+.header-price {
+  display: block !important;
+}
+
+.trade-plan-grid .market-price-main {
+  font-size: 14px !important;
+}
+
+.trade-plan-grid .market-price-original {
+  font-size: 9px !important;
+}

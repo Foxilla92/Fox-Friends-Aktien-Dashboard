@@ -267,12 +267,10 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
   const companyName = marketData.companyName || marketData.intraday?.meta?.name || marketData.daily?.meta?.name || resolvedSymbol;
   const exchangeForCurrency = String(marketData.resolvedExchange || marketData.intraday?.meta?.exchange || marketData.daily?.meta?.exchange || "").toUpperCase();
   const inferredCurrency = ["NASDAQ","NYSE","AMEX","NYSE ARCA"].includes(exchangeForCurrency) ? "USD"
-    : ["XETRA","XETR","GETTEX","FWB","TRADEGATE"].includes(exchangeForCurrency) ? "EUR"
-    : exchangeForCurrency.includes("ASX") ? "AUD"
+    : ["XETRA","GETTEX","FWB","TRADEGATE"].includes(exchangeForCurrency) ? "EUR"
     : "";
   const currency = String(marketData.currency || marketData.intraday?.meta?.currency || marketData.daily?.meta?.currency || inferredCurrency).toUpperCase();
   const eurRate = Number(marketData.eurRate);
-  const earningsInfo = marketData.earnings || { available: false, next: null };
 
   const intradayCloses = intradayData.values.map(row => Number(row.close));
   const rsiValues = calculateRsi(intradayCloses, settings.rsiLength);
@@ -286,6 +284,8 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
     volume: Number(row.volume)
   }));
   const latest = daily.at(-1);
+  const backendPrice = Number(marketData.price);
+  const currentPrice = Number.isFinite(backendPrice) && backendPrice > 0 ? backendPrice : latest.close;
   const threeMonths = daily.slice(-63);
   const oneYear = daily.slice(-252);
   const dailyCloses = daily.map(row=>row.close);
@@ -314,6 +314,7 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
   const upsidePotential = Math.max((threeMonthHigh / latest.close - 1) * 100, 0);
   const downsidePotential = Math.max((1 - threeMonthLow / latest.close) * 100, 0);
   const crvData = calculateCrv(latest.close, threeMonthHigh, fibonacci.nextLowerPrice, atr.atr);
+  const displayCrvData = calculateCrv(currentPrice, threeMonthHigh, fibonacci.nextLowerPrice, atr.atr);
   const trendScore = scoreTrend(latest.close, ema20, ema50, ema200);
   const momentumScore = scoreMomentum(currentRsi, macd, bollinger);
   const riskScore = scoreRisk(atr.percent, crvData.crv);
@@ -322,8 +323,21 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
   const priceFibBuy = buyPriceScore(threeMonthPosition)*0.50 + buyPriceScore(oneYearPosition)*0.20 + fibonacci.buyScore*0.30;
   const priceFibSell = sellPriceScore(threeMonthPosition)*0.50 + sellPriceScore(oneYearPosition)*0.20 + fibonacci.sellScore*0.30;
 
-  const buyScore = buyRsiScore(currentRsi)*0.35 + priceFibBuy*0.25 + trendScore*0.15 + momentumScore*0.15 + volume.score*0.10;
-  const sellScore = sellRsiScore(currentRsi)*0.35 + priceFibSell*0.25 + (100-trendScore)*0.15 + (100-momentumScore)*0.15 + volume.score*0.10;
+  // Trend-Trader-Profil:
+  // Trend 30 %, Preis/Fibonacci 25 %, Momentum 20 %, Volumen 15 %, RSI 10 %
+  const buyScore =
+    trendScore * 0.30 +
+    priceFibBuy * 0.25 +
+    momentumScore * 0.20 +
+    volume.score * 0.15 +
+    buyRsiScore(currentRsi) * 0.10;
+
+  const sellScore =
+    (100 - trendScore) * 0.30 +
+    priceFibSell * 0.25 +
+    (100 - momentumScore) * 0.20 +
+    volume.score * 0.15 +
+    sellRsiScore(currentRsi) * 0.10;
 
   const directionAgreement = buyScore >= sellScore
     ? (currentRsi > currentRsiAverage && macd.bullish ? 100 : currentRsi > currentRsiAverage || macd.bullish ? 70 : 35)
@@ -339,16 +353,16 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
   let label = "NEUTRAL";
   if (buyScore >= settings.buyThreshold && upsidePotential >= settings.minimumPotential && buyScore >= sellScore) {
     kind = "buy";
-    label = "KAUFEN";
+    label = "KAUFCHANCE";
   } else if (buyScore >= 60 && upsidePotential >= Math.min(3, settings.minimumPotential) && buyScore >= sellScore) {
     kind = "watch";
     label = "KAUF PRÜFEN";
   } else if (sellScore >= settings.sellThreshold && sellScore > buyScore) {
     kind = "sell";
-    label = "VERKAUFEN";
+    label = "VERKAUFSRISIKO";
   } else if (sellScore >= 60 && sellScore > buyScore) {
     kind = "watch";
-    label = "VERKAUF PRÜFEN";
+    label = "GEWINNMITNAHME PRÜFEN";
   }
 
   const marketRelative = benchmarkDaily ? relativePerformance(daily, benchmarkDaily) : {benchmarkReturn:NaN,relative:NaN};
@@ -364,7 +378,8 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
     eurRate,
     kind,
     label,
-    price: latest.close,
+    price: currentPrice,
+    priceSource: marketData.priceSource || "unknown",
     rsi: currentRsi,
     rsiAverage: currentRsiAverage,
     threeMonthPosition,
@@ -398,9 +413,9 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
     bollingerPosition: bollinger.position,
     atr: atr.atr,
     atrPercent: atr.percent,
-    crv: crvData.crv,
-    crvTarget: crvData.target,
-    crvStop: crvData.stop,
+    crv: displayCrvData.crv,
+    crvTarget: displayCrvData.target,
+    crvStop: displayCrvData.stop,
     trendScore,
     momentumScore,
     riskScore,
@@ -409,14 +424,477 @@ async function analyzeMarketData(symbol, settings, marketData, benchmarkDaily = 
     relativeStrengthMarket: marketRelative.relative,
     sectorReturn: sectorRelative.benchmarkReturn,
     relativeStrengthSector: sectorRelative.relative,
-    earningsAvailable: Boolean(earningsInfo.available),
-    nextEarningsDate: earningsInfo.next?.date || null,
-    nextEarningsSession: earningsInfo.next?.session || "",
-    nextEpsEstimate: earningsInfo.next?.estimate ?? null,
-    earningsUnavailableReason: earningsInfo.available ? "" : (earningsInfo.reason || ""),
     rank: Math.max(buyRank, sellRank),
     error: null
   };
 }
+
+function formatNumber(value, decimals = 1) {
+  return Number.isFinite(value)
+    ? value.toLocaleString("de-DE", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : "–";
+}
+
+
+
+
+
+function entryScoreLabel(score) {
+  if (!Number.isFinite(score)) return "Nicht bewertbar";
+  if (score >= 76) return "Sehr attraktiv";
+  if (score >= 51) return "Interessant";
+  if (score >= 26) return "Abwarten";
+  return "Eher ungünstig";
+}
+
+function exitScoreLabel(score) {
+  if (!Number.isFinite(score)) return "Nicht bewertbar";
+  if (score >= 76) return "Hohes Verkaufsrisiko";
+  if (score >= 51) return "Gewinnmitnahme prüfen";
+  if (score >= 26) return "Beobachten";
+  return "Geringer Verkaufsdruck";
+}
+
+function valuationScore(item) {
+  const pricePosition = 100 - (item.threeMonthPosition * 0.7 + item.oneYearPosition * 0.3);
+  const fibSupport = Number.isFinite(item.fibonacciBuyScore) ? item.fibonacciBuyScore : 50;
+  return clamp(pricePosition * 0.7 + fibSupport * 0.3, 0, 100);
+}
+
+function scoreExplanation(item) {
+  const valuation = valuationScore(item);
+  const score = item.kind === "sell" ? item.sellScore : item.buyScore;
+  const label = item.kind === "sell" ? exitScoreLabel(score) : entryScoreLabel(score);
+
+  const strongest = [
+    { name: "Trend", value: item.trendScore },
+    { name: "Schwung", value: item.momentumScore },
+    { name: "Bewertung", value: valuation },
+    { name: "Chance", value: item.chanceScore }
+  ].filter(part => Number.isFinite(part.value)).sort((a,b) => b.value - a.value)[0];
+
+  const weakest = [
+    { name: "Trend", value: item.trendScore },
+    { name: "Schwung", value: item.momentumScore },
+    { name: "Bewertung", value: valuation },
+    { name: "Chance", value: item.chanceScore }
+  ].filter(part => Number.isFinite(part.value)).sort((a,b) => a.value - b.value)[0];
+
+  return {
+    valuation,
+    label,
+    text: strongest && weakest
+      ? `${strongest.name} stützt die Bewertung am stärksten. ${weakest.name} bremst sie aktuell am meisten.`
+      : "Die Bewertung ergibt sich aus mehreren technischen Teilwerten."
+  };
+}
+
+function scoreWord(score) {
+  if (!Number.isFinite(score)) return "Unbekannt";
+  if (score >= 80) return "Sehr stark";
+  if (score >= 65) return "Stark";
+  if (score >= 50) return "Ausgeglichen";
+  if (score >= 35) return "Schwach";
+  return "Sehr schwach";
+}
+
+function scoreClass(score) {
+  if (!Number.isFinite(score)) return "tone-neutral";
+  if (score >= 65) return "tone-positive";
+  if (score >= 45) return "tone-caution";
+  return "tone-negative";
+}
+
+function crvAssessment(crv) {
+  if (!Number.isFinite(crv)) return { label: "nicht berechenbar", className: "tone-neutral" };
+  if (crv >= 3) return { label: "sehr attraktiv", className: "tone-positive" };
+  if (crv >= 2) return { label: "gut", className: "tone-positive" };
+  if (crv >= 1.5) return { label: "brauchbar", className: "tone-caution" };
+  if (crv >= 1) return { label: "knapp", className: "tone-caution" };
+  return { label: "ungünstig", className: "tone-negative" };
+}
+
+function relativeMarketText(value) {
+  if (!Number.isFinite(value)) return "Kein Marktvergleich verfügbar";
+  if (value >= 5) return `${formatNumber(value, 1)} Prozentpunkte besser als der Markt`;
+  if (value >= 0) return `${formatNumber(value, 1)} Prozentpunkte leicht besser als der Markt`;
+  if (value > -5) return `${formatNumber(Math.abs(value), 1)} Prozentpunkte leicht schwächer als der Markt`;
+  return `${formatNumber(Math.abs(value), 1)} Prozentpunkte schwächer als der Markt`;
+}
+
+function buildBeginnerSummary(item) {
+  if (item.error) {
+    return {
+      headline: "Diese Aktie konnte nicht ausgewertet werden.",
+      text: item.error,
+      positives: [],
+      cautions: []
+    };
+  }
+
+  const positives = [];
+  const cautions = [];
+
+  if (item.trendScore >= 65) positives.push("Der mittelfristige Trend ist stabil.");
+  else if (item.trendScore < 40) cautions.push("Der Trend ist aktuell eher schwach.");
+
+  if (item.momentumScore >= 65) positives.push("Der Kursschwung entwickelt sich positiv.");
+  else if (item.momentumScore < 40) cautions.push("Der Kursschwung liefert noch wenig Unterstützung.");
+
+  if (item.crv >= 2) positives.push(`Das Chancen-Risiko-Verhältnis ist mit ${formatNumber(item.crv, 2)} : 1 attraktiv.`);
+  else if (Number.isFinite(item.crv) && item.crv < 1.5) cautions.push(`Das Chancen-Risiko-Verhältnis ist mit ${formatNumber(item.crv, 2)} : 1 eher schwach.`);
+
+  if (item.rsi < 35) positives.push("Der RSI liegt weit unten und kann eine Gegenbewegung begünstigen.");
+  else if (item.rsi > 70) cautions.push("Der RSI liegt hoch; kurzfristige Rücksetzer sind eher möglich.");
+
+  if (item.volumeRatio >= 1.2) positives.push("Das Handelsvolumen bestätigt die Bewegung.");
+  else if (Number.isFinite(item.volumeRatio) && item.volumeRatio < 0.7) cautions.push("Das Handelsvolumen ist sehr niedrig; das Signal ist weniger überzeugend.");
+
+  if (item.relativeStrengthMarket >= 0) positives.push("Die Aktie hält sich mindestens so gut wie der Markt.");
+  else if (item.relativeStrengthMarket <= -5) cautions.push("Die Aktie entwickelt sich deutlich schwächer als der Markt.");
+
+  let headline;
+  if (item.kind === "buy") headline = "Mehrere Signale sprechen für einen möglichen Einstieg.";
+  else if (item.kind === "sell") headline = "Mehrere Signale sprechen für erhöhte Vorsicht oder einen möglichen Ausstieg.";
+  else headline = "Die Aktie ist interessant, aber das Signal ist noch nicht eindeutig.";
+
+  const text = positives.length || cautions.length
+    ? "Die wichtigsten Gründe sind unten zusammengefasst."
+    : "Für eine klare Einordnung fehlen derzeit ausreichend starke Signale.";
+
+  return { headline, text, positives: positives.slice(0, 3), cautions: cautions.slice(0, 3) };
+}
+
+function beginnerMetric(title, score, explanation) {
+  return `
+    <div class="beginner-metric ${scoreClass(score)}">
+      <div class="beginner-metric-top">
+        <span>${title}</span>
+        <strong>${scoreWord(score)}</strong>
+      </div>
+      <div class="mini-progress"><i style="width:${clamp(score, 0, 100)}%"></i></div>
+      <small>${explanation}</small>
+    </div>`;
+}
+
+
+function detectedCurrency(item) {
+  const explicit = String(item.currency || "").toUpperCase();
+  if (explicit) return explicit;
+
+  const exchange = String(item.resolvedExchange || "").toUpperCase();
+  if (["NASDAQ", "NYSE", "AMEX", "NYSE ARCA"].some(value => exchange.includes(value))) return "USD";
+  if (["XETRA", "XETR", "GETTEX", "FWB", "TRADEGATE"].some(value => exchange.includes(value))) return "EUR";
+  if (exchange.includes("ASX")) return "AUD";
+  return "";
+}
+
+function euroValue(item, amount) {
+  if (!Number.isFinite(amount)) return "–";
+
+  const currency = detectedCurrency(item);
+  if (currency === "EUR") return formatNumber(amount, 2) + " €";
+
+  const rate = Number(item.eurRate);
+  if (Number.isFinite(rate) && rate > 0) {
+    return formatNumber(amount * rate, 2) + " €";
+  }
+
+  return "–";
+}
+
+function euroLine(item, amount) {
+  const converted = euroValue(item, amount);
+  return converted === "–" ? "" : `<small class="eur-conversion">≈ ${converted}</small>`;
+}
+
+
+function originalCurrencyText(item, amount) {
+  if (!Number.isFinite(amount)) return "";
+  const currency = detectedCurrency(item);
+  if (!currency || currency === "EUR") return "";
+  return `${formatNumber(amount, 2)} ${currency}`;
+}
+
+function primaryPriceHtml(item, amount) {
+  const currency = detectedCurrency(item);
+  const euro = euroValue(item, amount);
+
+  if (currency === "EUR") {
+    return `<strong>${formatNumber(amount, 2)} €</strong>`;
+  }
+
+  const original = Number.isFinite(amount)
+    ? `${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}`
+    : "–";
+
+  if (euro !== "–") {
+    return `
+      <strong>${original}</strong>
+      <small class="converted-eur">≈ ${euro}</small>
+    `;
+  }
+
+  return `
+    <strong>${original}</strong>
+    ${currency && currency !== "EUR" ? `<small class="fx-unavailable">EUR-Umrechnung derzeit nicht verfügbar</small>` : ""}
+  `;
+}
+
+function profitLossExample(item, investmentAmount) {
+  if (!Number.isFinite(item.price) || item.price <= 0 || !Number.isFinite(investmentAmount) || investmentAmount <= 0) {
+    return { gain: NaN, loss: NaN };
+  }
+  const targetPct = Number.isFinite(item.crvTarget) ? (item.crvTarget / item.price - 1) : NaN;
+  const stopPct = Number.isFinite(item.crvStop) ? (item.crvStop / item.price - 1) : NaN;
+  return {
+    gain: Number.isFinite(targetPct) ? investmentAmount * targetPct : NaN,
+    loss: Number.isFinite(stopPct) ? investmentAmount * stopPct : NaN
+  };
+}
+
+function scoreBand(score) {
+  if (score >= 76) return { cls: "band-great", label: "Sehr attraktiv", range: "76–100" };
+  if (score >= 51) return { cls: "band-good", label: "Interessant", range: "51–75" };
+  if (score >= 26) return { cls: "band-wait", label: "Abwarten", range: "26–50" };
+  return { cls: "band-bad", label: "Eher ungünstig", range: "0–25" };
+}
+
+
+const COLLAPSED_CARDS_KEY = "foxFriendsCollapsedCards";
+
+function getCollapsedCards() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(COLLAPSED_CARDS_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function isCardCollapsed(symbol) {
+  return getCollapsedCards().has(String(symbol || "").toUpperCase());
+}
+
+function setCardCollapsed(symbol, collapsed) {
+  const cards = getCollapsedCards();
+  const key = String(symbol || "").toUpperCase();
+  if (collapsed) cards.add(key);
+  else cards.delete(key);
+  localStorage.setItem(COLLAPSED_CARDS_KEY, JSON.stringify([...cards]));
+}
+
+function cardHtml(item) {
+  const mainScore = item.kind === "sell" ? item.sellScore : item.buyScore;
+  const mainLabel = item.kind === "sell" ? "Ausstiegsscore" : "Einstiegsscore";
+  const summary = buildBeginnerSummary(item);
+  const crv = crvAssessment(item.crv);
+
+  const positiveList = summary.positives.length
+    ? `<div class="reason-group positive-reasons"><h4>Was dafür spricht</h4>${summary.positives.map(text => `<div>✓ ${text}</div>`).join("")}</div>`
+    : "";
+
+  const cautionList = summary.cautions.length
+    ? `<div class="reason-group caution-reasons"><h4>Worauf du achten solltest</h4>${summary.cautions.map(text => `<div>⚠ ${text}</div>`).join("")}</div>`
+    : "";
+
+  return `
+    <article class="signal-card ${item.kind} ${isCardCollapsed(item.symbol) ? "collapsed" : ""}" data-card-symbol="${item.symbol}">
+      <div class="signal-card-header">
+        <div class="card-identity">
+          <div class="symbol">${item.symbol}</div>
+          <div class="company-line">${item.companyName || item.resolvedSymbol || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
+          <div class="price header-price">
+            ${primaryPriceHtml(item, item.price)}
+          </div>
+        </div>
+        <div class="card-header-actions">
+          <span class="signal-pill ${item.kind}">${item.label}</span>
+          <button class="card-collapse-button" type="button" aria-label="${isCardCollapsed(item.symbol) ? "Aktienkarte ausklappen" : "Aktienkarte einklappen"}">${isCardCollapsed(item.symbol) ? "⌄" : "⌃"}</button>
+        </div>
+      </div>
+
+      <div class="card-collapsible">
+      ${(() => {
+        const scoreInfo = scoreExplanation(item);
+        const band = scoreBand(mainScore);
+        return `
+      <section class="verdict-panel ${item.kind}">
+        <div class="verdict-score-block">
+          <div class="score-with-help">
+            <div class="verdict-score">
+              <strong>${formatNumber(mainScore, 0)}</strong>
+              <span>/100</span>
+            </div>
+            <button type="button" class="score-popover-button" aria-label="Score-Skala anzeigen">?</button>
+          </div>
+          <span class="score-meaning ${band.cls}">${band.label}</span>
+
+          <div class="score-popover">
+            ${[
+              {range:"0–25",label:"Eher ungünstig",cls:"band-bad"},
+              {range:"26–50",label:"Abwarten",cls:"band-wait"},
+              {range:"51–75",label:"Interessant",cls:"band-good"},
+              {range:"76–100",label:"Sehr attraktiv",cls:"band-great"}
+            ].map(row => `<div class="${row.cls} ${row.range===band.range ? "active" : ""}"><span>${row.range}</span><strong>${row.label}</strong></div>`).join("")}
+          </div>
+        </div>
+
+        <div class="verdict-copy">
+          <span class="verdict-kicker">${mainLabel}</span>
+          <h3>${summary.headline}</h3>
+          <p>${scoreInfo.text}</p>
+        </div>
+      </section>
+
+      <section class="score-explainer">
+        <div class="score-explainer-header">
+          <div>
+            <span>So setzt sich der Score zusammen</span>
+            <strong>Je höher, desto positiver für einen Einstieg</strong>
+          </div>
+        </div>
+
+        <div class="score-breakdown">
+          ${beginnerMetric("Trend", item.trendScore, "Sind kurz-, mittel- und langfristiger Trend positiv?")}
+          ${beginnerMetric("Schwung", item.momentumScore, "Unterstützen RSI, MACD und Bollinger die Bewegung?")}
+          ${beginnerMetric("Bewertung", scoreInfo.valuation, "Liegt der Kurs eher günstig in seiner 3-Monats- und Jahresspanne?")}
+          ${beginnerMetric("Chance", item.chanceScore, "Wie viel technischer Spielraum ist nach oben vorhanden?")}
+        </div>
+      </section>`;
+      })()}
+
+      <div class="confidence-row">
+        <span>Signal-Vertrauen</span>
+        <strong>${formatNumber(item.confidence, 0)} % · ${scoreWord(item.confidence)}</strong>
+      </div>
+      <div class="progress confidence-progress"><i style="width:${clamp(item.confidence, 0, 100)}%"></i></div>
+
+      <section class="beginner-section compact-overview">
+        <h3>Zusätzliche Einordnung</h3>
+        <div class="beginner-grid">
+          ${beginnerMetric("Sicherheit", item.riskScore, "Je höher, desto günstiger wirken Volatilität und Chancen-Risiko-Verhältnis.")}
+          ${beginnerMetric("Signal-Vertrauen", item.confidence, "Je höher, desto besser bestätigen sich die Indikatoren gegenseitig.")}
+        </div>
+      </section>
+
+      <section class="reason-layout">
+        ${positiveList}
+        ${cautionList}
+      </section>
+
+      ${(() => {
+        const amount = Number(byId("investmentAmount")?.value || 1000);
+        const example = profitLossExample(item, amount);
+        const displayCurrency = detectedCurrency(item);
+        const symbolCurrency = displayCurrency ? ` ${displayCurrency}` : "";
+        return `
+      <section class="trade-plan">
+        <div class="trade-plan-header">
+          <div>
+            <span>Chancen-Risiko-Verhältnis</span>
+            <strong class="${crv.className}">${formatNumber(item.crv, 2)} : 1 · ${crv.label}</strong>
+          </div>
+          <div class="market-comparison ${item.relativeStrengthMarket >= 0 ? "positive" : "negative"}">
+            ${relativeMarketText(item.relativeStrengthMarket)}
+          </div>
+        </div>
+
+        <div class="trade-plan-grid">
+          <div>
+            <span>Aktueller Kurs</span>
+            ${primaryPriceHtml(item, item.price)}
+          </div>
+          <div>
+            <span>Mögliches Ziel</span>
+            ${primaryPriceHtml(item, item.crvTarget)}
+          </div>
+          <div>
+            <span>Rechnerischer Stopp</span>
+            ${primaryPriceHtml(item, item.crvStop)}
+          </div>
+          <div>
+            <span>Potenzial zum 3M-Hoch</span>
+            <strong>+${formatNumber(item.upsidePotential, 1)} %</strong>
+          </div>
+        </div>
+
+        <div class="example-calculator">
+          <div>
+            <span>Beispiel bei ${formatNumber(amount, 0)} € Einsatz</span>
+            <small>Rein rechnerisch anhand von Ziel und Stopp</small>
+          </div>
+          <div class="example-gain">
+            <span>Möglicher Gewinn</span>
+            <strong>${Number.isFinite(example.gain) ? "+" + formatNumber(example.gain, 2) + " €" : "–"}</strong>
+          </div>
+          <div class="example-loss">
+            <span>Möglicher Verlust</span>
+            <strong>${Number.isFinite(example.loss) ? formatNumber(example.loss, 2) + " €" : "–"}</strong>
+          </div>
+        </div>
+
+        <small class="trade-plan-note">Ziel, Stopp und Euro-Umrechnung sind technische Näherungen – keine Garantie und keine Kaufempfehlung.</small>
+      </section>`;
+      })()}
+      </div>
+
+      <details class="indicator-details">
+        <summary>
+          <span>Technische Details anzeigen</span>
+          <small>Für eine genauere Prüfung</small>
+        </summary>
+
+        <div class="technical-explainer">
+          <div class="tech-card">
+            <span>RSI</span>
+            <strong>${formatNumber(item.rsi, 1)}</strong>
+            <small>${item.rsi < 30 ? "Weit unten – mögliche Gegenbewegung." : item.rsi > 70 ? "Weit oben – Rücksetzer möglich." : "Neutraler Bereich."}</small>
+          </div>
+          <div class="tech-card">
+            <span>RSI-Durchschnitt</span>
+            <strong>${formatNumber(item.rsiAverage, 1)}</strong>
+            <small>${item.rsi > item.rsiAverage ? "Lila liegt über Gelb – eher positiv." : "Lila liegt unter Gelb – eher vorsichtig."}</small>
+          </div>
+          <div class="tech-card">
+            <span>3-Monats-Lage</span>
+            <strong>${formatNumber(item.threeMonthPosition, 0)} %</strong>
+            <small>${item.threeMonthPosition <= 33 ? "Im unteren Drittel der Spanne." : item.threeMonthPosition >= 67 ? "Im oberen Drittel der Spanne." : "Im mittleren Drittel."}</small>
+          </div>
+          <div class="tech-card">
+            <span>Jahreslage</span>
+            <strong>${formatNumber(item.oneYearPosition, 0)} %</strong>
+            <small>Langfristige Einordnung zwischen Jahrestief und Jahreshoch.</small>
+          </div>
+          <div class="tech-card">
+            <span>Volumen</span>
+            <strong>${Number.isFinite(item.volumeRatio) ? `${formatNumber(item.volumeRatio * 100, 0)} %` : "–"}</strong>
+            <small>Vergleich zum durchschnittlichen Handelsvolumen der letzten 20 Tage.</small>
+          </div>
+          <div class="tech-card">
+            <span>Fibonacci-Zone</span>
+            <strong>${formatNumber(item.fibonacciRatio * 100, 1)} %</strong>
+            <small>Mögliche technische Unterstützungs- oder Widerstandszone.</small>
+          </div>
+        </div>
+
+        <div class="indicator-list">
+          <div><span>EMA 20 / 50 / 200</span><strong>${formatNumber(item.ema20,2)} / ${formatNumber(item.ema50,2)} / ${formatNumber(item.ema200,2)}</strong></div>
+          <div><span>MACD / Signallinie</span><strong>${formatNumber(item.macdValue,3)} / ${formatNumber(item.macdSignal,3)}</strong></div>
+          <div><span>Bollinger-Position</span><strong>${formatNumber(item.bollingerPosition,0)} %</strong></div>
+          <div><span>ATR / Volatilität</span><strong>${formatNumber(item.atrPercent,1)} %</strong></div>
+          <div><span>Relativ zum Markt</span><strong>${Number.isFinite(item.relativeStrengthMarket)?(item.relativeStrengthMarket>=0?"+":"")+formatNumber(item.relativeStrengthMarket,1)+" %-Pkt.":"–"}</strong></div>
+          <div><span>Relativ zum Sektor</span><strong>${Number.isFinite(item.relativeStrengthSector)?(item.relativeStrengthSector>=0?"+":"")+formatNumber(item.relativeStrengthSector,1)+" %-Pkt.":"–"}</strong></div>
+        </div>
+      </details>
+
+      <div class="card-actions">
+        <button class="chart-button" data-chart="${item.symbol}" data-tv-symbol="${item.tradingViewSymbol || ""}">
+          TradingView-Chart öffnen
+        </button>
+      </div>
+      </div>
+    </article>`;
+}
+
 
 module.exports = { analyzeMarketData };

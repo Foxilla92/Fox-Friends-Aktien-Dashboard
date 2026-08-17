@@ -692,27 +692,26 @@ function originalCurrencyText(item, amount) {
 }
 
 function primaryPriceHtml(item, amount) {
-  const currency = detectedCurrency(item);
   const euro = euroValue(item, amount);
-
-  if (currency === "EUR") {
-    return `<strong>${formatNumber(amount, 2)} €</strong>`;
-  }
-
-  const original = Number.isFinite(amount)
-    ? `${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}`
-    : "–";
+  const original = originalCurrencyText(item, amount);
 
   if (euro !== "–") {
     return `
-      <strong>${original}</strong>
-      <small class="converted-eur">≈ ${euro}</small>
+      <span class="market-price-block">
+        <strong class="market-price-main">${euro}</strong>
+        ${original ? `<small class="market-price-original">${original}</small>` : ""}
+      </span>
     `;
   }
 
+  const currency = detectedCurrency(item);
   return `
-    <strong>${original}</strong>
-    ${currency && currency !== "EUR" ? `<small class="fx-unavailable">EUR-Umrechnung derzeit nicht verfügbar</small>` : ""}
+    <span class="market-price-block">
+      <strong class="market-price-main">${formatNumber(amount, 2)}${currency ? ` ${currency}` : ""}</strong>
+      ${currency && currency !== "EUR"
+        ? `<small class="fx-unavailable">Euro-Umrechnung derzeit nicht verfügbar</small>`
+        : ""}
+    </span>
   `;
 }
 

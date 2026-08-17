@@ -662,3 +662,31 @@ VERSION 8.4 – AKTUELLER KURS GETRENNT VON ANALYSEKERZEN
 - Falls /price vorübergehend scheitert, fällt die Anzeige auf den letzten
   Intraday-Close zurück, statt die komplette Aktie als Fehler zu verwerfen.
 - /price kostet bei Twelve Data einen zusätzlichen API-Credit pro Aktie/Prüflauf.
+
+
+VERSION 8.6 – AUTOMATIK = MANUELL + EUR WIEDER HAUPTWERT
+
+KRITISCHER AUTOMATIK-FIX
+Die Ursache für die unterschiedlichen Werte war gefunden:
+- Manuelles „Prüfen“ berechnete die Aktie in app.js.
+- Die Automatik verwendete separat analysis-core.js.
+- analysis-core.js war auf einem älteren Stand:
+  - andere Score-Gewichtung,
+  - alter sichtbarer Kurs aus daily/latest.close,
+  - alter CRV,
+  - teilweise alte Labels/Logik.
+
+Ab v8.6 verwendet analysis-core.js exakt dieselbe Analysefunktion wie das
+manuelle Prüfen. Damit werden bei identischen Eingangsdaten dieselben Werte,
+Scores, Kurse, CRV-Werte und Signale erzeugt.
+
+Wichtig:
+- Der automatische Lauf nutzt weiterhin dieselbe market-data-Funktion.
+- Der aktuelle sichtbare Kurs aus v8.4 (/price) wird jetzt auch von der Automatik
+  verarbeitet.
+- Technische Analyse und Score bleiben auf der bisherigen Analysebasis.
+
+ANZEIGE
+- EUR ist wieder der große, hervorgehobene Hauptwert.
+- Die Originalwährung, z. B. USD, steht klein und dezent darunter.
+- Dies gilt oben in der Karte sowie im CRV-Bereich.
