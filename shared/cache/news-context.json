@@ -1,106 +1,66 @@
 {
-  "fetchedAt": "2026-08-18T14:53:14.258Z",
+  "fetchedAt": "2026-08-18T20:07:58.453Z",
   "news": [
     {
-      "id": "https://www.cnbc.com/2026/08/18/contrarian-vs-the-crowd-one-trader-made-a-massive-bet-against-chip-stocks.html",
-      "title": "Contrarian vs . the crowd : One trader made a massive bet against chip stocks",
-      "url": "https://www.cnbc.com/2026/08/18/contrarian-vs-the-crowd-one-trader-made-a-massive-bet-against-chip-stocks.html",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
-    {
-      "id": "http://www.newstomato.com/ReadNews.aspx?no=1310617",
-      "title": "한미반도체 , 1300억 투입 … 역대 최대 규모 공장 구축 착수",
-      "url": "http://www.newstomato.com/ReadNews.aspx?no=1310617",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
-    {
-      "id": "https://navabharat.com/?p=548064",
-      "title": "सेमीकॉन इंडिया - 2026 यशोभूमि में 17 - 19 सितंबर तक , मोदी करेंगे उद्घाटन",
-      "url": "https://navabharat.com/?p=548064",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
-    {
-      "id": "https://www.zerohedge.com/markets/sea-red-futures-slide-market-wakes-soaring-bond-yields-and-diesel-prices",
-      "title": "Sea Of Red : Futures Slide As Market Wakes Up To Soaring Bond Yields And Diesel Prices",
-      "url": "https://www.zerohedge.com/markets/sea-red-futures-slide-market-wakes-soaring-bond-yields-and-diesel-prices",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
-    {
-      "id": "https://www.tickerreport.com/banking-finance/13548518/pallas-capital-advisors-llc-takes-4-83-million-position-in-servicenow-inc-now.html",
-      "title": "Pallas Capital Advisors LLC Takes $4 . 83 Million Position in ServiceNow , Inc . $NOW",
-      "url": "https://www.tickerreport.com/banking-finance/13548518/pallas-capital-advisors-llc-takes-4-83-million-position-in-servicenow-inc-now.html",
-      "source": "",
-      "date": "",
-      "category": "sector"
-    },
-    {
-      "id": "https://www.dissexpress.co.uk/national/paralysed-campaigner-died-after-crash-while-filming-apple-series-inquest-told-170688/",
-      "title": "Paralysed campaigner died after crash while filming Apple series , inquest told",
-      "url": "https://www.dissexpress.co.uk/national/paralysed-campaigner-died-after-crash-while-filming-apple-series-inquest-told-170688/",
+      "id": "https://tvoemisto.tv/uk/stories/8819-kudy-znykly-stari-sady-lvova-istoriya-kleparivskoyi-cherekhy-ta-halytskykh-yablun",
+      "title": "Куди зникли старі сади Львова : історія клепарівської черехи та галицьких яблунь",
+      "url": "https://tvoemisto.tv/uk/stories/8819-kudy-znykly-stari-sady-lvova-istoriya-kleparivskoyi-cherekhy-ta-halytskykh-yablun",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.naroomanewsonline.com.au/story/9333000/child-safety-trial-could-reshape-instagram-and-facebook/",
-      "title": "Child - safety trial could reshape Instagram and Facebook",
-      "url": "https://www.naroomanewsonline.com.au/story/9333000/child-safety-trial-could-reshape-instagram-and-facebook/",
+      "id": "https://wccftech.com/alibabas-tsmc-built-5nm-risc-v-chip-xuantie-c950-now-runs-qwen-3-8-27b-model-natively-unlocking-massive-vertical-integration-tailwinds/",
+      "title": "Alibaba TSMC - Built 5nm RISC - V Chip , XuanTie C950 , Now Runs Qwen - 3 . 8 27B Model Natively , Unlocking Massive Vertical Integration Tailwinds",
+      "url": "https://wccftech.com/alibabas-tsmc-built-5nm-risc-v-chip-xuantie-c950-now-runs-qwen-3-8-27b-model-natively-unlocking-massive-vertical-integration-tailwinds/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.newsway.co.kr/news/view?ud=2026081818584310052",
-      "title": "통신3사에 카카오 · 이스트소프트까지 모두의 AI 출사표",
-      "url": "https://www.newsway.co.kr/news/view?ud=2026081818584310052",
+      "id": "https://www.eteknix.com/intel-plans-to-bring-its-extended-bllc-cache-technology-to-gaming-laptops-to-compete-with-amd-3d-v-cache/",
+      "title": "Intel Plans to Bring Its Extended bLLC Cache Technology to Gaming Laptops to Compete With AMD 3D V - Cache",
+      "url": "https://www.eteknix.com/intel-plans-to-bring-its-extended-bllc-cache-technology-to-gaming-laptops-to-compete-with-amd-3d-v-cache/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.wikitree.co.kr/articles/1153220",
-      "title": "애플 macOS 26 . 7 RC서 카메라 에어팟 데모 영상 유출 , 시리가 책 표지 저장해준다",
-      "url": "https://www.wikitree.co.kr/articles/1153220",
+      "id": "https://www.sopitas.com/geek/filtracion-apple-nuevos-airpods-con-camara/",
+      "title": "Qué ?! Filtración en Apple muestra nuevos AirPods … con cámara",
+      "url": "https://www.sopitas.com/geek/filtracion-apple-nuevos-airpods-con-camara/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.beurs.nl/Nieuws/875009/Wall-Street-koerst-af-op-lagere-opening.aspx",
-      "title": "Wall Street koerst af op lagere opening",
-      "url": "https://www.beurs.nl/Nieuws/875009/Wall-Street-koerst-af-op-lagere-opening.aspx",
+      "id": "https://www.excelsior.com.mx/recetas/licuado-verde-amaranto-avena-y-espinacas-elixir-energetico-mananas",
+      "title": "Licuado verde de amaranto , avena y espinacas , ¡ el elixir energético de las mañanas !",
+      "url": "https://www.excelsior.com.mx/recetas/licuado-verde-amaranto-avena-y-espinacas-elixir-energetico-mananas",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://screenrant.com/heated-rivalry-season-2-filming-first-look/",
-      "title": "Heated Rivalry Season 2 First Look Revealed As Filming Begins",
-      "url": "https://screenrant.com/heated-rivalry-season-2-filming-first-look/",
+      "id": "https://www.la-croix.com/a-vif/la-loi-d-urgence-agricole-se-trompe-de-debat-20260818",
+      "title": "La loi durgence agricole se trompe de débat",
+      "url": "https://www.la-croix.com/a-vif/la-loi-d-urgence-agricole-se-trompe-de-debat-20260818",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://bigfrog104.com/music-giant-columbia-house-shutting-down/",
-      "title": "Columbia House Shutting Down after 71 Years",
-      "url": "https://bigfrog104.com/music-giant-columbia-house-shutting-down/",
+      "id": "https://radaronline.com/p/transgender-cia-agent-julia-curlee-laura-loomer-firing-trump-white-house/",
+      "title": "Transgender CIA Agent Blames Leakers & Laura Loomer for Her Firing",
+      "url": "https://radaronline.com/p/transgender-cia-agent-julia-curlee-laura-loomer-firing-trump-white-house/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.finanzen.net/nachricht/aktien/dow-jones-30-industrial-titel-apple-aktie-so-viel-gewinn-haette-eine-investition-in-apple-von-vor-5-jahren-abgeworfen-15884720",
-      "title": "Dow Jones 30 Industrial - Titel Apple - Aktie : So viel Gewinn hätte eine Investition in Apple von vor 5 Jahren abgeworfen",
-      "url": "https://www.finanzen.net/nachricht/aktien/dow-jones-30-industrial-titel-apple-aktie-so-viel-gewinn-haette-eine-investition-in-apple-von-vor-5-jahren-abgeworfen-15884720",
+      "id": "https://www.kommersant.ru/doc/8892359",
+      "title": "ЦИК распределил бесплатный эфир для агитации на выборах в Госдуму",
+      "url": "https://www.kommersant.ru/doc/8892359",
       "source": "",
       "date": "",
       "category": "stocks"
