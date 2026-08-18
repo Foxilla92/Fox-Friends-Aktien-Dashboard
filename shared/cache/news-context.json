@@ -1,66 +1,106 @@
 {
-  "fetchedAt": "2026-08-18T20:07:58.453Z",
+  "fetchedAt": "2026-08-18T21:08:00.858Z",
   "news": [
     {
-      "id": "https://tvoemisto.tv/uk/stories/8819-kudy-znykly-stari-sady-lvova-istoriya-kleparivskoyi-cherekhy-ta-halytskykh-yablun",
-      "title": "Куди зникли старі сади Львова : історія клепарівської черехи та галицьких яблунь",
-      "url": "https://tvoemisto.tv/uk/stories/8819-kudy-znykly-stari-sady-lvova-istoriya-kleparivskoyi-cherekhy-ta-halytskykh-yablun",
+      "id": "https://www.dailypolitical.com/2026/08/18/head-to-head-analysis-astec-industries-nasdaqaste-vat-group-otcmktsvacny.html",
+      "title": "Head to Head Analysis : Astec Industries ( NASDAQ : ASTE ) & VAT Group ( OTCMKTS : VACNY )",
+      "url": "https://www.dailypolitical.com/2026/08/18/head-to-head-analysis-astec-industries-nasdaqaste-vat-group-otcmktsvacny.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.fool.com/investing/2026/08/18/broadcom-s-stock-has-beaten-the-market-in-12-of-the-past-13-years-and-it-could-do-it-again-in-2026/?source=iedfolrf0000001",
+      "title": "Broadcom Stock Has Beaten the Market in 12 of the Past 13 Years , and It Could Do It Again in 2026",
+      "url": "https://www.fool.com/investing/2026/08/18/broadcom-s-stock-has-beaten-the-market-in-12-of-the-past-13-years-and-it-could-do-it-again-in-2026/?source=iedfolrf0000001",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.dailypolitical.com/2026/08/18/best-infrastructure-stocks-to-consider-august-18th.html",
+      "title": "Best Infrastructure Stocks To Consider – August 18th",
+      "url": "https://www.dailypolitical.com/2026/08/18/best-infrastructure-stocks-to-consider-august-18th.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.fool.com/investing/2026/08/18/meet-the-dividend-king-thats-quietly-crushing-the/?source=iedfolrf0000001",
+      "title": "Meet the Dividend King That Quietly Crushing the S & P 500 in 2026 . Here Why It a Buy This August .",
+      "url": "https://www.fool.com/investing/2026/08/18/meet-the-dividend-king-thats-quietly-crushing-the/?source=iedfolrf0000001",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.dailypolitical.com/2026/08/18/best-value-stocks-to-follow-now-august-18th.html",
+      "title": "Best Value Stocks To Follow Now – August 18th",
+      "url": "https://www.dailypolitical.com/2026/08/18/best-value-stocks-to-follow-now-august-18th.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://finance.now.com/news/post.php?id=982557",
+      "title": "蘋果降歐洲APP Store費用 冀化解與歐盟爭端",
+      "url": "https://finance.now.com/news/post.php?id=982557",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://wccftech.com/alibabas-tsmc-built-5nm-risc-v-chip-xuantie-c950-now-runs-qwen-3-8-27b-model-natively-unlocking-massive-vertical-integration-tailwinds/",
-      "title": "Alibaba TSMC - Built 5nm RISC - V Chip , XuanTie C950 , Now Runs Qwen - 3 . 8 27B Model Natively , Unlocking Massive Vertical Integration Tailwinds",
-      "url": "https://wccftech.com/alibabas-tsmc-built-5nm-risc-v-chip-xuantie-c950-now-runs-qwen-3-8-27b-model-natively-unlocking-massive-vertical-integration-tailwinds/",
+      "id": "https://www.brisbanetimes.com.au/goodfood/tips-and-advice/the-ridiculously-simple-two-ingredient-dessert-that-caused-a-nationwide-supermarket-shortage-20260817-p60p5l.html",
+      "title": "Kingston cream biscuit and tinned peaches : The viral two - ingredient instagram dessert hack",
+      "url": "https://www.brisbanetimes.com.au/goodfood/tips-and-advice/the-ridiculously-simple-two-ingredient-dessert-that-caused-a-nationwide-supermarket-shortage-20260817-p60p5l.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.eteknix.com/intel-plans-to-bring-its-extended-bllc-cache-technology-to-gaming-laptops-to-compete-with-amd-3d-v-cache/",
-      "title": "Intel Plans to Bring Its Extended bLLC Cache Technology to Gaming Laptops to Compete With AMD 3D V - Cache",
-      "url": "https://www.eteknix.com/intel-plans-to-bring-its-extended-bllc-cache-technology-to-gaming-laptops-to-compete-with-amd-3d-v-cache/",
+      "id": "https://www.fool.com/investing/2026/08/18/why-intel-stock-is-falling-today/?source=iedfolrf0000001",
+      "title": "Why Intel Stock Is Falling Today | The Motley Fool",
+      "url": "https://www.fool.com/investing/2026/08/18/why-intel-stock-is-falling-today/?source=iedfolrf0000001",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.sopitas.com/geek/filtracion-apple-nuevos-airpods-con-camara/",
-      "title": "Qué ?! Filtración en Apple muestra nuevos AirPods … con cámara",
-      "url": "https://www.sopitas.com/geek/filtracion-apple-nuevos-airpods-con-camara/",
+      "id": "https://www.lapresse.ca/gourmand/restaurants/2026-08-18/critique-resto/porcine-entre-potager-et-cochonnailles-raffinees.php",
+      "title": "Critique resto | Porcine : entre potager et cochonnailles raffinées",
+      "url": "https://www.lapresse.ca/gourmand/restaurants/2026-08-18/critique-resto/porcine-entre-potager-et-cochonnailles-raffinees.php",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.excelsior.com.mx/recetas/licuado-verde-amaranto-avena-y-espinacas-elixir-energetico-mananas",
-      "title": "Licuado verde de amaranto , avena y espinacas , ¡ el elixir energético de las mañanas !",
-      "url": "https://www.excelsior.com.mx/recetas/licuado-verde-amaranto-avena-y-espinacas-elixir-energetico-mananas",
+      "id": "https://www.techtimes.com/articles/324857/20260818/shrinking-season-3-depicts-parkinsons-hallucinations-exactly-neurologists-describe.htm",
+      "title": "Shrinking Season 3 Depicts Parkinson Hallucinations Exactly as Neurologists Describe",
+      "url": "https://www.techtimes.com/articles/324857/20260818/shrinking-season-3-depicts-parkinsons-hallucinations-exactly-neurologists-describe.htm",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.la-croix.com/a-vif/la-loi-d-urgence-agricole-se-trompe-de-debat-20260818",
-      "title": "La loi durgence agricole se trompe de débat",
-      "url": "https://www.la-croix.com/a-vif/la-loi-d-urgence-agricole-se-trompe-de-debat-20260818",
+      "id": "https://www.techtimes.com/articles/324840/20260818/sealbreakers-drops-weapons-entirely-ukrainian-brawler-playtest-live-now.htm",
+      "title": "Sealbreakers Drops Weapons Entirely : Ukrainian Brawler Playtest Is Live Now",
+      "url": "https://www.techtimes.com/articles/324840/20260818/sealbreakers-drops-weapons-entirely-ukrainian-brawler-playtest-live-now.htm",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://radaronline.com/p/transgender-cia-agent-julia-curlee-laura-loomer-firing-trump-white-house/",
-      "title": "Transgender CIA Agent Blames Leakers & Laura Loomer for Her Firing",
-      "url": "https://radaronline.com/p/transgender-cia-agent-julia-curlee-laura-loomer-firing-trump-white-house/",
+      "id": "https://www.fool.com/investing/2026/08/18/nvidia-reveals-a-21-billion-position-in-spacex-her/?source=iedfolrf0000001",
+      "title": "Nvidia Reveals a $21 Billion Position in SpaceX . Here How That Could Impact Its Earnings",
+      "url": "https://www.fool.com/investing/2026/08/18/nvidia-reveals-a-21-billion-position-in-spacex-her/?source=iedfolrf0000001",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.kommersant.ru/doc/8892359",
-      "title": "ЦИК распределил бесплатный эфир для агитации на выборах в Госдуму",
-      "url": "https://www.kommersant.ru/doc/8892359",
+      "id": "https://www.dailymail.com/tvshowbiz/article-16061843/Dogue-2026-Bad-Bunnys-beagle-tucks-spaghetti-joins-Millie-Bobby-Browns-pet-pooch-spin-Vogue-magazine.html",
+      "title": "Dogue 2026 is Here ! Bad Bunny beagle tucks into spaghetti as he joins Millie Bobby Brown pet pooch in the spin - off Vogue magazine",
+      "url": "https://www.dailymail.com/tvshowbiz/article-16061843/Dogue-2026-Bad-Bunnys-beagle-tucks-spaghetti-joins-Millie-Bobby-Browns-pet-pooch-spin-Vogue-magazine.html",
       "source": "",
       "date": "",
       "category": "stocks"
