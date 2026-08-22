@@ -1,66 +1,106 @@
 {
-  "fetchedAt": "2026-08-21T22:07:28.271Z",
+  "fetchedAt": "2026-08-22T00:22:28.481Z",
   "news": [
     {
-      "id": "https://www.finanznachrichten.de/nachrichten-2026-08/69379100-apple-lays-off-staff-as-vision-pro-demand-disappoints-020.htm",
-      "title": "Apple Lays Off Staff As Vision Pro Demand Disappoints",
-      "url": "https://www.finanznachrichten.de/nachrichten-2026-08/69379100-apple-lays-off-staff-as-vision-pro-demand-disappoints-020.htm",
+      "id": "http://www.russiaherald.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "title": "Micron unveils $10 billion Boise research lab for AI memory",
+      "url": "http://www.russiaherald.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "http://www.neworleanssun.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "title": "Micron unveils $10 billion Boise research lab for AI memory",
+      "url": "http://www.neworleanssun.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://nasional.kompas.com/read/2026/08/22/06050001/-brain-gain-dimulai-dari-merit-bukan-paspor",
+      "title": "Brain Gain Dimulai dari Merit , Bukan Paspor",
+      "url": "https://nasional.kompas.com/read/2026/08/22/06050001/-brain-gain-dimulai-dari-merit-bukan-paspor",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "http://www.newzealandstar.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "title": "Micron unveils $10 billion Boise research lab for AI memory",
+      "url": "http://www.newzealandstar.com/news/279254647/micron-unveils-usd10-billion-boise-research-lab-for-ai-memory",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://siliconangle.com/2026/08/21/starcloud-raises-250m-to-build-ai-data-centers-in-orbit/",
+      "title": "Starcloud raises $250M to build AI data centers in orbit",
+      "url": "https://siliconangle.com/2026/08/21/starcloud-raises-250m-to-build-ai-data-centers-in-orbit/",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://jweekly.com/2026/08/21/local-kosher-spots-share-their-tried-and-true-high-holiday-recipes/",
+      "title": "Local kosher spots share their tried and true High Holiday recipes",
+      "url": "https://jweekly.com/2026/08/21/local-kosher-spots-share-their-tried-and-true-high-holiday-recipes/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://hotspotatl.com/6820623/joe-donell-jones-verzuz/",
-      "title": "Top Moments From The Joe And Donell Jones Verzuz",
-      "url": "https://hotspotatl.com/6820623/joe-donell-jones-verzuz/",
+      "id": "https://finance.yahoo.com/markets/stocks/articles/scansource-inc-q4-2026-earnings-165701589.html",
+      "title": "ScanSource , Inc . Q4 2026 Earnings Call Summary",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/scansource-inc-q4-2026-earnings-165701589.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.ocregister.com/2026/08/21/10-best-things-to-eat-during-disneylands-halloween-time/",
-      "title": "10 best things to eat during Disneyland Halloween Time – Orange County Register",
-      "url": "https://www.ocregister.com/2026/08/21/10-best-things-to-eat-during-disneylands-halloween-time/",
+      "id": "https://www.yahoo.com/news/world/articles/bookshops-let-chinese-readers-country-222633219.html",
+      "title": "These bookshops let Chinese readers question their country - now the doors are closing",
+      "url": "https://www.yahoo.com/news/world/articles/bookshops-let-chinese-readers-country-222633219.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.finanzen.ch/nachrichten/aktien/apple-lays-off-staff-as-vision-pro-demand-disappoints-1036483812",
-      "title": "Apple Lays Off Staff As Vision Pro Demand Disappoints",
-      "url": "https://www.finanzen.ch/nachrichten/aktien/apple-lays-off-staff-as-vision-pro-demand-disappoints-1036483812",
+      "id": "http://www.econotimes.com/Apple-Cuts-Over-200-Siri-Vision-Pro-Jobs-in-AI-Shift-1750162",
+      "title": "Apple Cuts Over 200 Siri , Vision Pro Jobs in AI Shift",
+      "url": "http://www.econotimes.com/Apple-Cuts-Over-200-Siri-Vision-Pro-Jobs-in-AI-Shift-1750162",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://arynews.tv/wall-st-indexes-eye-weekly-losses-bond-yields-and-iran-in-focus",
-      "title": "Wall St indexes eye weekly losses ; bond yields and Iran in focus",
-      "url": "https://arynews.tv/wall-st-indexes-eye-weekly-losses-bond-yields-and-iran-in-focus",
+      "id": "https://www.cronista.com/informacion-gral/mezclar-cascara-de-banana-con-vinagre-por-que-lo-recomiendan-y-para-que-sirve-9/",
+      "title": "Mezclar cáscara de banana con vinagre : por qué lo recomiendan y para qué sirve",
+      "url": "https://www.cronista.com/informacion-gral/mezclar-cascara-de-banana-con-vinagre-por-que-lo-recomiendan-y-para-que-sirve-9/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://c101.iheart.com/featured/hitman/content/2026-08-21-1248-classic-hitz-with-hitman-hitman-talks-to-wil-from-earshot/",
-      "title": "Hitman Talks to Wil From Earshot | C101",
-      "url": "https://c101.iheart.com/featured/hitman/content/2026-08-21-1248-classic-hitz-with-hitman-hitman-talks-to-wil-from-earshot/",
+      "id": "https://americanbazaaronline.com/2026/08/21/starcloud-raises-250-million-for-orbital-data-centers-486852/",
+      "title": "Starcloud raises $250 million for orbital data centers",
+      "url": "https://americanbazaaronline.com/2026/08/21/starcloud-raises-250-million-for-orbital-data-centers-486852/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.jewishchronicle.org/category/food/",
-      "title": "Food | Wisconsin Jewish Chronicle",
-      "url": "https://www.jewishchronicle.org/category/food/",
+      "id": "https://mix108.com/ixp/1172/p/manslaughter-charge-minnesota-tree-trimming-incident/",
+      "title": "MN Man Faces Manslaughter Charge in Fatal Tree - Trimming Incident",
+      "url": "https://mix108.com/ixp/1172/p/manslaughter-charge-minnesota-tree-trimming-incident/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.breitbart.com/clips/2026/08/21/chris-matthews-aoc-is-as-american-as-apple-pie/",
-      "title": "Chris Matthews : AOC Is as American as Apple Pie",
-      "url": "https://www.breitbart.com/clips/2026/08/21/chris-matthews-aoc-is-as-american-as-apple-pie/",
+      "id": "https://occidente.co/cali/el-mio-en-la-calle-5-reabre-troncal-completa-cali/",
+      "title": "El MIO en la calle 5 reabre toda su troncal desde este viernes",
+      "url": "https://occidente.co/cali/el-mio-en-la-calle-5-reabre-troncal-completa-cali/",
       "source": "",
       "date": "",
       "category": "stocks"
