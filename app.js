@@ -653,6 +653,18 @@ function beginnerMetric(title, score, explanation) {
 }
 
 
+const COMPANY_NAMES = Object.freeze({"MU": "Micron Technology, Inc.", "AMD": "Advanced Micro Devices, Inc.", "MSFT": "Microsoft Corporation", "AMZN": "Amazon.com, Inc.", "QBTS": "D-Wave Quantum Inc.", "MCHP": "Microchip Technology Incorporated", "AVGO": "Broadcom Inc.", "ASML": "ASML Holding N.V.", "LLY": "Eli Lilly and Company", "GE": "GE Aerospace", "NVDA": "NVIDIA Corporation", "INTC": "Intel Corporation", "KLAC": "KLA Corporation", "LRCX": "Lam Research Corporation", "PLTR": "Palantir Technologies Inc.", "NBIS": "Nebius Group N.V.", "AMAT": "Applied Materials, Inc."});
+
+function displayCompanyName(item) {
+  const symbol = String(item?.symbol || "").toUpperCase().trim();
+  const supplied = String(item?.companyName || "").trim();
+
+  // Nur echte ausgeschriebene Namen übernehmen; ein erneut geliefertes Kürzel
+  // (z. B. "MU") wird nicht als Firmenname angezeigt.
+  if (supplied && supplied.toUpperCase() !== symbol) return supplied;
+  return COMPANY_NAMES[symbol] || "";
+}
+
 function detectedCurrency(item) {
   const explicit = String(item.currency || "").toUpperCase();
   if (explicit) return explicit;
@@ -776,7 +788,7 @@ function cardHtml(item) {
       <div class="signal-card-header">
         <div class="card-identity">
           <div class="symbol">${item.symbol}</div>
-          <div class="company-line">${item.companyName || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
+          <div class="company-line">${displayCompanyName(item) || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
           <div class="price header-price">
             ${primaryPriceHtml(item, item.price)}
           </div>

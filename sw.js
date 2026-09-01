@@ -1,4 +1,4 @@
-const CACHE = "fox-friends-dashboard-v8-8-real-company-names";
+const CACHE = "fox-friends-v8-9-company-name-only";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest"];
 self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener("activate", event => event.waitUntil(
