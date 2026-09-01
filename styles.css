@@ -1055,3 +1055,15 @@ small { color: var(--muted); display: block; margin-top: 5px; line-height: 1.35;
 .trade-plan-grid .market-price-original {
   font-size: 9px !important;
 }
+
+.company-full-name {
+  display:block;
+  margin-top:2px;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:600;
+  color:#8e9ab0;
+  opacity:.9;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}

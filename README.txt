@@ -690,3 +690,9 @@ ANZEIGE
 - EUR ist wieder der große, hervorgehobene Hauptwert.
 - Die Originalwährung, z. B. USD, steht klein und dezent darunter.
 - Dies gilt oben in der Karte sowie im CRV-Bereich.
+
+
+VERSION 8.7 – FIRMENNAME
+Basis: v8.6. AutoFreshData-Änderung verworfen.
+Neu: vollständiger Unternehmensname direkt unter dem Aktienkürzel.
+Sonstige Logik unverändert.

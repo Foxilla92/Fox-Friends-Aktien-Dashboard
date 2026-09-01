@@ -776,6 +776,7 @@ function cardHtml(item) {
       <div class="signal-card-header">
         <div class="card-identity">
           <div class="symbol">${item.symbol}</div>
+          ${item.companyName ? `<div class="company-full-name">${escapeHtml(item.companyName)}</div>` : ""}
           <div class="company-line">${item.companyName || item.resolvedSymbol || item.symbol}${item.resolvedExchange ? ` · ${item.resolvedExchange}` : ""}</div>
           <div class="price header-price">
             ${primaryPriceHtml(item, item.price)}
