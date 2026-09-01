@@ -696,3 +696,9 @@ VERSION 8.7 – FIRMENNAME
 Basis: v8.6. AutoFreshData-Änderung verworfen.
 Neu: vollständiger Unternehmensname direkt unter dem Aktienkürzel.
 Sonstige Logik unverändert.
+
+
+VERSION 8.8
+Korrektur Firmenname: keine doppelte Kürzelzeile mehr.
+Die bisherige Zeile „MU · NASDAQ“ zeigt nun „Micron Technology, Inc. · NASDAQ“,
+sofern Twelve Data den Unternehmensnamen liefert.
