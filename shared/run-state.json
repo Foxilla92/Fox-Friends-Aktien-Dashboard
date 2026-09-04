@@ -1,9 +1,8 @@
 {
-  "running": false,
-  "owner": "",
-  "mode": "",
-  "startedAt": null,
-  "expiresAt": null,
-  "lastAutomaticAt": "2026-09-04T15:36:21.655Z",
-  "lastCompletedBy": "Automatik"
+  "running": true,
+  "owner": "Automatik",
+  "mode": "automatic",
+  "startedAt": "2026-09-04T15:45:10.302Z",
+  "expiresAt": "2026-09-04T16:05:10.302Z",
+  "lastAutomaticAt": "2026-09-04T15:36:21.655Z"
 }
