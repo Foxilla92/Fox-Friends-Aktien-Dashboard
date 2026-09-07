@@ -1,109 +1,45 @@
 {
-  "fetchedAt": "2026-09-07T10:36:31.292Z",
+  "fetchedAt": "2026-09-07T14:12:23.903Z",
   "news": [
     {
-      "id": "https://danviet.vn/thung-lung-silicon-tai-duc-san-sang-ho-tro-tphcm-xu-ly-nuoc-y-te-ban-dan-d1457497.html",
-      "title": "Thung lũng Silicon tại Đức sẵn sàng hỗ trợ TP . HCM xử lý nước , y tế , bán dẫn ...",
-      "url": "https://danviet.vn/thung-lung-silicon-tai-duc-san-sang-ho-tro-tphcm-xu-ly-nuoc-y-te-ban-dan-d1457497.html",
+      "id": "https://pt.euronews.com/business/2026/09/07/germany-vitoria-da-afd-pode-travar-recuperacao-economica",
+      "title": "Germany : vitória da AfD pode travar recuperao económica ?",
+      "url": "https://pt.euronews.com/business/2026/09/07/germany-vitoria-da-afd-pode-travar-recuperacao-economica",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://news.az/news/chinas-silent-embargo-are-critical-minerals-the-new-cold-wars-latest-weapon",
-      "title": "China silent embargo : Are critical minerals the new Cold War latest weapon ?",
-      "url": "https://news.az/news/chinas-silent-embargo-are-critical-minerals-the-new-cold-wars-latest-weapon",
+      "id": "https://baomoi.com/nvidia-noi-len-nhu-nha-bang-cho-nganh-cong-nghiep-ai-c55998138.epi",
+      "title": "NVIDIA nổi lên như nhà băng cho ngành công nghiệp AI",
+      "url": "https://baomoi.com/nvidia-noi-len-nhu-nha-bang-cho-nganh-cong-nghiep-ai-c55998138.epi",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://stockbiz.vn/tin-tuc/da-tang-nhom-co-phieu-cong-nghe-chi-phoi-chung-khoan-chau-a/41688431",
-      "title": "Đà tăng nhóm cổ phiếu công nghệ chi phối chứng khoán châu Á",
-      "url": "https://stockbiz.vn/tin-tuc/da-tang-nhom-co-phieu-cong-nghe-chi-phoi-chung-khoan-chau-a/41688431",
+      "id": "https://www.koreatimes.co.kr/foreignaffairs/20260907/cover-story-iran-war-hinders-multiple-korea-us-projects",
+      "title": "[ COVER STORY ] Iran war hinders multiple Korea - US projects",
+      "url": "https://www.koreatimes.co.kr/foreignaffairs/20260907/cover-story-iran-war-hinders-multiple-korea-us-projects",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://udn.com/news/story/6656/9739699",
-      "title": "總統接見神奈川日華協會 盼打造安全韌性非紅供應鏈 | 政治 | 要聞",
-      "url": "https://udn.com/news/story/6656/9739699",
+      "id": "https://finance.yahoo.com/technology/ai/articles/tesla-vs-spacex-elon-musk-114959693.html",
+      "title": "Tesla vs SpaceX : Elon Musk Two Companies Are Chasing the Same AI Prize . Only One Is Positioned to Win It",
+      "url": "https://finance.yahoo.com/technology/ai/articles/tesla-vs-spacex-elon-musk-114959693.html",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://news.ltn.com.tw/news/politics/breakingnews/5566013",
-      "title": "箱根要跟北投溫泉結盟了 ！ 神奈川訪團會賴總統 力促11月簽MOU - 政治",
-      "url": "https://news.ltn.com.tw/news/politics/breakingnews/5566013",
+      "id": "https://www.prnewswire.com/news-releases/thermoplastic-polyimide-market-worth-0-86-billion-in-2032---exclusive-report-by-marketsandmarkets-302871130.html",
+      "title": "Thermoplastic Polyimide Market worth $0 . 86 billion in 2032 - Exclusive Report by MarketsandMarkets™",
+      "url": "https://www.prnewswire.com/news-releases/thermoplastic-polyimide-market-worth-0-86-billion-in-2032---exclusive-report-by-marketsandmarkets-302871130.html",
       "source": "",
       "date": "",
       "category": "sector"
-    },
-    {
-      "id": "http://www.texasguardian.com/news/279291085/five-killed-in-miami-plane-crash",
-      "title": "Five killed in Miami plane crash",
-      "url": "http://www.texasguardian.com/news/279291085/five-killed-in-miami-plane-crash",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://www.citnews.com.cn/news/221466",
-      "title": "办公AI江湖 ： 入口收拢 、 组织换血与上下文战争",
-      "url": "https://www.citnews.com.cn/news/221466",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://talkradio1080.iheart.com/content/2026-09-07-nvidia-ceo-jensen-huang-claims-agi-has-arrived/",
-      "title": "Nvidia CEO Jensen Huang Claims AGI Has Arrived",
-      "url": "https://talkradio1080.iheart.com/content/2026-09-07-nvidia-ceo-jensen-huang-claims-agi-has-arrived/",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://www.nvdaily.com/associated_press_national/investigators-hunt-for-what-went-wrong-after-cargo-plane-crash-in-miami-kills-at-least/article_9348189f-c1de-5a77-870d-70f260933779.html",
-      "title": "Investigators hunt for what went wrong after cargo plane crash in Miami kills at least 5",
-      "url": "https://www.nvdaily.com/associated_press_national/investigators-hunt-for-what-went-wrong-after-cargo-plane-crash-in-miami-kills-at-least/article_9348189f-c1de-5a77-870d-70f260933779.html",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://www.kitguru.net/tech-news/mustafa-mahmoud/a-decade-following-its-cancellation-hideki-kamiya-still-wants-to-revive-scalebound/",
-      "title": "A decade following its cancellation , Hideki Kamiya still wants to revive Scalebound",
-      "url": "https://www.kitguru.net/tech-news/mustafa-mahmoud/a-decade-following-its-cancellation-hideki-kamiya-still-wants-to-revive-scalebound/",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "http://www.europesun.com/news/279291085/five-killed-in-miami-plane-crash",
-      "title": "Five killed in Miami plane crash",
-      "url": "http://www.europesun.com/news/279291085/five-killed-in-miami-plane-crash",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://www.herefordtimes.com/news/26526633.clarksons-farm-star-set-leave-jeremy-clarksons-show/",
-      "title": "Clarkson Farm star set to leave Jeremy Clarkson show",
-      "url": "https://www.herefordtimes.com/news/26526633.clarksons-farm-star-set-leave-jeremy-clarksons-show/",
-      "source": "",
-      "date": "",
-      "category": "stocks"
-    },
-    {
-      "id": "https://www.di.se/live/pareto-nya-konsultbolaget-negativt-for-afry/",
-      "title": "Pareto : Nya konsultbolaget negativt för Afry",
-      "url": "https://www.di.se/live/pareto-nya-konsultbolaget-negativt-for-afry/",
-      "source": "",
-      "date": "",
-      "category": "stocks"
     }
   ]
 }
