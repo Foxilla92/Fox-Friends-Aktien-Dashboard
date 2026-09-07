@@ -1,5 +1,5 @@
 {
-  "dailyDate": "2026-09-05",
+  "dailyDate": "2026-09-07",
   "daily": {
     "meta": {
       "symbol": "SPY",
@@ -2409,7 +2409,7 @@
         "high": "772.87000",
         "low": "769",
         "close": "770.19000",
-        "volume": "32960393"
+        "volume": "34015600"
       }
     ],
     "status": "ok"
