@@ -1,45 +1,101 @@
 {
-  "fetchedAt": "2026-09-07T14:12:23.903Z",
+  "fetchedAt": "2026-09-08T08:25:41.527Z",
   "news": [
     {
-      "id": "https://pt.euronews.com/business/2026/09/07/germany-vitoria-da-afd-pode-travar-recuperacao-economica",
-      "title": "Germany : vitória da AfD pode travar recuperao económica ?",
-      "url": "https://pt.euronews.com/business/2026/09/07/germany-vitoria-da-afd-pode-travar-recuperacao-economica",
+      "id": "https://news.pts.org.tw/article/826027",
+      "title": "調查 ： 半導體業每月徵4 . 7萬人 四分之一職缺與AI相關 ｜ 公視新聞網 PNN",
+      "url": "https://news.pts.org.tw/article/826027",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://baomoi.com/nvidia-noi-len-nhu-nha-bang-cho-nganh-cong-nghiep-ai-c55998138.epi",
-      "title": "NVIDIA nổi lên như nhà băng cho ngành công nghiệp AI",
-      "url": "https://baomoi.com/nvidia-noi-len-nhu-nha-bang-cho-nganh-cong-nghiep-ai-c55998138.epi",
+      "id": "https://www.fnnews.com/news/202609071639271365",
+      "title": "1형만 되던 당뇨 지원 , 2형도 받는다 ... 12월부터 달라지는 건강보험",
+      "url": "https://www.fnnews.com/news/202609071639271365",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://www.koreatimes.co.kr/foreignaffairs/20260907/cover-story-iran-war-hinders-multiple-korea-us-projects",
-      "title": "[ COVER STORY ] Iran war hinders multiple Korea - US projects",
-      "url": "https://www.koreatimes.co.kr/foreignaffairs/20260907/cover-story-iran-war-hinders-multiple-korea-us-projects",
+      "id": "https://www.nrc.nl/nieuws/2026/09/08/asml-gaat-samenwerken-met-taiwanese-chipgigant-tsmc-om-zijn-nieuwste-chipmachines-te-upgraden-a4936073",
+      "title": "ASML gaat samenwerken met Taiwanese chipgigant TSMC om zijn nieuwste chipmachines te upgraden",
+      "url": "https://www.nrc.nl/nieuws/2026/09/08/asml-gaat-samenwerken-met-taiwanese-chipgigant-tsmc-om-zijn-nieuwste-chipmachines-te-upgraden-a4936073",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://finance.yahoo.com/technology/ai/articles/tesla-vs-spacex-elon-musk-114959693.html",
-      "title": "Tesla vs SpaceX : Elon Musk Two Companies Are Chasing the Same AI Prize . Only One Is Positioned to Win It",
-      "url": "https://finance.yahoo.com/technology/ai/articles/tesla-vs-spacex-elon-musk-114959693.html",
+      "id": "https://www.newspim.com/news/view/20260908001013",
+      "title": "강원 동해안 해수욕장 모두 폐장 ... 699만 3547명 방문",
+      "url": "https://www.newspim.com/news/view/20260908001013",
       "source": "",
       "date": "",
       "category": "sector"
     },
     {
-      "id": "https://www.prnewswire.com/news-releases/thermoplastic-polyimide-market-worth-0-86-billion-in-2032---exclusive-report-by-marketsandmarkets-302871130.html",
-      "title": "Thermoplastic Polyimide Market worth $0 . 86 billion in 2032 - Exclusive Report by MarketsandMarkets™",
-      "url": "https://www.prnewswire.com/news-releases/thermoplastic-polyimide-market-worth-0-86-billion-in-2032---exclusive-report-by-marketsandmarkets-302871130.html",
+      "id": "https://www.newspim.com/news/view/20260908001026",
+      "title": "[ 뉴스핌 뉴스레터 Today ANDA ] 9월8일",
+      "url": "https://www.newspim.com/news/view/20260908001026",
       "source": "",
       "date": "",
       "category": "sector"
+    },
+    {
+      "id": "https://www.futura-sciences.com/sante/actualites/alimentation-ce-fruit-vous-connaissez-tous-pourrait-reduire-20-risque-depression-w2t8-137201/",
+      "title": "Ce fruit que vous connaissez tous pourrait réduire de 20 % le risque de dépression",
+      "url": "https://www.futura-sciences.com/sante/actualites/alimentation-ce-fruit-vous-connaissez-tous-pourrait-reduire-20-risque-depression-w2t8-137201/",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://ekantipur.com/business/2026/09/08/landslide-on-karnali-highway-twin-apples-worth-rs-25-million-stranded-on-the-road-54-09.html",
+      "title": "कर्णाली राजमार्गमा पहिरो : २ करोड ५० लाख मूल्य बराबरको जुम्ली स्याउ बाटोमै रोकिए",
+      "url": "https://ekantipur.com/business/2026/09/08/landslide-on-karnali-highway-twin-apples-worth-rs-25-million-stranded-on-the-road-54-09.html",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://www.munhwa.com:443/article/11615301",
+      "title": "[ 속보 ] 한동훈은 관종 강용석 같다 김민석 · 송영길 , 한동훈 맹폭",
+      "url": "https://www.munhwa.com:443/article/11615301",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://editorinleaf.com/elliotte-friedman-needs-the-maple-leafs-more-than-he-would-like-to-admit",
+      "title": "Elliotte Friedman needs the Maple Leafs more than he would like to admit",
+      "url": "https://editorinleaf.com/elliotte-friedman-needs-the-maple-leafs-more-than-he-would-like-to-admit",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://www.zazoom.it/2026-09-08/si-avvicina-il-mese-piu-intenso-dellanno-il-10-settembre-si-apre-la-new-york-fashion-week-e-non-sara-unedizione-come-le-altre-il-calendario-e-le-novita/19655031/",
+      "title": "Si avvicina il mese più intenso dell anno | il 10 settembre si apre la New York Fashion Week e non sarà un edizione come le altre Il calendario e le novità",
+      "url": "https://www.zazoom.it/2026-09-08/si-avvicina-il-mese-piu-intenso-dellanno-il-10-settembre-si-apre-la-new-york-fashion-week-e-non-sara-unedizione-come-le-altre-il-calendario-e-le-novita/19655031/",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://www.republicain-lorrain.fr/faits-divers-justice/2026/09/08/avion-cargo-d-amazon-sorti-de-piste-a-miami-la-boite-noire-recuperee-l-enquete-se-poursuit",
+      "title": "États - Unis . Avion - cargo dAmazon sorti de piste à Miami : la boîte noire récupérée , lenquête se poursuit",
+      "url": "https://www.republicain-lorrain.fr/faits-divers-justice/2026/09/08/avion-cargo-d-amazon-sorti-de-piste-a-miami-la-boite-noire-recuperee-l-enquete-se-poursuit",
+      "source": "",
+      "date": "",
+      "category": "stocks"
+    },
+    {
+      "id": "https://radio.wpsu.org/2026-09-08/what-to-know-about-canadas-escalating-trade-war-with-the-u-s",
+      "title": "What to know about Canada escalating trade war with the U . S .",
+      "url": "https://radio.wpsu.org/2026-09-08/what-to-know-about-canadas-escalating-trade-war-with-the-u-s",
+      "source": "",
+      "date": "",
+      "category": "stocks"
     }
   ]
 }
