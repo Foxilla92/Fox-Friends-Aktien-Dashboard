@@ -1,66 +1,106 @@
 {
-  "fetchedAt": "2026-09-13T03:15:32.645Z",
+  "fetchedAt": "2026-09-26T08:52:32.320Z",
   "news": [
     {
-      "id": "https://jd.zol.com.cn/1246/12465548.html",
-      "title": "Apple iPhone 18 Pro 256GB黑款换新立减",
-      "url": "https://jd.zol.com.cn/1246/12465548.html",
+      "id": "https://biz.heraldcorp.com/article/10884650",
+      "title": "美 국채 30년물 , 연내 6 % 넘을 것 … 실현 시 닷컴버블 이후 26년만",
+      "url": "https://biz.heraldcorp.com/article/10884650",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.cna.com.tw/news/aopl/202609250151.aspx",
+      "title": "李逸洋赴熊本慰問震災 縣知事木村敬10月訪台感謝台灣伸援 | 國際",
+      "url": "https://www.cna.com.tw/news/aopl/202609250151.aspx",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.the-star.co.ke/news/2026-09-25-could-ai-really-kill-all-humans",
+      "title": "Could AI really kill all humans ?",
+      "url": "https://www.the-star.co.ke/news/2026-09-25-could-ai-really-kill-all-humans",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://inosmi.ru/20260925/ssha_kitay-280338154.html",
+      "title": "Саммит Си Цзиньпина и саммит Трампа : в чем сходства и различия мероприятий , от которых так много зависит ( Bloomberg , США )",
+      "url": "https://inosmi.ru/20260925/ssha_kitay-280338154.html",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.industrialinfo.com/news/article/us-manufacturing-boosts-capex-expectations--362933",
+      "title": "U . S . Manufacturing Boosts Capex Expectations",
+      "url": "https://www.industrialinfo.com/news/article/us-manufacturing-boosts-capex-expectations--362933",
+      "source": "",
+      "date": "",
+      "category": "sector"
+    },
+    {
+      "id": "https://www.themarketsdaily.com/2026/09/25/cvs-group-h2-earnings-call-highlights.html",
+      "title": "CVS Group H2 Earnings Call Highlights",
+      "url": "https://www.themarketsdaily.com/2026/09/25/cvs-group-h2-earnings-call-highlights.html",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://planeteafrique.com/Niger/index.asp?affiche=News_Display.asp&articleID=17724",
-      "title": "CLIMAT : Le réchauffement climatique de la planète va dépasser les 1 , 5°C",
-      "url": "https://planeteafrique.com/Niger/index.asp?affiche=News_Display.asp&articleID=17724",
+      "id": "https://www.wcsufm.org/latest-from-npr/2026-09-25/mom-mom-mom-3-ways-to-stay-calm-in-stressful-parenting-moments",
+      "title": "Mom ! Mom ! MOM ! 3 ways to stay calm in stressful parenting moments",
+      "url": "https://www.wcsufm.org/latest-from-npr/2026-09-25/mom-mom-mom-3-ways-to-stay-calm-in-stressful-parenting-moments",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.bgr.com/2253310/why-do-laptops-have-small-hole-webcam/",
-      "title": "Why Do Some Laptops Have Small Holes Next To The Webcam ?",
-      "url": "https://www.bgr.com/2253310/why-do-laptops-have-small-hole-webcam/",
+      "id": "https://ascii.jp/elem/000/004/437/4437383/",
+      "title": "ASCII . jp ：【 SecureMemoCloud 】 API連携機能リリース",
+      "url": "https://ascii.jp/elem/000/004/437/4437383/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://diena.lt/naujienos/ivairenybes/receptai/ka-valgyti-rugseji-derliaus-dovanos-1773726",
-      "title": "Ką valgyti rugsėjį : derliaus dovanos",
-      "url": "https://diena.lt/naujienos/ivairenybes/receptai/ka-valgyti-rugseji-derliaus-dovanos-1773726",
+      "id": "https://www.leblogauto.com/actualites/waymo-lance-ses-robotaxis-a-las-vegas/",
+      "title": "Waymo lance ses robotaxis à Las Vegas",
+      "url": "https://www.leblogauto.com/actualites/waymo-lance-ses-robotaxis-a-las-vegas/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.bgr.com/2253165/budget-phone-cases-equivalent-to-otterbox/",
-      "title": "Are There Any Budget Phone Case Brands Equivalent To OtterBox ?",
-      "url": "https://www.bgr.com/2253165/budget-phone-cases-equivalent-to-otterbox/",
+      "id": "https://www.edaily.co.kr/News/Read?newsId=02059846645583728&mediaCodeNo=257",
+      "title": "[ 단독 ] 과징금 맞고도 또 뚫린 정부24 … 개인정보 유출 한달 뒤 알려져",
+      "url": "https://www.edaily.co.kr/News/Read?newsId=02059846645583728&mediaCodeNo=257",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://cnycentral.com/news/local/feeling-more-humid-with-rain-overnight-then-hit-or-miss-gusty-storms-sunday",
-      "title": "Feeling more humid with rain overnight then hit or miss gusty storms Sunday",
-      "url": "https://cnycentral.com/news/local/feeling-more-humid-with-rain-overnight-then-hit-or-miss-gusty-storms-sunday",
+      "id": "https://www.fool.com/investing/2026/09/25/warren-buffett-successor-greg-abel-55-berkshire-hathaway-360-billion-portfolio-invested-in-4-stocks/?source=iedfolrf0000001",
+      "title": "Warren Buffett Successor , Greg Abel , Has 55 % of Berkshire Hathaway $360 Billion Portfolio Invested in 4 Standout Stocks",
+      "url": "https://www.fool.com/investing/2026/09/25/warren-buffett-successor-greg-abel-55-berkshire-hathaway-360-billion-portfolio-invested-in-4-stocks/?source=iedfolrf0000001",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://www.dailymail.com/tvshowbiz/article-16126879/Miley-Cyrus-goes-party-girl-poses-sizzling-snaps-iconic-LA-haunt-new-single-FLOPS-charts.html",
-      "title": "Miley Cyrus goes full party girl as she poses for sizzling snaps at iconic LA haunt ... after her new single FLOPS on the charts",
-      "url": "https://www.dailymail.com/tvshowbiz/article-16126879/Miley-Cyrus-goes-party-girl-poses-sizzling-snaps-iconic-LA-haunt-new-single-FLOPS-charts.html",
+      "id": "https://ascii.jp/elem/000/004/436/4436554/",
+      "title": "ASCII . jp ： 4000円以下 、 とにかく安い ！ 安すぎるスマートウォッチがむっちゃ使えた ！ ( 1 / 5 )",
+      "url": "https://ascii.jp/elem/000/004/436/4436554/",
       "source": "",
       "date": "",
       "category": "stocks"
     },
     {
-      "id": "https://baomoi.com/bo-tu-gay-bao-trong-phim-gio-vang-mua-he-nam-ay-c56037866.epi",
-      "title": "Bộ tứ gây bão trong phim giờ vàng Mùa hè năm ấy",
-      "url": "https://baomoi.com/bo-tu-gay-bao-trong-phim-gio-vang-mua-he-nam-ay-c56037866.epi",
+      "id": "https://grist.org/culture/my-boomer-moms-cheap-online-shopping-habit-drives-me-nuts/",
+      "title": "My boomer mom cheap online shopping habit drives me nuts",
+      "url": "https://grist.org/culture/my-boomer-moms-cheap-online-shopping-habit-drives-me-nuts/",
       "source": "",
       "date": "",
       "category": "stocks"
