@@ -1,10 +1,10 @@
 {
   "version": 1,
   "updatedBy": "Automatik",
-  "updatedAt": "2026-11-26T14:36:03.378Z",
+  "updatedAt": "2026-11-26T14:50:34.055Z",
   "apiUsageDate": "2026-11-26",
-  "apiCreditsToday": 38,
-  "lastRunCredits": 38,
+  "apiCreditsToday": 62,
+  "lastRunCredits": 24,
   "interval": "1h",
   "marketBenchmark": "SPY",
   "sectorBenchmark": "SOXX",
